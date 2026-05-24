@@ -12,6 +12,7 @@ import {
   Calendar,
   Clock,
   Eye,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -169,217 +170,190 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Aprovacao de Usuarios</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Gerencie as solicitacoes de acesso a plataforma.
-        </p>
-      </div>
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/10 p-2.5">
-              <Clock className="h-5 w-5 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-foreground">{pendingCount}</p>
-              <p className="text-xs text-muted-foreground">Pendentes</p>
-              <p className="text-xs text-muted-foreground">usuarios</p>
-            </div>
+    <div className="space-y-8">
+      {/* Summary Stats Bento Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col justify-center">
+          <p className="text-sm text-slate-500 mb-1">Pendentes</p>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[28px] leading-9 font-semibold tracking-tight text-amber-500">{pendingCount}</h2>
+            <span className="text-sm text-slate-500">usuarios</span>
           </div>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2.5">
-              <UserCheck className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-foreground">{approvedToday}</p>
-              <p className="text-xs text-muted-foreground">Aprovados hoje</p>
-            </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col justify-center">
+          <p className="text-sm text-slate-500 mb-1">Aprovados hoje</p>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[28px] leading-9 font-semibold tracking-tight text-emerald-500">{approvedToday}</h2>
+            <span className="text-sm text-slate-500">usuarios</span>
           </div>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2.5">
-              <Users className="h-5 w-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-foreground">{totalActive}</p>
-              <p className="text-xs text-muted-foreground">Total de usuarios</p>
-              <p className="text-xs text-muted-foreground">ativos</p>
-            </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col justify-center">
+          <p className="text-sm text-slate-500 mb-1">Total de usuarios</p>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[28px] leading-9 font-semibold tracking-tight text-slate-900">{totalActive.toLocaleString()}</h2>
+            <span className="text-sm text-slate-500">ativos</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Tabs: Mentores / Mentorados */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
-        <TabsList className="bg-muted/50 border border-border">
-          <TabsTrigger value="mentors">Mentores</TabsTrigger>
-          <TabsTrigger value="mentees">Mentorados</TabsTrigger>
-        </TabsList>
-
+      {/* Filters & Search */}
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* Tabs */}
+        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-full md:w-auto">
+          <button
+            onClick={() => setActiveTab("mentors")}
+            className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold tracking-wide transition-all ${
+              activeTab === "mentors"
+                ? "bg-white text-blue-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Mentores
+          </button>
+          <button
+            onClick={() => setActiveTab("mentees")}
+            className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold tracking-wide transition-all ${
+              activeTab === "mentees"
+                ? "bg-white text-blue-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Mentorados
+          </button>
+        </div>
         {/* Search */}
-        <div className="relative max-w-md mt-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <input
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
             placeholder="Buscar por nome ou e-mail..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-card/50 border-border/50"
+            type="text"
           />
         </div>
+      </section>
 
-        {/* User cards - shared for both tabs */}
-        {(["mentors", "mentees"] as TabValue[]).map((tab) => (
-          <TabsContent key={tab} value={tab}>
-            {filteredUsers.length === 0 ? (
-              <EmptyState
-                icon={Users}
-                title="Nenhum usuario encontrado"
-                description={
-                  search
-                    ? "Tente ajustar sua busca"
-                    : "Nao ha usuarios pendentes nesta categoria"
-                }
-              />
-            ) : (
-              <div className="space-y-3 mt-4">
-                {filteredUsers.map((user) => {
-                  const borderColor =
-                    user.role === "MENTOR"
-                      ? "border-l-blue-500"
-                      : "border-l-purple-500"
+      {/* Pending Users Card Grid */}
+      {filteredUsers.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="Nenhum usuario encontrado"
+          description={
+            search
+              ? "Tente ajustar sua busca"
+              : "Nao ha usuarios pendentes nesta categoria"
+          }
+        />
+      ) : (
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredUsers.map((user) => (
+            <article
+              key={user.id}
+              className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col relative overflow-hidden"
+            >
+              {/* Left accent bar */}
+              <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
 
-                  return (
-                    <div
-                      key={user.id}
-                      className={`rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 sm:p-5 border-l-4 ${borderColor} hover:bg-card/80 transition-colors`}
+              {/* Header: avatar + name + time */}
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    src={user.image}
+                    name={user.name}
+                    size="lg"
+                  />
+                  <div>
+                    <h3 className="text-sm font-semibold tracking-wide text-slate-900">{user.name}</h3>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                        user.role === "MENTOR"
+                          ? "bg-blue-600 text-white"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
                     >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        {/* User info */}
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <Avatar
-                            src={user.image}
-                            name={user.name}
-                            size="md"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-semibold text-foreground">
-                                {user.name}
-                              </p>
-                              <Badge
-                                className={
-                                  user.role === "MENTOR"
-                                    ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                                    : "bg-purple-500/20 text-purple-400 border-purple-500/30"
-                                }
-                              >
-                                {roleLabels[user.role]}
-                              </Badge>
-                            </div>
-                            {user.headline && (
-                              <p className="text-sm text-muted-foreground mt-0.5">
-                                Cargo: {user.headline}
-                              </p>
-                            )}
-                            {/* Skill badges */}
-                            {user.skills && user.skills.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {user.skills.slice(0, 4).map((s) => (
-                                  <span
-                                    key={s.id}
-                                    className="inline-flex items-center rounded-md bg-muted/50 border border-border/50 px-2 py-0.5 text-xs text-muted-foreground"
-                                  >
-                                    {s.skill.name}
-                                  </span>
-                                ))}
-                                {user.skills.length > 4 && (
-                                  <span className="inline-flex items-center rounded-md bg-muted/50 border border-border/50 px-2 py-0.5 text-xs text-muted-foreground">
-                                    +{user.skills.length - 4}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <p className="mt-2 text-xs text-muted-foreground">
-                              {timeAgo(user.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-border/50"
-                            onClick={() => setSelectedUser(user)}
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            Ver Detalhes
-                          </Button>
-                          {user.status === "PENDING" && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
-                                disabled={actionLoading === user.id}
-                                onClick={() => handleUpdateStatus(user.id, "REJECTED")}
-                              >
-                                <UserX className="h-3.5 w-3.5" />
-                                Reprovar
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                disabled={actionLoading === user.id}
-                                onClick={() => handleUpdateStatus(user.id, "APPROVED")}
-                              >
-                                <UserCheck className="h-3.5 w-3.5" />
-                                Aprovar
-                              </Button>
-                            </>
-                          )}
-                          {user.status === "APPROVED" && user.role !== "ADMIN" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-border/50"
-                              disabled={actionLoading === user.id}
-                              onClick={() => handleUpdateStatus(user.id, "SUSPENDED")}
-                            >
-                              <ShieldAlert className="h-3.5 w-3.5" />
-                              Suspender
-                            </Button>
-                          )}
-                          {user.status === "SUSPENDED" && (
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                              disabled={actionLoading === user.id}
-                              onClick={() => handleUpdateStatus(user.id, "APPROVED")}
-                            >
-                              <UserCheck className="h-3.5 w-3.5" />
-                              Reativar
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+                      {roleLabels[user.role]}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-slate-500">{timeAgo(user.createdAt)}</span>
               </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+
+              {/* Body: headline + skills */}
+              <div className="mb-4 flex-1">
+                {user.headline && (
+                  <p className="text-sm text-slate-900">
+                    <span className="font-semibold">Cargo:</span> {user.headline}
+                  </p>
+                )}
+                {user.skills && user.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {user.skills.slice(0, 4).map((s) => (
+                      <span
+                        key={s.id}
+                        className="px-2 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium border border-slate-200"
+                      >
+                        {s.skill.name}
+                      </span>
+                    ))}
+                    {user.skills.length > 4 && (
+                      <span className="px-2 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium border border-slate-200">
+                        +{user.skills.length - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-2 mt-auto">
+                <button
+                  onClick={() => setSelectedUser(user)}
+                  className="w-full py-2 bg-transparent text-blue-700 border border-blue-700 rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-50 transition-colors"
+                >
+                  Ver Detalhes
+                </button>
+                {user.status === "PENDING" && (
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-semibold tracking-wide flex justify-center items-center gap-1 hover:bg-red-100 transition-colors"
+                      disabled={actionLoading === user.id}
+                      onClick={() => handleUpdateStatus(user.id, "REJECTED")}
+                    >
+                      <X className="h-4 w-4" /> Reprovar
+                    </button>
+                    <button
+                      className="flex-[2] py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-700 transition-colors"
+                      disabled={actionLoading === user.id}
+                      onClick={() => handleUpdateStatus(user.id, "APPROVED")}
+                    >
+                      Aprovar
+                    </button>
+                  </div>
+                )}
+                {user.status === "APPROVED" && user.role !== "ADMIN" && (
+                  <button
+                    className="w-full py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold tracking-wide hover:bg-slate-50 transition-colors"
+                    disabled={actionLoading === user.id}
+                    onClick={() => handleUpdateStatus(user.id, "SUSPENDED")}
+                  >
+                    Suspender
+                  </button>
+                )}
+                {user.status === "SUSPENDED" && (
+                  <button
+                    className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-emerald-700 transition-colors"
+                    disabled={actionLoading === user.id}
+                    onClick={() => handleUpdateStatus(user.id, "APPROVED")}
+                  >
+                    Reativar
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
 
       {/* User detail dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { ArrowLeft, Loader2, Mail, Lock, GraduationCap, ChevronRight } from "lucide-react"
+import { ArrowLeft, Loader2, Mail, Lock, GraduationCap, Send } from "lucide-react"
 
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
@@ -45,120 +45,135 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0f1e] px-4">
-        <div className="w-full max-w-md text-center">
-          {/* Logo */}
-          <div className="mb-10 flex items-center justify-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-              <GraduationCap className="h-5 w-5 text-blue-400" />
-            </div>
-            <span className="text-xl font-bold text-white">MentorMatch</span>
+      <div className="bg-[#0b1326] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+        <main className="w-full max-w-[420px] relative z-10">
+          {/* Brand Anchor */}
+          <div className="flex justify-center items-center gap-2 mb-8">
+            <GraduationCap className="h-5 w-5 text-[#b4c5ff]" />
+            <span className="text-[18px] leading-[24px] font-semibold text-[#b4c5ff] tracking-wide">MentorMatch</span>
           </div>
 
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-700/50">
-              <Mail className="h-7 w-7 text-blue-400" />
+          {/* Success Card */}
+          <div className="bg-[#171f33] border border-[#434655] rounded-xl p-8 relative overflow-hidden">
+            {/* Glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-[#222a3d] border border-[#434655] flex items-center justify-center mb-6">
+                <Mail className="h-5 w-5 text-[#b4c5ff]" />
+              </div>
+
+              <h1 className="text-[28px] leading-[36px] font-semibold text-[#dae2fd] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
+                E-mail enviado!
+              </h1>
+              <p className="text-[14px] leading-[20px] text-[#c3c6d7] text-center mb-8 max-w-xs mx-auto">
+                Se uma conta com esse e-mail existir, voce recebera um link para
+                redefinir sua senha. Verifique sua caixa de entrada e spam.
+              </p>
             </div>
           </div>
 
-          <h1 className="mb-3 text-2xl font-semibold text-white">E-mail enviado!</h1>
-          <p className="mb-8 text-sm leading-relaxed text-gray-400">
-            Se uma conta com esse e-mail existir, voce recebera um link para
-            redefinir sua senha. Verifique sua caixa de entrada e spam.
-          </p>
-
-          <Link href="/login">
-            <Button
-              variant="outline"
-              className="h-11 w-full rounded-lg border-gray-700 bg-transparent text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white"
+          {/* Back to Login */}
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] hover:text-[#b4c5ff] transition-colors group"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Voltar ao login
-            </Button>
-          </Link>
-        </div>
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Voltar ao login</span>
+            </Link>
+          </div>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0f1e] px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="mb-10 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-            <GraduationCap className="h-5 w-5 text-blue-400" />
-          </div>
-          <span className="text-xl font-bold text-white">MentorMatch</span>
+    <div className="bg-[#0b1326] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+      <main className="w-full max-w-[420px] relative z-10">
+        {/* Brand Anchor */}
+        <div className="flex justify-center items-center gap-2 mb-8">
+          <GraduationCap className="h-5 w-5 text-[#b4c5ff]" />
+          <span className="text-[18px] leading-[24px] font-semibold text-[#b4c5ff] tracking-wide">MentorMatch</span>
         </div>
 
-        {/* Lock icon */}
-        <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-700/50">
-            <Lock className="h-7 w-7 text-gray-400" />
-          </div>
-        </div>
+        {/* Recovery Card */}
+        <div className="bg-[#171f33] border border-[#434655] rounded-xl p-8 relative overflow-hidden">
+          {/* Glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Title */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-white">Recuperacao de Acesso</h1>
-          <p className="mt-3 text-sm leading-relaxed text-gray-400">
-            Enviaremos um link para voce redefinir sua senha corporativa.
-          </p>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-5">
-            <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-              E-mail corporativo
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-              <input
-                id="email"
-                type="email"
-                placeholder="seu@empresa.com"
-                className="h-11 w-full rounded-lg border border-gray-700 bg-gray-800/50 pl-10 pr-3 text-sm text-white placeholder:text-gray-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                {...register("email")}
-              />
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-full bg-[#222a3d] border border-[#434655] flex items-center justify-center mb-6">
+              <Lock className="h-5 w-5 text-[#dae2fd]" />
             </div>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+
+            <h1 className="text-[28px] leading-[36px] font-semibold text-[#dae2fd] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
+              Recuperacao de Acesso
+            </h1>
+            <p className="text-[14px] leading-[20px] text-[#c3c6d7] text-center mb-8 max-w-xs mx-auto">
+              Enviaremos um link para voce redefinir sua senha corporativa.
+            </p>
+
+            {error && (
+              <div className="w-full mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
+                {error}
+              </div>
             )}
+
+            {/* Form */}
+            <form className="w-full space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              <div className="space-y-2">
+                <label
+                  className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] block uppercase"
+                  htmlFor="email"
+                >
+                  E-mail corporativo
+                </label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8d90a0] group-focus-within:text-[#b4c5ff] transition-colors" />
+                  <input
+                    className="w-full bg-[#060e20] border border-[#434655] rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] text-[#dae2fd] placeholder:text-[#8d90a0]/50 focus:outline-none focus:border-[#b4c5ff] focus:ring-1 focus:ring-[#b4c5ff] transition-all duration-200"
+                    id="email"
+                    type="email"
+                    placeholder="seu.nome@empresa.com"
+                    {...register("email")}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 text-[#eeefff] text-[12px] leading-[16px] tracking-[0.05em] font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#dbe1ff] hover:text-[#002a78] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#b4c5ff] focus:ring-offset-2 focus:ring-offset-[#171f33] h-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>Enviar Instrucoes</span>
+                    <Send className="h-[18px] w-[18px]" />
+                  </>
+                )}
+              </Button>
+            </form>
           </div>
+        </div>
 
-          <Button
-            type="submit"
-            className="h-11 w-full rounded-lg bg-[#2563eb] text-sm font-medium text-white hover:bg-[#1d4ed8]"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                Enviar Instrucoes
-                <ChevronRight className="h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
+        {/* Back to Login */}
+        <div className="mt-8 flex justify-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300"
+            className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] hover:text-[#b4c5ff] transition-colors group"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Voltar ao login
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Voltar ao login</span>
           </Link>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

@@ -8,6 +8,10 @@ import {
   MapPin,
   Play,
   Send,
+  Flame,
+  Briefcase,
+  PlayCircle,
+  Calendar,
 } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -44,7 +48,6 @@ interface ExperienceEntry {
 
 function parseExperience(experience?: string | null): ExperienceEntry[] {
   if (!experience) return []
-  // Try to split by double newlines for entries
   const entries = experience.split(/\n\n+/).filter(Boolean)
   return entries.map((entry) => {
     const lines = entry.split("\n").filter(Boolean)
@@ -98,16 +101,16 @@ export default function MentorProfilePage() {
 
   if (!mentor) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#faf8ff]">
         <div className="p-4">
-          <Button variant="ghost" onClick={() => router.back()} className="text-gray-600">
+          <Button variant="ghost" onClick={() => router.back()} className="text-[#434655]">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
         </div>
         <div className="text-center py-16">
-          <p className="text-lg font-medium text-gray-900">Mentor nao encontrado</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-lg font-medium text-[#131b2e]">Mentor nao encontrado</p>
+          <p className="text-sm text-[#434655] mt-1">
             O perfil que voce procura nao existe ou nao esta mais disponivel.
           </p>
         </div>
@@ -120,82 +123,79 @@ export default function MentorProfilePage() {
   const secondarySkills = mentor.skills.slice(3)
 
   return (
-    <div className="min-h-screen bg-white -mx-4 -mt-6 sm:-mx-6 lg:-mx-8 lg:-mt-6">
-      <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Back button */}
-        <button
-          onClick={() => router.push(`/t/${slug}/mentors`)}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para mentores
-        </button>
-
-        {/* Avatar */}
-        <div className="flex justify-center mb-4">
+    <div className="max-w-[900px] mx-auto flex flex-col gap-8">
+      {/* Profile Header */}
+      <section className="bg-white border border-[#E2E8F0] rounded-xl p-8 flex flex-col items-center text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-md mb-6">
           <Avatar
             src={mentor.image}
             name={mentor.name}
             size="xl"
-            className="h-28 w-28 text-3xl"
+            className="w-full h-full"
           />
         </div>
 
-        {/* Name and headline */}
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">{mentor.name}</h1>
-          {mentor.headline && (
-            <p className="mt-1 text-blue-600 font-medium">{mentor.headline}</p>
-          )}
-          <div className="flex items-center justify-center gap-1 mt-2 text-sm text-gray-500">
-            <MapPin className="h-4 w-4" />
-            <span>Sao Paulo, SP (Remoto)</span>
-          </div>
-        </div>
+        <h2 className="text-[28px] md:text-[36px] leading-[34px] md:leading-[44px] font-bold text-[#131b2e] mb-2">
+          {mentor.name}
+        </h2>
+        {mentor.headline && (
+          <p className="text-lg leading-7 text-[#004ac6] font-medium mb-1">
+            {mentor.headline}
+          </p>
+        )}
+        <p className="text-sm text-[#505f76] mb-6 flex items-center justify-center gap-1">
+          <MapPin className="h-4 w-4" />
+          Sao Paulo, SP (Remoto)
+        </p>
 
-        {/* Bio */}
         {mentor.bio && (
-          <p className="text-gray-600 text-center leading-relaxed mb-6">
+          <p className="text-base leading-6 text-[#434655] max-w-2xl mb-8 leading-relaxed">
             {mentor.bio}
           </p>
         )}
 
-        {/* Action buttons */}
-        <div className="space-y-3 mb-8">
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-4 justify-center">
           {submitted ? (
-            <Button disabled className="w-full h-12 bg-gray-300 text-gray-500">
+            <Button disabled className="bg-[#c3c6d7] text-[#434655] px-8 py-3">
               <Send className="h-4 w-4" />
               Solicitacao Enviada
             </Button>
           ) : (
-            <Button
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium"
+            <button
+              className="bg-[#004ac6] text-white text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg hover:bg-[#004ac6]/90 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95"
               onClick={() => router.push(`/t/${slug}/confirm/${mentorId}`)}
             >
+              <Calendar className="h-5 w-5" />
               Solicitar Mentoria
-            </Button>
+            </button>
           )}
 
           {mentor.whatsapp && (
             <button
               onClick={() => openWhatsApp(mentor.whatsapp)}
-              className="w-full flex items-center justify-center gap-2 h-12 rounded-md border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="bg-transparent border-2 border-[#004ac6] text-[#004ac6] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg hover:bg-[#dae2fd]/30 transition-colors flex items-center justify-center gap-2 active:scale-95"
             >
               <MessageCircle className="h-5 w-5" />
               WhatsApp
             </button>
           )}
         </div>
+      </section>
 
-        {/* Habilidades */}
+      {/* Bento Grid Details */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* Skills Card */}
         {mentor.skills.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Habilidades</h2>
+          <section className="md:col-span-2 bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-5 flex items-center gap-2">
+              <Flame className="h-5 w-5 text-[#004ac6]" />
+              Habilidades
+            </h3>
             <div className="flex flex-wrap gap-2">
               {primarySkills.map((s) => (
                 <span
                   key={s.id}
-                  className="rounded-full bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-medium"
                 >
                   {s.skill.name}
                 </span>
@@ -203,71 +203,73 @@ export default function MentorProfilePage() {
               {secondarySkills.map((s) => (
                 <span
                   key={s.id}
-                  className="rounded-full border border-blue-600 px-3 py-1 text-sm font-medium text-blue-600"
+                  className="bg-[#dae2fd] text-[#434655] px-4 py-1.5 rounded-full text-xs font-medium"
                 >
                   {s.skill.name}
                 </span>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Apresentacao (Video) */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Apresentacao</h2>
-          <div className="relative rounded-xl bg-gray-100 aspect-video flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
-            <button className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors">
-              <Play className="h-7 w-7 text-blue-600 ml-1" />
-            </button>
-          </div>
-        </div>
-
-        {/* Experiencia */}
-        {(experienceEntries.length > 0 || mentor.experience) && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Experiencia</h2>
-            {experienceEntries.length > 0 ? (
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-200" />
-
-                <div className="space-y-6">
-                  {experienceEntries.map((entry, i) => (
-                    <div key={i} className="relative pl-7">
-                      {/* Timeline dot */}
-                      <div className="absolute left-0 top-1.5 h-[15px] w-[15px] rounded-full bg-blue-600 border-2 border-white" />
-
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{entry.company}</h3>
-                        {entry.dates && (
-                          <p className="text-sm text-gray-400">{entry.dates}</p>
-                        )}
-                        {entry.role && (
-                          <p className="text-sm font-medium text-gray-700 mt-0.5">{entry.role}</p>
-                        )}
-                        {entry.description && (
-                          <p className="text-sm text-gray-500 mt-1">{entry.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+        {/* Video Presentation Card */}
+        <section className={`${mentor.skills.length > 0 ? "md:col-span-3" : "md:col-span-5"} bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)] flex flex-col`}>
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-5 flex items-center gap-2">
+            <PlayCircle className="h-5 w-5 text-[#004ac6]" />
+            Apresentacao
+          </h3>
+          <div className="relative w-full flex-grow min-h-[200px] bg-[#e2e7ff] rounded-lg overflow-hidden group cursor-pointer">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#dae2fd] to-[#c3c6d7]" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover:bg-[#004ac6] transition-colors duration-300 z-10">
+                <Play className="h-8 w-8 text-[#004ac6] group-hover:text-white transition-colors ml-1" />
               </div>
-            ) : mentor.experience ? (
-              <p className="text-gray-600 whitespace-pre-line">{mentor.experience}</p>
-            ) : null}
+            </div>
           </div>
-        )}
-
-        {/* Education */}
-        {mentor.education && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Formacao</h2>
-            <p className="text-gray-600 whitespace-pre-line">{mentor.education}</p>
-          </div>
-        )}
+        </section>
       </div>
+
+      {/* Experience Timeline */}
+      {(experienceEntries.length > 0 || mentor.experience) && (
+        <section className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-8 flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-[#004ac6]" />
+            Experiencia
+          </h3>
+          {experienceEntries.length > 0 ? (
+            <div className="flex flex-col gap-8 relative before:absolute before:inset-y-2 before:left-[11px] before:w-[2px] before:bg-[#dae2fd]">
+              {experienceEntries.map((entry, i) => (
+                <div key={i} className="flex gap-6 relative">
+                  <div className={`w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center z-10 shrink-0 mt-1 ${
+                    i === 0 ? "bg-[#004ac6]" : "bg-[#dae2fd]"
+                  }`} />
+                  <div>
+                    <h4 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e] text-lg">
+                      {entry.role || entry.company}
+                    </h4>
+                    <p className="text-sm text-[#004ac6] font-medium mb-2">
+                      {entry.company} {entry.dates && `• ${entry.dates}`}
+                    </p>
+                    {entry.description && (
+                      <p className="text-base leading-6 text-[#434655]">{entry.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : mentor.experience ? (
+            <p className="text-[#434655] whitespace-pre-line">{mentor.experience}</p>
+          ) : null}
+        </section>
+      )}
+
+      {/* Education */}
+      {mentor.education && (
+        <section className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-4">Formacao</h3>
+          <p className="text-[#434655] whitespace-pre-line">{mentor.education}</p>
+        </section>
+      )}
     </div>
   )
 }

@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Check,
   X,
+  CalendarDays,
+  UserPlus,
 } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -119,231 +121,211 @@ export default function MentorDashboardPage() {
     return <Loading text="Carregando dashboard..." />
   }
 
-  const menteeStatuses = ["EM DIA", "AGUARDANDO", "ATIVO"]
+  const menteeStatuses = ["Em dia", "Aguardando", "Ativo"]
   const statusColors: Record<string, string> = {
-    "EM DIA": "bg-green-500/20 text-green-400",
-    AGUARDANDO: "bg-yellow-500/20 text-yellow-400",
-    ATIVO: "bg-blue-500/20 text-blue-400",
+    "Em dia": "bg-emerald-500/10 text-emerald-500",
+    Aguardando: "bg-amber-500/10 text-amber-500",
+    Ativo: "bg-[#004ac6]/10 text-[#004ac6]",
   }
 
   return (
-    <div className="min-h-screen space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Visao Geral</h1>
-        <p className="text-slate-400 mt-1">
+    <div className="flex flex-col gap-8 max-w-5xl mx-auto">
+      {/* Page Header */}
+      <div className="flex flex-col gap-1">
+        <h2 className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
+          Visao Geral
+        </h2>
+        <p className="text-base leading-6 text-[#434655]">
           Acompanhe seu impacto e gerencie suas mentorias.
         </p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="space-y-3">
+      {/* Bento Grid: Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total de Mentorados */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20">
-              <Users className="h-6 w-6 text-blue-400" />
+        <div className="bg-blue-600/5 rounded-xl p-4 border border-[#004ac6]/20 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-start">
+            <span className="text-sm font-semibold tracking-[0.05em] text-[#004ac6]">
+              Total de Mentorados
+            </span>
+            <div className="p-2 bg-[#004ac6] text-white rounded-lg">
+              <Users className="h-5 w-5" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-slate-400">Total de Mentorados</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-white">{stats.activeMentees}</p>
-                {stats.activeMentees > 0 && (
-                  <span className="flex items-center gap-0.5 text-xs text-green-400">
-                    <TrendingUp className="h-3 w-3" />
-                    +{Math.min(stats.activeMentees, 2)} este mes
-                  </span>
-                )}
-              </div>
-            </div>
+          </div>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
+              {stats.activeMentees}
+            </span>
+            {stats.activeMentees > 0 && (
+              <span className="text-xs font-medium text-emerald-500 flex items-center bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                <TrendingUp className="h-3.5 w-3.5 mr-1" />
+                +{Math.min(stats.activeMentees, 2)}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Horas de Mentoria */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600/20">
-              <Clock className="h-6 w-6 text-purple-400" />
+        <div className="bg-[#d0e1fb]/20 rounded-xl p-4 border border-[#505f76]/20 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-start">
+            <span className="text-sm font-semibold tracking-[0.05em] text-[#505f76]">
+              Horas de Mentoria
+            </span>
+            <div className="p-2 bg-[#505f76] text-white rounded-lg">
+              <Clock className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-sm text-slate-400">Horas de Mentoria</p>
-              <p className="text-2xl font-bold text-white">
-                {stats.activeMentees * 12}h
-              </p>
-            </div>
+          </div>
+          <div className="mt-4">
+            <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
+              {stats.activeMentees * 12}h
+            </span>
           </div>
         </div>
 
         {/* Nota Media */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-600/20">
-              <Star className="h-6 w-6 text-yellow-400" />
+        <div className="bg-[#ffb596]/10 rounded-xl p-4 border border-[#943700]/20 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-start">
+            <span className="text-sm font-semibold tracking-[0.05em] text-[#943700]">
+              Nota Media
+            </span>
+            <div className="p-2 bg-[#943700] text-white rounded-lg">
+              <Star className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-sm text-slate-400">Nota Media</p>
-              <div className="flex items-center gap-1">
-                <p className="text-2xl font-bold text-white">4.8</p>
-                <span className="text-sm text-slate-400">/ 5.0</span>
-                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 ml-1" />
-              </div>
-            </div>
+          </div>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
+              4.9
+            </span>
+            <span className="text-xs font-medium text-[#434655]">/ 5.0</span>
           </div>
         </div>
       </div>
 
-      {/* Meus Mentorados Ativos */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Meus Mentorados Ativos</h2>
-          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-            {stats.activeMentees} de 4 slots preenchidos
-          </span>
-        </div>
+      {/* Main Dashboard Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Active Mentees */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="flex justify-between items-end border-b border-[#E2E8F0] pb-2">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e]">
+              Meus Mentorados Ativos
+            </h3>
+            <span className="text-xs font-medium text-[#434655] bg-[#e2e7ff] px-3 py-1 rounded-full">
+              {stats.activeMentees} de 4 slots preenchidos
+            </span>
+          </div>
 
-        {activeConnections.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="Nenhum mentorado ativo"
-            description="Voce ainda nao possui mentorados. Aguarde solicitacoes de mentoria."
-          />
-        ) : (
-          <div className="space-y-3">
-            {activeConnections.map((conn, index) => {
-              const progress = [85, 60, 45, 30][index % 4]
-              const status = menteeStatuses[index % menteeStatuses.length]
-              const nextMeeting = ["Amanha as 14:00", "Quinta as 10:00", "Sexta as 16:00"][index % 3]
+          {activeConnections.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Nenhum mentorado ativo"
+              description="Voce ainda nao possui mentorados. Aguarde solicitacoes de mentoria."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeConnections.map((conn, index) => {
+                const progress = [85, 40, 60, 30][index % 4]
+                const status = menteeStatuses[index % menteeStatuses.length]
+                const nextMeeting = [
+                  "Proxima reuniao: Amanha as 14:00",
+                  "Proxima reuniao: Sex, 10:00",
+                  "Ultima reuniao: Semana passada",
+                ][index % 3]
 
-              return (
-                <div
-                  key={conn.id}
-                  className="rounded-xl bg-slate-900 border border-slate-800 p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <Avatar
-                      src={conn.mentee.image}
-                      name={conn.mentee.name}
-                      size="md"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-medium text-white truncate">
+                return (
+                  <div
+                    key={conn.id}
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-3 hover:border-[#004ac6] transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        src={conn.mentee.image}
+                        name={conn.mentee.name}
+                        size="md"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e] group-hover:text-[#004ac6] transition-colors">
                           {conn.mentee.name}
-                        </h3>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusColors[status]}`}>
-                          {status}
-                        </span>
-                      </div>
-                      {conn.mentee.skills.length > 0 && (
-                        <p className="text-sm text-slate-400 mt-0.5">
-                          {conn.mentee.skills.map((s) => s.skill.name).join(", ")}
+                        </h4>
+                        <p className="text-xs font-medium text-[#434655]">
+                          {conn.mentee.skills.length > 0
+                            ? conn.mentee.skills.map((s) => s.skill.name).join(", ")
+                            : "Mentoria"}
+                          {" "}&bull; {progress}% Concluido
                         </p>
-                      )}
-
-                      {/* Progress bar */}
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-slate-400">Progresso</span>
-                          <span className="text-white font-medium">{progress}% Concluido</span>
-                        </div>
-                        <div className="h-1.5 w-full rounded-full bg-slate-800">
-                          <div
-                            className="h-1.5 rounded-full bg-blue-600"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
                       </div>
-
-                      <p className="text-xs text-slate-500 mt-2">
-                        Proxima reuniao: {nextMeeting}
-                      </p>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${statusColors[status]}`}
+                      >
+                        {status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#434655]">
+                      <CalendarDays className="h-4 w-4" />
+                      <span className="text-xs font-medium">{nextMeeting}</span>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Solicitacoes Pendentes Banner */}
-      {pendingConnections.length > 0 && (
-        <div className="rounded-xl bg-gradient-to-r from-orange-600/20 to-yellow-600/20 border border-orange-500/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20">
-              <AlertCircle className="h-5 w-5 text-orange-400" />
+                )
+              })}
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-white">Solicitacoes Pendentes</h3>
-              <p className="text-sm text-slate-300">
-                Voce tem {pendingConnections.length} nova{pendingConnections.length > 1 ? "s" : ""} solicitacao{pendingConnections.length > 1 ? "oes" : ""} de mentoria
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-3 space-y-2">
-            {pendingConnections.slice(0, 3).map((conn) => (
-              <div key={conn.id} className="flex items-center justify-between rounded-lg bg-slate-900/50 p-3">
-                <div className="flex items-center gap-2">
-                  <Avatar src={conn.mentee.image} name={conn.mentee.name} size="sm" />
-                  <span className="text-sm text-white truncate">{conn.mentee.name}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="h-8 bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => handleRequest(conn.id, "ACCEPTED")}
-                    disabled={updatingId === conn.id}
-                  >
-                    <Check className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 border-slate-600 text-slate-300 hover:bg-slate-800"
-                    onClick={() => handleRequest(conn.id, "REJECTED")}
-                    disabled={updatingId === conn.id}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Button
-            className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
-            onClick={() => router.push(`/t/${slug}/requests`)}
-          >
-            Analisar Solicitacoes
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          )}
         </div>
-      )}
 
-      {/* Acesso Rapido */}
-      <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Acesso Rapido</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => router.push(`/t/${slug}/library`)}
-            className="flex flex-col items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 p-5 transition-colors hover:bg-slate-800"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20">
-              <BookOpen className="h-6 w-6 text-blue-400" />
+        {/* Right Column: Pending & Shortcuts */}
+        <div className="flex flex-col gap-8">
+          {/* Pending Requests Highlight */}
+          {pendingConnections.length > 0 && (
+            <div className="bg-[#bc4800] text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+              <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl leading-7 font-semibold">Novas Solicitacoes</h3>
+                </div>
+                <p className="text-base">
+                  Existem <strong>{pendingConnections.length} nova{pendingConnections.length > 1 ? "s" : ""} pessoa{pendingConnections.length > 1 ? "s" : ""}</strong> interessada{pendingConnections.length > 1 ? "s" : ""} em sua mentoria.
+                </p>
+                <button
+                  onClick={() => router.push(`/t/${slug}/requests`)}
+                  className="w-full py-3 px-4 bg-white text-[#943700] font-bold rounded-lg hover:bg-[#faf8ff] transition-all active:scale-95 shadow-md"
+                >
+                  Analisar Solicitacoes
+                </button>
+              </div>
+              <UserPlus className="absolute -right-4 -bottom-4 h-20 w-20 text-white/10 rotate-12" />
             </div>
-            <span className="text-sm font-medium text-white">Biblioteca</span>
-          </button>
+          )}
 
-          <button
-            onClick={() => router.push(`/t/${slug}/notifications`)}
-            className="flex flex-col items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 p-5 transition-colors hover:bg-slate-800"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600/20">
-              <Calendar className="h-6 w-6 text-green-400" />
+          {/* Quick Shortcuts */}
+          <div className="flex flex-col gap-4">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] border-b border-[#E2E8F0] pb-2">
+              Acesso Rapido
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => router.push(`/t/${slug}/library`)}
+                className="flex flex-col items-center justify-center gap-3 p-6 bg-[#eaedff] rounded-xl border border-transparent hover:border-[#004ac6]/30 hover:bg-white transition-all group shadow-sm"
+              >
+                <div className="p-3 bg-[#004ac6]/10 text-[#004ac6] rounded-full group-hover:bg-[#004ac6] group-hover:text-white transition-colors">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <span className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                  Biblioteca
+                </span>
+              </button>
+              <button
+                onClick={() => router.push(`/t/${slug}/notifications`)}
+                className="flex flex-col items-center justify-center gap-3 p-6 bg-[#eaedff] rounded-xl border border-transparent hover:border-[#004ac6]/30 hover:bg-white transition-all group shadow-sm"
+              >
+                <div className="p-3 bg-[#004ac6]/10 text-[#004ac6] rounded-full group-hover:bg-[#004ac6] group-hover:text-white transition-colors">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <span className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                  Agenda
+                </span>
+              </button>
             </div>
-            <span className="text-sm font-medium text-white">Agenda</span>
-          </button>
+          </div>
         </div>
       </div>
     </div>

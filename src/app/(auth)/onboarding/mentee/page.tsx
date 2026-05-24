@@ -12,10 +12,10 @@ import {
   ArrowLeft,
   ArrowRight,
   GraduationCap,
-  User,
-  Link2,
-  Phone,
-  BookOpen,
+  TrendingUp,
+  Code,
+  Rocket,
+  Check,
 } from "lucide-react"
 
 import { menteeProfileSchema, type MenteeProfileInput } from "@/lib/validations"
@@ -23,9 +23,41 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
 const steps = [
-  { number: 1, label: "Basico" },
-  { number: 2, label: "Sobre voce" },
+  { number: 1, label: "Perfil" },
+  { number: 2, label: "Objetivos" },
   { number: 3, label: "Habilidades" },
+]
+
+const objectives = [
+  {
+    value: "career",
+    icon: TrendingUp,
+    label: "Crescimento de Carreira",
+    description: "Promocoes, transicao de area ou lideranca.",
+  },
+  {
+    value: "skills",
+    icon: Code,
+    label: "Habilidades Tecnicas",
+    description: "Aprender novas ferramentas ou linguagens.",
+  },
+  {
+    value: "startup",
+    icon: Rocket,
+    label: "Empreendedorismo",
+    description: "Criar ou escalar um negocio proprio.",
+    fullWidth: true,
+  },
+]
+
+const suggestedSkills = [
+  "Lideranca",
+  "UX/UI Design",
+  "Desenvolvimento Web",
+  "Gestao de Projetos",
+  "Marketing Digital",
+  "Ciencia de Dados",
+  "Product Management",
 ]
 
 export default function MenteeOnboardingPage() {
@@ -34,7 +66,8 @@ export default function MenteeOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [skillInput, setSkillInput] = useState("")
+  const [selectedObjective, setSelectedObjective] = useState("career")
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
 
   const {
     register,
@@ -52,32 +85,18 @@ export default function MenteeOnboardingPage() {
 
   const learningSkills = watch("learningSkills")
 
-  function addSkill() {
-    const trimmed = skillInput.trim()
-    if (!trimmed) return
-    if (learningSkills.includes(trimmed)) {
-      setSkillInput("")
-      return
-    }
-    setValue("learningSkills", [...learningSkills, trimmed], {
-      shouldValidate: true,
-    })
-    setSkillInput("")
+  function toggleSuggestedSkill(skill: string) {
+    const newSkills = selectedSkills.includes(skill)
+      ? selectedSkills.filter((s) => s !== skill)
+      : [...selectedSkills, skill]
+    setSelectedSkills(newSkills)
+    setValue("learningSkills", newSkills, { shouldValidate: true })
   }
 
   function removeSkill(skill: string) {
-    setValue(
-      "learningSkills",
-      learningSkills.filter((s) => s !== skill),
-      { shouldValidate: true }
-    )
-  }
-
-  function handleSkillKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      addSkill()
-    }
+    const newSkills = selectedSkills.filter((s) => s !== skill)
+    setSelectedSkills(newSkills)
+    setValue("learningSkills", newSkills, { shouldValidate: true })
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -112,8 +131,7 @@ export default function MenteeOnboardingPage() {
       const valid = await trigger(["name", "whatsapp"])
       if (valid) setCurrentStep(2)
     } else if (currentStep === 2) {
-      const valid = await trigger(["bio"])
-      if (valid) setCurrentStep(3)
+      setCurrentStep(3)
     }
   }
 
@@ -149,310 +167,255 @@ export default function MenteeOnboardingPage() {
     }
   }
 
+  const progressWidth = `${(currentStep / 3) * 100}%`
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
-    <div className="w-full max-w-md flex flex-col items-center">
-      {/* Header */}
-      <div className="mb-6 flex w-full items-center gap-3">
-        <Link href="/select-profile" className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft className="h-5 w-5" />
+    <div className="bg-[#F8FAFC] text-[#131b2e] min-h-screen flex flex-col font-sans">
+      {/* TopAppBar */}
+      <header className="bg-white border-b border-[#E2E8F0] fixed top-0 w-full z-50 h-16 flex items-center px-6 justify-between">
+        <div className="flex items-center gap-2 text-[#004ac6]">
+          <GraduationCap className="h-6 w-6" />
+          <span className="font-heading text-[28px] leading-[36px] tracking-[-0.01em] font-bold">MentorMatch</span>
+        </div>
+        <Link href="/select-profile" className="text-[#434655] hover:text-[#004ac6] transition-colors">
+          <X className="h-6 w-6" />
         </Link>
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563eb]">
-            <GraduationCap className="h-4 w-4 text-white" />
+      </header>
+
+      <main className="flex-grow pt-24 pb-12 px-4 md:px-10 flex items-center justify-center relative overflow-hidden">
+        {/* Background Decoration */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 flex justify-center items-center">
+          <div className="w-[800px] h-[800px] bg-[#b4c5ff]/30 rounded-full blur-[100px] absolute top-[-20%] left-[-10%]" />
+          <div className="w-[600px] h-[600px] bg-[#d0e1fb]/40 rounded-full blur-[80px] absolute bottom-[-10%] right-[-5%]" />
+        </div>
+
+        <div className="bg-white/90 backdrop-blur-[10px] w-full max-w-2xl rounded-xl border border-[#E2E8F0] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] z-10 p-6 md:p-10">
+          {/* Header Section */}
+          <div className="mb-8 text-center">
+            <h1 className="font-heading text-[28px] leading-[34px] font-bold md:text-[36px] md:leading-[44px] md:tracking-[-0.02em] text-[#131b2e] mb-2">
+              Junte-se a nos
+            </h1>
+            <p className="text-[16px] leading-[24px] text-[#434655]">
+              Encontre o mentor ideal para impulsionar sua carreira.
+            </p>
           </div>
-          <span className="text-lg font-bold text-gray-900">MentorMatch</span>
-        </div>
-      </div>
 
-      {/* Card */}
-      <div className="w-full rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-xl font-semibold text-gray-900">Torne-se um Mentorado</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Preencha suas informacoes para encontrar o mentor ideal.
-          </p>
-        </div>
-
-        {/* Step indicator */}
-        <div className="mb-8 flex items-center justify-center gap-0">
-          {steps.map((step, idx) => (
-            <div key={step.number} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
-                    currentStep >= step.number
-                      ? "bg-[#2563eb] text-white"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
-                >
-                  {step.number}
-                </div>
+          {/* Progress Bar */}
+          <div className="mb-10 relative">
+            <div className="flex justify-between mb-2">
+              {steps.map((step) => (
                 <span
-                  className={`mt-1.5 text-xs ${
-                    currentStep >= step.number ? "font-medium text-[#2563eb]" : "text-gray-400"
+                  key={step.number}
+                  className={`text-[12px] leading-[14px] font-medium ${
+                    currentStep >= step.number ? "text-[#004ac6]" : "text-[#434655]"
                   }`}
                 >
                   {step.label}
                 </span>
-              </div>
-              {idx < steps.length - 1 && (
-                <div
-                  className={`mx-3 mb-5 h-0.5 w-12 ${
-                    currentStep > step.number ? "bg-[#2563eb]" : "bg-gray-200"
-                  }`}
-                />
-              )}
+              ))}
             </div>
-          ))}
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {error}
+            <div className="h-2 bg-[#e2e7ff] rounded-full overflow-hidden relative">
+              <div
+                className="absolute top-0 left-0 h-full bg-[#004ac6] transition-all duration-500 ease-out rounded-full"
+                style={{ width: progressWidth }}
+              />
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Step 1: Basico */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              {/* Photo */}
-              <div className="flex items-center gap-4">
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt="Foto de perfil"
-                    className="h-14 w-14 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-                    <Upload className="h-5 w-5 text-gray-400" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="text-sm font-medium text-[#2563eb] hover:underline"
-                  disabled={uploading}
-                  onClick={() => document.getElementById("photo-upload")?.click()}
-                >
-                  {uploading ? "Enviando..." : "Escolher foto"}
-                </button>
-                <input
-                  id="photo-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                />
-              </div>
+          {error && (
+            <div className="mb-4 rounded-lg bg-[#ffdad6] p-3 text-sm text-[#93000a]">
+              {error}
+            </div>
+          )}
 
-              {/* Name */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Nome Completo
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Step 1: Basic Info */}
+            {currentStep === 1 && (
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e] mb-2" htmlFor="name">
+                    Nome Completo
+                  </label>
                   <input
-                    type="text"
+                    className="w-full px-4 py-3 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] outline-none transition-colors text-[16px] leading-[24px] text-[#131b2e] placeholder:text-[#737686]"
+                    id="name"
                     placeholder="Seu nome completo"
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                    type="text"
                     {...register("name")}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-[#ba1a1a]">{errors.name.message}</p>
+                  )}
                 </div>
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
-                )}
-              </div>
 
-              {/* Headline */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Titulo profissional
-                </label>
-                <div className="relative">
-                  <BookOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <div>
+                  <label className="block text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e] mb-2" htmlFor="email">
+                    E-mail Profissional
+                  </label>
                   <input
-                    type="text"
-                    placeholder="Ex: Estudante de Engenharia"
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                    className="w-full px-4 py-3 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] outline-none transition-colors text-[16px] leading-[24px] text-[#131b2e] placeholder:text-[#737686]"
+                    id="email"
+                    placeholder="exemplo@email.com"
+                    type="email"
                     {...register("headline")}
                   />
                 </div>
-              </div>
 
-              {/* LinkedIn */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  URL do LinkedIn
-                </label>
-                <div className="relative">
-                  <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="url"
-                    placeholder="https://linkedin.com/in/seu-perfil"
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                    {...register("linkedin")}
-                  />
-                </div>
-                {errors.linkedin && (
-                  <p className="mt-1 text-sm text-red-500">{errors.linkedin.message}</p>
-                )}
-              </div>
-
-              {/* WhatsApp */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  WhatsApp
-                </label>
-                <div className="flex gap-2">
-                  <div className="flex h-11 w-20 items-center justify-center rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-600">
-                    +55
-                  </div>
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <div>
+                  <label className="block text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e] mb-2" htmlFor="whatsapp">
+                    WhatsApp
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-4 py-3 rounded-l-lg border border-r-0 border-[#E2E8F0] bg-[#f2f3ff] text-[#434655] text-[16px] leading-[24px]">
+                      +55
+                    </span>
                     <input
+                      className="w-full px-4 py-3 rounded-r-lg border border-[#E2E8F0] bg-white focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] outline-none transition-colors text-[16px] leading-[24px] text-[#131b2e] placeholder:text-[#737686]"
+                      id="whatsapp"
+                      placeholder="(11) 90000-0000"
                       type="tel"
-                      placeholder="(11) 99999-9999"
-                      className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
                       {...register("whatsapp")}
                     />
                   </div>
-                </div>
-                {errors.whatsapp && (
-                  <p className="mt-1 text-sm text-red-500">{errors.whatsapp.message}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Sobre voce */}
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              {/* Bio */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Sobre voce
-                </label>
-                <textarea
-                  placeholder="Conte um pouco sobre voce e o que busca em uma mentoria..."
-                  rows={4}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                  {...register("bio")}
-                />
-                {errors.bio && (
-                  <p className="mt-1 text-sm text-red-500">{errors.bio.message}</p>
-                )}
-              </div>
-
-              {/* Education */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Formacao
-                </label>
-                <div className="relative">
-                  <BookOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Ex: Engenharia de Software - UNICAMP"
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                    {...register("education")}
-                  />
+                  <p className="mt-1 text-[14px] leading-[20px] text-[#434655]">
+                    Usado para conectar voce ao seu mentor via wa.me
+                  </p>
+                  {errors.whatsapp && (
+                    <p className="mt-1 text-sm text-[#ba1a1a]">{errors.whatsapp.message}</p>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Step 3: Habilidades */}
-          {currentStep === 3 && (
-            <div className="space-y-4">
+            {/* Step 2: Objectives */}
+            {currentStep === 2 && (
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Habilidades que deseja aprender
-                </label>
-                <p className="mb-3 text-xs text-gray-500">
-                  Digite uma habilidade e pressione Enter ou clique em Adicionar.
+                <h2 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
+                  Qual e o seu objetivo principal?
+                </h2>
+                <p className="text-[14px] leading-[20px] text-[#434655] mb-6">
+                  Isso nos ajuda a recomendar os mentores certos para voce.
                 </p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Ex: React, Lideranca, Product Management..."
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={handleSkillKeyDown}
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addSkill}
-                    className="h-11 rounded-lg border-gray-300 px-4 text-sm"
-                  >
-                    Adicionar
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {objectives.map((obj) => (
+                    <label
+                      key={obj.value}
+                      className={`relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none hover:border-[#004ac6] transition-colors ${
+                        obj.fullWidth ? "md:col-span-2" : ""
+                      } ${
+                        selectedObjective === obj.value
+                          ? "border-[#004ac6] bg-[#dbe1ff]/20"
+                          : "border-[#E2E8F0] bg-white"
+                      }`}
+                    >
+                      <input
+                        className="sr-only"
+                        name="objective"
+                        type="radio"
+                        value={obj.value}
+                        checked={selectedObjective === obj.value}
+                        onChange={() => setSelectedObjective(obj.value)}
+                      />
+                      <div className={`flex ${obj.fullWidth ? "items-center gap-4" : "flex-col gap-2"} relative z-10 w-full`}>
+                        <obj.icon className="h-7 w-7 text-[#004ac6] flex-shrink-0" />
+                        <div>
+                          <span className="block text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
+                            {obj.label}
+                          </span>
+                          <span className="text-[14px] leading-[20px] text-[#434655]">
+                            {obj.description}
+                          </span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
-                {learningSkills.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {learningSkills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="gap-1 rounded-full px-3 py-1 pr-1.5">
+              </div>
+            )}
+
+            {/* Step 3: Skills */}
+            {currentStep === 3 && (
+              <div>
+                <h2 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-2">
+                  O que voce quer aprender?
+                </h2>
+                <p className="text-[14px] leading-[20px] text-[#434655] mb-6">
+                  Selecione pelo menos 3 areas de interesse para refinar seu match.
+                </p>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {suggestedSkills.map((skill) => {
+                    const isSelected = selectedSkills.includes(skill)
+                    return (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() => toggleSuggestedSkill(skill)}
+                        className={`px-4 py-2 rounded-full border text-[14px] leading-[16px] tracking-[0.05em] font-semibold transition-colors ${
+                          isSelected
+                            ? "bg-[#004ac6] text-white border-[#004ac6]"
+                            : "border-[#E2E8F0] bg-white text-[#434655] hover:border-[#004ac6] hover:text-[#004ac6]"
+                        }`}
+                      >
                         {skill}
-                        <button
-                          type="button"
-                          onClick={() => removeSkill(skill)}
-                          className="ml-1 rounded-full p-0.5 hover:bg-gray-300/50"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                      </button>
+                    )
+                  })}
+                </div>
                 {errors.learningSkills && (
-                  <p className="mt-1 text-sm text-red-500">
+                  <p className="mt-1 text-sm text-[#ba1a1a]">
                     {errors.learningSkills.message}
                   </p>
                 )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Navigation buttons */}
-          <div className="mt-8 flex gap-3">
-            {currentStep > 1 && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                className="h-11 flex-1 rounded-lg border-gray-300 text-sm font-medium text-gray-700"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            )}
-            {currentStep < 3 ? (
-              <Button
-                type="button"
-                onClick={handleNext}
-                className="h-11 flex-1 rounded-lg bg-[#2563eb] text-sm font-medium text-white hover:bg-[#1d4ed8]"
-              >
-                Proximo Passo
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                className="h-11 flex-1 rounded-lg bg-[#2563eb] text-sm font-medium text-white hover:bg-[#1d4ed8]"
-                disabled={isSubmitting}
-              >
-                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                Finalizar
-              </Button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+            {/* Navigation Buttons */}
+            <div className="mt-10 pt-6 border-t border-[#E2E8F0] flex justify-between items-center">
+              {currentStep > 1 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleBack}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-[#004ac6] text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#f2f3ff] transition-colors h-auto"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                  Voltar
+                </Button>
+              ) : (
+                <div className="invisible">
+                  <Button type="button" variant="ghost" className="h-auto">Voltar</Button>
+                </div>
+              )}
+
+              {currentStep < 3 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-[#004ac6] text-white text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#0053db] active:scale-95 transition-all shadow-md h-auto"
+                >
+                  Continuar
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-[#004ac6] text-white text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#0053db] active:scale-95 transition-all shadow-md h-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      Concluir
+                      <Check className="h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </form>
+        </div>
+      </main>
     </div>
   )
 }

@@ -15,6 +15,7 @@ import {
   CalendarDays,
   ChevronDown,
   Minus,
+  BarChart3,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
@@ -38,65 +39,58 @@ interface ReportData {
 
 // Donut chart component using SVG
 function DonutChart({ percentage }: { percentage: number }) {
-  const size = 160
-  const strokeWidth = 14
-  const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (percentage / 100) * circumference
+  const circumference = 2 * Math.PI * 45
+  const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size} className="-rotate-90">
-        {/* Background circle */}
+    <div className="relative w-40 h-40 flex items-center justify-center">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
         <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
+          cx="50" cy="50" r="45"
           fill="none"
-          stroke="#e5e7eb"
-          strokeWidth={strokeWidth}
+          stroke="#dae2fd"
+          strokeWidth="10"
         />
-        {/* Progress circle */}
         <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
+          cx="50" cy="50" r="45"
           fill="none"
-          stroke="#3b82f6"
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          stroke="#004ac6"
+          strokeWidth="10"
+          strokeDasharray={strokeDasharray}
           strokeLinecap="round"
           className="transition-all duration-1000 ease-out"
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-3xl font-bold text-gray-900">{percentage}%</span>
-        <span className="text-xs text-gray-500">Match</span>
+        <span className="text-4xl font-bold tracking-tight text-slate-900">{percentage}%</span>
+        <span className="text-xs font-medium text-slate-500">Match</span>
       </div>
     </div>
   )
 }
 
 // Bar chart component
-function BarChart({ data }: { data: { label: string; value: number }[] }) {
+function BarChart({ data }: { data: { label: string; value: number; color: string }[] }) {
   const maxValue = Math.max(...data.map((d) => d.value), 1)
 
   return (
-    <div className="flex items-end gap-3 h-40">
+    <div className="flex items-end justify-between gap-2 h-48 relative">
+      {/* Grid lines */}
+      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+        <div className="border-b border-slate-400 w-full h-0" />
+        <div className="border-b border-slate-400 w-full h-0" />
+        <div className="border-b border-slate-400 w-full h-0" />
+        <div className="border-b border-slate-400 w-full h-0" />
+      </div>
       {data.map((item) => {
         const height = (item.value / maxValue) * 100
-
         return (
-          <div key={item.label} className="flex flex-col items-center flex-1 gap-1">
-            <span className="text-xs font-medium text-gray-600">{item.value}</span>
-            <div className="w-full flex justify-center">
-              <div
-                className="w-10 rounded-t-md bg-blue-500 transition-all duration-500"
-                style={{ height: `${Math.max(height, 4)}%` }}
-              />
-            </div>
-            <span className="text-xs text-gray-500 font-medium">{item.label}</span>
+          <div key={item.label} className="flex flex-col items-center gap-2 z-10 group">
+            <div
+              className={`w-8 md:w-12 rounded-t-sm transition-colors ${item.color}`}
+              style={{ height: `${Math.max(height, 4)}%` }}
+            />
+            <span className="text-xs text-slate-500 font-medium">{item.label}</span>
           </div>
         )
       })}
@@ -150,118 +144,121 @@ export default function AdminReportsPage() {
 
   // Sample tenant engagement data
   const tenantData = [
-    { label: "SP", value: Math.round(data.activeConnections * 0.35) || 12 },
-    { label: "RJ", value: Math.round(data.activeConnections * 0.25) || 8 },
-    { label: "MG", value: Math.round(data.activeConnections * 0.2) || 6 },
-    { label: "PR", value: Math.round(data.activeConnections * 0.12) || 4 },
-    { label: "RS", value: Math.round(data.activeConnections * 0.08) || 3 },
+    { label: "TC", value: Math.round(data.activeConnections * 0.35) || 12, color: "bg-blue-700" },
+    { label: "GB", value: Math.round(data.activeConnections * 0.25) || 8, color: "bg-blue-200" },
+    { label: "IH", value: Math.round(data.activeConnections * 0.2) || 6, color: "bg-blue-100" },
+    { label: "MX", value: Math.round(data.activeConnections * 0.4) || 14, color: "bg-blue-700" },
+    { label: "LG", value: Math.round(data.activeConnections * 0.22) || 7, color: "bg-blue-200" },
+    { label: "OP", value: Math.round(data.activeConnections * 0.12) || 4, color: "bg-blue-100" },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {/* Dashboard Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Relatorios Administrativos</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Visao geral do desempenho e engajamento da plataforma.
-          </p>
+          <h2 className="text-[28px] md:text-4xl font-bold tracking-tight text-slate-900 mb-1">Relatorios Administrativos</h2>
+          <p className="text-base text-slate-500">Visao geral do desempenho e engajamento da plataforma.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-sm font-semibold tracking-wide hover:border-blue-600 hover:text-blue-700 transition-colors flex-1 sm:flex-none shadow-sm">
             <CalendarDays className="h-4 w-4" />
             Este Mes
-            <ChevronDown className="h-3 w-3 ml-1" />
-          </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          </button>
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-600 transition-colors shadow-sm flex-1 sm:flex-none">
             <Download className="h-4 w-4" />
             Exportar
-          </Button>
+          </button>
         </div>
       </div>
 
-      {/* Stat cards with trend indicators */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total de Conexoes */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Total de Conexoes</p>
-            <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5">
-              <ArrowUpRight className="h-3 w-3 text-green-600" />
-              <span className="text-xs font-medium text-green-600">+12.5%</span>
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+        {/* Global Metric 1: Conexoes */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white">
+              <GraduationCap className="h-5 w-5" />
             </div>
+            <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-full">
+              <TrendingUp className="h-3.5 w-3.5" />
+              +12.5%
+            </span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{data.totalConnections}</p>
+          <div>
+            <h3 className="text-sm text-slate-500 mb-1">Total de Conexoes</h3>
+            <p className="text-[28px] leading-9 font-semibold tracking-tight text-slate-900">{data.totalConnections.toLocaleString()}</p>
+          </div>
         </div>
 
-        {/* Usuarios Ativos */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Usuarios Ativos</p>
-            <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5">
-              <ArrowUpRight className="h-3 w-3 text-green-600" />
-              <span className="text-xs font-medium text-green-600">+8.2%</span>
+        {/* Global Metric 2: Usuarios Ativos */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
+              <Users className="h-5 w-5" />
             </div>
+            <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-full">
+              <TrendingUp className="h-3.5 w-3.5" />
+              +8.2%
+            </span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{data.totalUsers}</p>
+          <div>
+            <h3 className="text-sm text-slate-500 mb-1">Usuarios Ativos</h3>
+            <p className="text-[28px] leading-9 font-semibold tracking-tight text-slate-900">{data.totalUsers.toLocaleString()}</p>
+          </div>
         </div>
 
-        {/* Novos Cadastros/Mes */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Novos Cadastros/Mes</p>
-            <div className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5">
-              <Minus className="h-3 w-3 text-gray-500" />
-              <span className="text-xs font-medium text-gray-500">Estavel</span>
+        {/* Global Metric 3: Crescimento */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-12 h-12 rounded-full bg-orange-700 flex items-center justify-center text-white">
+              <BarChart3 className="h-5 w-5" />
             </div>
+            <span className="flex items-center gap-1 text-slate-500 text-xs font-medium bg-slate-100 px-2 py-1 rounded-full">
+              Estavel
+            </span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{data.pendingUsers + Math.round(data.totalUsers * 0.1)}</p>
+          <div>
+            <h3 className="text-sm text-slate-500 mb-1">Novos Cadastros (Mes)</h3>
+            <p className="text-[28px] leading-9 font-semibold tracking-tight text-slate-900">{(data.pendingUsers + Math.round(data.totalUsers * 0.1)).toLocaleString()}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Charts row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Engajamento por Tenant - bar chart */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between mb-1">
+        {/* Chart Card: Engajamento por Tenant */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Engajamento por Tenant</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Sessoes ativas nas principais unidades.</p>
+              <h3 className="text-xl font-semibold text-slate-900">Engajamento por Tenant</h3>
+              <p className="text-sm text-slate-500">Sessoes ativas nas principais unidades.</p>
             </div>
-            <select className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-400">
+            <select className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 p-2">
               <option>Todos os Tenants</option>
+              <option>TechCorp Inc.</option>
+              <option>Global Bank</option>
+              <option>Innova Health</option>
             </select>
           </div>
-          <div className="mt-6">
+          <div className="flex-1 mt-4 pt-4 border-t border-dashed border-slate-200">
             <BarChart data={tenantData} />
           </div>
         </div>
 
-        {/* Taxa de Sucesso - donut chart */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Taxa de Sucesso</h3>
-          </div>
-          <div className="flex flex-col items-center justify-center mt-6">
-            <DonutChart percentage={matchPercentage} />
-            <p className="text-sm text-gray-500 mt-4 text-center max-w-xs">
-              Das solicitacoes de mentoria resultaram em conexoes ativas este mes.
-            </p>
-          </div>
+        {/* Chart Card: Taxa de Sucesso */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+          {/* Abstract background element */}
+          <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-700/5 rounded-full blur-2xl" />
+          <h3 className="text-xl font-semibold text-slate-900 w-full text-left mb-6">Taxa de Sucesso</h3>
+          <DonutChart percentage={matchPercentage} />
+          <p className="text-sm text-slate-500 text-center mt-4">
+            Das solicitacoes de mentoria resultaram em conexoes ativas este mes.
+          </p>
         </div>
       </div>
 
-      {/* Skills popularity (kept from original but restyled) */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Habilidades Mais Populares</h3>
-        {data.topSkills.length === 0 ? (
-          <EmptyState
-            icon={Sparkles}
-            title="Sem dados"
-            description="Ainda nao ha habilidades com usuarios associados"
-            className="py-8"
-          />
-        ) : (
+      {/* Skills popularity */}
+      {data.topSkills.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-slate-900 mb-4">Habilidades Mais Populares</h3>
           <div className="space-y-3">
             {data.topSkills.map((skill, index) => {
               const maxCount = Math.max(...data.topSkills.map((s) => s.count), 1)
@@ -269,18 +266,18 @@ export default function AdminReportsPage() {
                 <div key={skill.skill} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-400 font-mono text-xs w-5">
+                      <span className="text-slate-400 font-mono text-xs w-5">
                         {index + 1}.
                       </span>
-                      <span className="font-medium text-gray-900">{skill.skill}</span>
+                      <span className="font-medium text-slate-900">{skill.skill}</span>
                     </div>
-                    <span className="text-gray-400 text-xs">
+                    <span className="text-slate-400 text-xs">
                       {skill.count} usuario{skill.count !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden ml-7">
+                  <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden ml-7">
                     <div
-                      className="h-full rounded-full bg-blue-500 transition-all"
+                      className="h-full rounded-full bg-blue-600 transition-all"
                       style={{
                         width: `${(skill.count / maxCount) * 100}%`,
                       }}
@@ -290,8 +287,8 @@ export default function AdminReportsPage() {
               )
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

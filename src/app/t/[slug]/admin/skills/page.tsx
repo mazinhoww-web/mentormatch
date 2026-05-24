@@ -18,6 +18,7 @@ import {
   Check,
   X,
   ChevronDown,
+  Clock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -224,14 +225,12 @@ export default function AdminSkillsPage() {
   }
 
   function handleApproveSkill(skill: Skill) {
-    // Approve pending skill - change status to approved
     setSkills((prev) =>
       prev.map((s) => (s.id === skill.id ? { ...s, status: "approved" } : s))
     )
   }
 
   function handleRejectSkill(skill: Skill) {
-    // Remove rejected skill
     setSkills((prev) => prev.filter((s) => s.id !== skill.id))
   }
 
@@ -259,221 +258,205 @@ export default function AdminSkillsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Gestao de Habilidades</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Analise sugestoes e mantenha o dicionario de skills organizado.
-          </p>
+          <h1 className="text-[28px] md:text-4xl font-bold tracking-tight text-slate-900 mb-2">Gestao de Habilidades</h1>
+          <p className="text-base text-slate-500">Analise sugestoes e mantenha o dicionario de skills organizado.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-            <Download className="h-4 w-4" />
-            Exportar Lista
-          </Button>
-          <Button onClick={openCreateDialog} className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="h-4 w-4" />
-            Nova Habilidade
-          </Button>
+        <div className="flex gap-2">
+          <button className="bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-lg text-sm font-semibold tracking-wide flex items-center gap-2 hover:border-slate-400 transition-colors shadow-sm">
+            <Download className="h-4 w-4" /> Exportar Lista
+          </button>
+          <button
+            onClick={openCreateDialog}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold tracking-wide flex items-center gap-2 hover:bg-blue-600 transition-colors shadow-sm"
+          >
+            <Plus className="h-4 w-4" /> Nova Habilidade
+          </button>
         </div>
       </div>
 
-      {/* Pending skills section */}
-      {pendingSkills.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Aguardando Aprovacao</h2>
-            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-semibold text-yellow-800">
-              {pendingSkills.length} Pendente{pendingSkills.length > 1 ? "s" : ""}
-            </span>
-          </div>
-          <div className="space-y-3">
+      {/* Layout Grid: Pending vs Existing */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* SECTION 1: Pending Approvals */}
+        {pendingSkills.length > 0 && (
+          <section className="lg:col-span-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-500" />
+                Aguardando Aprovacao
+              </h2>
+              <span className="bg-red-50 text-red-700 text-xs font-medium px-2 py-1 rounded-full">
+                {pendingSkills.length} Pendente{pendingSkills.length > 1 ? "s" : ""}
+              </span>
+            </div>
+
             {pendingSkills.map((skill) => {
               const type = getSkillType(skill)
-              const borderColor = type === "soft" ? "border-l-purple-500" : "border-l-blue-500"
-
               return (
                 <div
                   key={skill.id}
-                  className={`rounded-xl border border-gray-200 bg-white p-4 border-l-4 ${borderColor} shadow-sm`}
+                  className="bg-white border-l-4 border-l-amber-500 border-y border-r border-slate-200 rounded-r-xl rounded-l-sm p-4 flex flex-col gap-3 hover:shadow-sm transition-shadow"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900">{skill.name}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                        {skill.suggestedBy && (
-                          <p className="text-sm text-gray-500">
-                            Sugerido por: {skill.suggestedBy} ({skill.suggestedByRole || "Mentor"})
-                          </p>
-                        )}
-                        <Badge
-                          className={
-                            type === "soft"
-                              ? "bg-purple-100 text-purple-700 border-purple-200"
-                              : "bg-blue-100 text-blue-700 border-blue-200"
-                          }
-                        >
-                          Sugerido como: {type === "soft" ? "Soft Skill" : "Hard Skill"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => handleApproveSkill(skill)}
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                        Aprovar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                        onClick={() => openEditDialog(skill)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                        onClick={() => handleRejectSkill(skill)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                        Recusar
-                      </Button>
-                    </div>
+                  <div>
+                    <h3 className="text-sm font-semibold tracking-wide text-slate-900">{skill.name}</h3>
+                    {skill.suggestedBy && (
+                      <p className="text-sm text-slate-500 mt-1">
+                        Sugerido por: {skill.suggestedBy} ({skill.suggestedByRole || "Mentor"})
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="bg-slate-100 text-slate-500 text-xs font-medium px-2 py-1 rounded-full border border-slate-200">
+                      Sugerido como: {type === "soft" ? "Soft Skill" : "Hard Skill"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <button
+                      className="flex items-center justify-center gap-1 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors border border-transparent hover:border-emerald-200 text-xs font-medium"
+                      onClick={() => handleApproveSkill(skill)}
+                      title="Aprovar"
+                    >
+                      <Check className="h-4 w-4" /> Aprovar
+                    </button>
+                    <button
+                      className="flex items-center justify-center gap-1 py-1.5 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 text-xs font-medium"
+                      onClick={() => openEditDialog(skill)}
+                      title="Editar"
+                    >
+                      <Pencil className="h-4 w-4" /> Editar
+                    </button>
+                    <button
+                      className="flex items-center justify-center gap-1 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors border border-transparent hover:border-red-200 text-xs font-medium"
+                      onClick={() => handleRejectSkill(skill)}
+                      title="Recusar"
+                    >
+                      <X className="h-4 w-4" /> Recusar
+                    </button>
                   </div>
                 </div>
               )
             })}
-          </div>
-        </div>
-      )}
+          </section>
+        )}
 
-      {/* Active skills dictionary */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Dicionario Ativo</h2>
-
-        {/* Search and filter */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              placeholder="Buscar habilidade..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-            />
-          </div>
-          <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
-            {([
-              { key: "all" as FilterTab, label: "Todas" },
-              { key: "soft" as FilterTab, label: "Soft" },
-              { key: "hard" as FilterTab, label: "Hard" },
-            ]).map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilterTab(tab.key)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  filterTab === tab.key
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Skills list */}
-        {displayedSkills.length === 0 ? (
-          <EmptyState
-            icon={Sparkles}
-            title="Nenhuma habilidade encontrada"
-            description={
-              search
-                ? "Tente ajustar sua busca"
-                : "Adicione a primeira habilidade para comecar"
-            }
-            action={
-              !search ? (
-                <Button onClick={openCreateDialog} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Plus className="h-4 w-4" />
-                  Nova Habilidade
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-          <div className="space-y-1">
-            {displayedSkills.map((skill) => {
-              const type = getSkillType(skill)
-              const SkillIcon = getSkillIcon(skill)
-              const iconBg = type === "soft" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"
-
-              return (
-                <div
-                  key={skill.id}
-                  className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-gray-50 transition-colors group"
-                >
-                  <div className={`rounded-lg p-2 ${iconBg}`}>
-                    <SkillIcon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{skill.name}</p>
-                  </div>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      type === "soft"
-                        ? "bg-purple-50 text-purple-600"
-                        : "bg-blue-50 text-blue-600"
+        {/* SECTION 2: Skill Dictionary */}
+        <section className={`${pendingSkills.length > 0 ? "lg:col-span-8" : "lg:col-span-12"} bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col gap-4`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+            <h2 className="text-xl font-semibold text-slate-900">Dicionario Ativo</h2>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                  placeholder="Buscar habilidade..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  type="text"
+                />
+              </div>
+              <div className="flex bg-slate-50 border border-slate-200 rounded-lg p-1">
+                {([
+                  { key: "all" as FilterTab, label: "Todas" },
+                  { key: "soft" as FilterTab, label: "Soft" },
+                  { key: "hard" as FilterTab, label: "Hard" },
+                ]).map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setFilterTab(tab.key)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                      filterTab === tab.key
+                        ? "bg-white text-blue-700 shadow-sm"
+                        : "text-slate-500 hover:text-slate-900"
                     }`}
                   >
-                    {type === "soft" ? "Soft Skill" : "Hard Skill"}
-                  </span>
-                  <span className="text-xs text-gray-400 w-28 text-right">
-                    Usada por {skill._count?.users ?? 0} usuario{(skill._count?.users ?? 0) !== 1 ? "s" : ""}
-                  </span>
-                  {/* Edit/Delete on hover */}
-                  {(
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Skills List */}
+          {displayedSkills.length === 0 ? (
+            <EmptyState
+              icon={Sparkles}
+              title="Nenhuma habilidade encontrada"
+              description={
+                search
+                  ? "Tente ajustar sua busca"
+                  : "Adicione a primeira habilidade para comecar"
+              }
+              action={
+                !search ? (
+                  <Button onClick={openCreateDialog} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Plus className="h-4 w-4" />
+                    Nova Habilidade
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <div className="flex flex-col gap-0.5 overflow-y-auto max-h-[600px] pr-2">
+              {displayedSkills.map((skill) => {
+                const type = getSkillType(skill)
+                const SkillIcon = getSkillIcon(skill)
+                const iconBg =
+                  type === "soft"
+                    ? "bg-blue-50 text-blue-600"
+                    : "bg-blue-100 text-blue-700"
+
+                return (
+                  <div
+                    key={skill.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center`}>
+                        <SkillIcon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold tracking-wide text-slate-900">{skill.name}</h4>
+                        <p className="text-sm text-slate-500">
+                          {type === "soft" ? "Soft Skill" : "Hard Skill"} - Usada por {skill._count?.users ?? 0} usuario{(skill._count?.users ?? 0) !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                       <button
-                        className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
+                        className="p-2 text-slate-400 hover:text-blue-700 transition-colors rounded-md hover:bg-slate-100"
                         onClick={() => openEditDialog(skill)}
                         title="Editar"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-4 w-4" />
                       </button>
                       <button
-                        className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"
+                        className="p-2 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
                         onClick={() => openDeleteDialog(skill)}
                         title="Excluir"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                  )}
-                </div>
-              )
-            })}
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
-            {/* Load more button */}
-            {activeSkills.length > INITIAL_SHOW && !showMore && (
+          {/* Load more */}
+          {activeSkills.length > INITIAL_SHOW && !showMore && (
+            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-center">
               <button
                 onClick={() => setShowMore(true)}
-                className="w-full py-3 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center gap-1"
+                className="text-blue-700 hover:text-blue-600 text-sm font-semibold tracking-wide flex items-center gap-1 transition-colors"
               >
-                Carregar mais
-                <ChevronDown className="h-4 w-4" />
+                Carregar mais <ChevronDown className="h-4 w-4" />
               </button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </section>
       </div>
 
       {/* Create dialog */}
