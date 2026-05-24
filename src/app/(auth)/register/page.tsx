@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -20,6 +20,14 @@ interface InvitationData {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#faf8ff]"><Loader2 className="h-6 w-6 animate-spin text-[#004ac6]" /></div>}>
+      <RegisterForm />
+    </Suspense>
+  )
+}
+
+function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")

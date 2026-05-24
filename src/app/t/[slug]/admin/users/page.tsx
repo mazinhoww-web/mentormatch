@@ -14,6 +14,11 @@ import {
   Eye,
   X,
   Download,
+  UserPlus,
+  Send,
+  Loader2,
+  CheckCircle,
+  XCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,6 +26,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
 import { Loading } from "@/components/ui/loading"
 import { EmptyState } from "@/components/ui/empty-state"
+import { Select } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Dialog,
@@ -46,6 +53,18 @@ interface User {
     mentorConns: number
     menteeConns: number
   }
+}
+
+interface InvitationItem {
+  id: string
+  email: string
+  role: string
+  token: string
+  used: boolean
+  expired: boolean
+  expiresAt: string
+  createdAt: string
+  invitedBy: { id: string; name: string | null; email: string } | null
 }
 
 type TabValue = "mentors" | "mentees"
@@ -103,6 +122,16 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
+  // Invitation state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState("")
+  const [inviteRole, setInviteRole] = useState<"MENTOR" | "MENTEE">("MENTEE")
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteError, setInviteError] = useState<string | null>(null)
+  const [inviteSuccess, setInviteSuccess] = useState(false)
+  const [invitations, setInvitations] = useState<InvitationItem[]>([])
+  const [invitationsLoading, setInvitationsLoading] = useState(false)
+
   const fetchUsers = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/users")
@@ -117,9 +146,25 @@ export default function AdminUsersPage() {
     }
   }, [])
 
+  const fetchInvitations = useCallback(async () => {
+    setInvitationsLoading(true)
+    try {
+      const res = await fetch("/api/invitations")
+      if (res.ok) {
+        const data = await res.json()
+        setInvitations(data)
+      }
+    } catch (error) {
+      console.error("Erro ao buscar convites:", error)
+    } finally {
+      setInvitationsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchUsers()
-  }, [fetchUsers])
+    fetchInvitations()
+  }, [fetchUsers, fetchInvitations])
 
   const pendingCount = useMemo(() => users.filter((u) => u.status === "PENDING").length, [users])
   const approvedToday = useMemo(() => {
@@ -151,6 +196,11 @@ export default function AdminUsersPage() {
     return result
   }, [users, activeTab, search])
 
+  const pendingInvitations = useMemo(
+    () => invitations.filter((inv) => !inv.used && !inv.expired),
+    [invitations]
+  )
+
   async function handleUpdateStatus(userId: string, status: "APPROVED" | "REJECTED" | "SUSPENDED") {
     setActionLoading(userId)
     try {
@@ -173,6 +223,44 @@ export default function AdminUsersPage() {
       console.error("Erro ao atualizar usuario:", error)
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  async function handleSendInvite() {
+    setInviteError(null)
+    setInviteSuccess(false)
+    setInviteLoading(true)
+
+    try {
+      const res = await fetch("/api/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        setInviteError(data.error || "Erro ao enviar convite")
+        return
+      }
+
+      setInviteSuccess(true)
+      setInviteEmail("")
+      setInviteRole("MENTEE")
+      fetchInvitations()
+
+      // Auto-close after success
+      setTimeout(() => {
+        setInviteDialogOpen(false)
+        setInviteSuccess(false)
+      }, 2000)
+    } catch {
+      setInviteError("Erro de conexao. Tente novamente.")
+    } finally {
+      setInviteLoading(false)
     }
   }
 
@@ -241,16 +329,30 @@ export default function AdminUsersPage() {
           Exportar
         </button>
         </div>
-        {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-          <input
-            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-            placeholder="Buscar por nome ou e-mail..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            type="text"
-          />
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* Invite button */}
+          <Button
+            onClick={() => {
+              setInviteDialogOpen(true)
+              setInviteError(null)
+              setInviteSuccess(false)
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 shrink-0"
+          >
+            <UserPlus className="h-4 w-4" />
+            Convidar Usuario
+          </Button>
+          {/* Search */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <input
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+              placeholder="Buscar por nome ou e-mail..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              type="text"
+            />
+          </div>
         </div>
       </section>
 
@@ -375,6 +477,74 @@ export default function AdminUsersPage() {
         </section>
       )}
 
+      {/* Pending Invitations Section */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold text-slate-900">Convites Pendentes</h2>
+        {invitationsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-500 py-4">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Carregando convites...
+          </div>
+        ) : pendingInvitations.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
+            Nenhum convite pendente
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="text-left px-4 py-3 font-medium text-slate-600">E-mail</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-600">Papel</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-600">Convidado por</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-600">Status</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-600">Expira em</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invitations.map((inv) => (
+                  <tr key={inv.id} className="border-b border-slate-100 last:border-0">
+                    <td className="px-4 py-3 text-slate-900">{inv.email}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                          inv.role === "MENTOR"
+                            ? "bg-blue-600 text-white"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {roleLabels[inv.role] || inv.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {inv.invitedBy?.name || inv.invitedBy?.email || "-"}
+                    </td>
+                    <td className="px-4 py-3">
+                      {inv.used ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+                          <CheckCircle className="h-3.5 w-3.5" /> Utilizado
+                        </span>
+                      ) : inv.expired ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
+                          <XCircle className="h-3.5 w-3.5" /> Expirado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-500">
+                          <Clock className="h-3.5 w-3.5" /> Pendente
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">
+                      {formatDate(inv.expiresAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {/* User detail dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
         {selectedUser && (
@@ -486,6 +656,73 @@ export default function AdminUsersPage() {
               </Button>
             </DialogFooter>
           </>
+        )}
+      </Dialog>
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogHeader>
+          <DialogTitle>Convidar Usuario</DialogTitle>
+          <DialogDescription>
+            Envie um convite por e-mail para um novo usuario
+          </DialogDescription>
+        </DialogHeader>
+        <DialogContent>
+          {inviteSuccess ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <CheckCircle className="h-12 w-12 text-emerald-500" />
+              <p className="text-sm font-medium text-emerald-700">Convite enviado com sucesso!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {inviteError && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                  {inviteError}
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="invite-email">E-mail</Label>
+                <Input
+                  id="invite-email"
+                  type="email"
+                  placeholder="usuario@empresa.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-role">Papel</Label>
+                <Select
+                  id="invite-role"
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as "MENTOR" | "MENTEE")}
+                  options={[
+                    { value: "MENTEE", label: "Mentorado" },
+                    { value: "MENTOR", label: "Mentor" },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+        {!inviteSuccess && (
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              onClick={handleSendInvite}
+              disabled={inviteLoading || !inviteEmail}
+            >
+              {inviteLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Enviar Convite
+            </Button>
+          </DialogFooter>
         )}
       </Dialog>
     </div>
