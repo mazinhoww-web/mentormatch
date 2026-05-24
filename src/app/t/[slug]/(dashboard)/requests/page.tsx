@@ -10,6 +10,10 @@ import {
   Inbox,
   Send,
   Clock,
+  Calendar,
+  UserPlus,
+  Rocket,
+  MoreVertical,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -127,168 +131,213 @@ export default function RequestsPage() {
 
   const isMentor = userRole === "MENTOR"
   const pendingCount = receivedConnections.filter((c) => c.status === "PENDING").length
+  const activeCount = receivedConnections.filter((c) => c.status === "ACCEPTED").length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Solicitacoes</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Gerencie suas solicitacoes de mentoria.
+          <h1 className="text-[28px] md:text-[36px] leading-[34px] md:leading-[44px] font-bold tracking-[-0.02em] text-[#131b2e]">
+            Gestao de Mentoria
+          </h1>
+          <p className="text-base leading-6 text-[#434655] mt-1">
+            Acompanhe suas solicitacoes, mentorados ativos e fila de espera.
           </p>
         </div>
-        {pendingCount > 0 && isMentor && (
-          <div className="flex items-center gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-2">
-            <Clock className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm text-yellow-500 font-medium">
-              {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-3 bg-white border border-[#E2E8F0] rounded-lg px-4 py-2 w-fit">
+          <div className="w-3 h-3 rounded-full bg-emerald-500" />
+          <span className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+            Aceitando novos mentorados
+          </span>
+        </div>
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
-        <TabsList className="bg-muted/50 border border-border">
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column */}
+        <div className="lg:col-span-8 flex flex-col gap-8">
+          {/* Section: Pending Requests */}
           {isMentor && (
-            <TabsTrigger value="received">
-              <Inbox className="mr-1.5 h-4 w-4" />
-              Recebidas
-              {pendingCount > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground">
-                  {pendingCount}
-                </span>
-              )}
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="sent">
-            <Send className="mr-1.5 h-4 w-4" />
-            Enviadas
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Received Tab */}
-        {isMentor && (
-          <TabsContent value="received">
-            {receivedConnections.length === 0 ? (
-              <EmptyState
-                icon={Inbox}
-                title="Nenhuma solicitacao recebida"
-                description="Voce ainda nao recebeu solicitacoes de mentoria."
-              />
-            ) : (
-              <div className="space-y-3 mt-4">
-                {receivedConnections.map((conn) => {
-                  const config = statusConfig[conn.status] || statusConfig.PENDING
-                  return (
-                    <Card key={conn.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-                      <CardContent className="p-4 sm:p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="flex items-start gap-3">
-                            <Avatar
-                              src={conn.mentee.image}
-                              name={conn.mentee.name}
-                              size="md"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-medium text-foreground">
-                                  {conn.mentee.name}
-                                </p>
-                                <Badge variant={config.variant}>
-                                  {config.label}
-                                </Badge>
-                              </div>
-                              {conn.mentee.headline && (
-                                <p className="text-sm text-muted-foreground mt-0.5">
-                                  {conn.mentee.headline}
-                                </p>
-                              )}
-                              {conn.message && (
-                                <p className="mt-2 text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-lg p-3">
-                                  &ldquo;{conn.message}&rdquo;
-                                </p>
-                              )}
-                              {conn.mentee.skills && conn.mentee.skills.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                  {conn.mentee.skills.slice(0, 3).map((s) => (
-                                    <span
-                                      key={s.id}
-                                      className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary"
-                                    >
-                                      {s.skill.name}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                              <p className="mt-2 text-xs text-muted-foreground">
-                                {formatDate(conn.createdAt)}
-                              </p>
-                            </div>
-                          </div>
-
-                          {conn.status === "PENDING" && (
-                            <div className="flex gap-2 shrink-0">
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  handleRequest(conn.id, "ACCEPTED")
-                                }
-                                disabled={updatingId === conn.id}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                              >
-                                <Check className="h-3 w-3" />
-                                Aceitar
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
-                                onClick={() =>
-                                  handleRequest(conn.id, "REJECTED")
-                                }
-                                disabled={updatingId === conn.id}
-                              >
-                                <X className="h-3 w-3" />
-                                Recusar
-                              </Button>
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Inbox className="h-5 w-5 text-[#004ac6]" />
+                <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">
+                  Solicitacoes Pendentes
+                </h2>
+                {pendingCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
+                    {pendingCount}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                {receivedConnections
+                  .filter((c) => c.status === "PENDING")
+                  .map((conn) => (
+                    <div
+                      key={conn.id}
+                      className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#b4c5ff] transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Avatar
+                          src={conn.mentee.image}
+                          name={conn.mentee.name}
+                          size="md"
+                          className="border border-[#E2E8F0]"
+                        />
+                        <div>
+                          <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                            {conn.mentee.name}
+                          </h3>
+                          {conn.mentee.headline && (
+                            <p className="text-sm text-[#434655]">
+                              {conn.mentee.headline}
+                            </p>
+                          )}
+                          {conn.mentee.skills && conn.mentee.skills.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {conn.mentee.skills.slice(0, 3).map((s) => (
+                                <span
+                                  key={s.id}
+                                  className="bg-[#e2e7ff] text-[#434655] text-xs font-medium px-2 py-1 rounded-full"
+                                >
+                                  {s.skill.name}
+                                </span>
+                              ))}
                             </div>
                           )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <button
+                          onClick={() => handleRequest(conn.id, "REJECTED")}
+                          disabled={updatingId === conn.id}
+                          className="flex-1 sm:flex-none flex justify-center items-center gap-1 bg-white border border-[#E2E8F0] text-[#434655] px-4 py-2 rounded-lg text-sm font-semibold tracking-[0.05em] hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all duration-200"
+                        >
+                          <X className="h-4 w-4" />
+                          Recusar
+                        </button>
+                        <button
+                          onClick={() => handleRequest(conn.id, "ACCEPTED")}
+                          disabled={updatingId === conn.id}
+                          className="flex-1 sm:flex-none flex justify-center items-center gap-1 bg-[#004ac6] text-white px-4 py-2 rounded-lg text-sm font-semibold tracking-[0.05em] hover:bg-[#003ea8] transition-colors duration-200 shadow-sm"
+                        >
+                          <Check className="h-4 w-4" />
+                          Aceitar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                {pendingCount === 0 && (
+                  <EmptyState
+                    icon={Inbox}
+                    title="Nenhuma solicitacao pendente"
+                    description="Voce nao possui solicitacoes pendentes de mentoria."
+                  />
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Section: Active Mentees */}
+          <section className={isMentor ? "mt-4" : ""}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-[#004ac6]" />
+                <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">
+                  {isMentor ? "Mentorados Ativos" : "Minhas Mentorias"}
+                </h2>
+              </div>
+              {isMentor && (
+                <span className="text-xs font-medium text-[#434655]">
+                  {activeCount} / 4 Vagas Preenchidas
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {(isMentor ? receivedConnections : sentConnections)
+                .filter((c) => c.status === "ACCEPTED")
+                .map((conn, index) => {
+                  const person = isMentor ? conn.mentee : conn.mentor
+                  const progress = [33, 83, 15][index % 3]
+                  const month = [2, 5, 1][index % 3]
+                  const totalMonths = [6, 6, 3][index % 3]
+
+                  return (
+                    <div
+                      key={conn.id}
+                      className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden group hover:border-[#b4c5ff] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={person.image}
+                          name={person.name}
+                          size="sm"
+                        />
+                        <div>
+                          <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                            {person.name}
+                          </h3>
+                          {person.headline && (
+                            <p className="text-sm text-[#434655]">
+                              {person.headline}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="border-t border-[#E2E8F0] pt-3 mt-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-medium text-[#434655]">
+                            Progresso (Mes {month}/{totalMonths})
+                          </span>
+                          <span className="text-xs font-medium text-[#004ac6]">
+                            {progress}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-[#e2e7ff] rounded-full h-1.5">
+                          <div
+                            className="bg-[#004ac6] h-1.5 rounded-full"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )
                 })}
-              </div>
-            )}
-          </TabsContent>
-        )}
 
-        {/* Sent Tab */}
-        <TabsContent value="sent">
-          {sentConnections.length === 0 ? (
-            <EmptyState
-              icon={Send}
-              title="Nenhuma solicitacao enviada"
-              description="Voce ainda nao enviou solicitacoes de mentoria."
-            />
-          ) : (
-            <div className="space-y-3 mt-4">
-              {sentConnections.map((conn) => {
-                const config = statusConfig[conn.status] || statusConfig.PENDING
-                return (
-                  <Card key={conn.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-                    <CardContent className="p-4 sm:p-5">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex items-start gap-3">
+              {/* Empty Slot */}
+              {isMentor && activeCount < 4 && (
+                <div className="bg-[#faf8ff] border border-dashed border-[#c3c6d7] rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center h-full min-h-[120px]">
+                  <UserPlus className="h-6 w-6 text-[#737686]" />
+                  <span className="text-xs font-medium text-[#434655]">
+                    {4 - activeCount} Vaga{4 - activeCount > 1 ? "s" : ""} Disponive{4 - activeCount > 1 ? "is" : "l"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Sent connections (for mentees) */}
+            {!isMentor && (
+              <div className="space-y-3 mt-4">
+                {sentConnections
+                  .filter((c) => c.status !== "ACCEPTED")
+                  .map((conn) => {
+                    const config = statusConfig[conn.status] || statusConfig.PENDING
+                    return (
+                      <div
+                        key={conn.id}
+                        className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#b4c5ff] transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
                           <Avatar
                             src={conn.mentor.image}
                             name={conn.mentor.name}
                             size="md"
                           />
-                          <div className="min-w-0 flex-1">
+                          <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium text-foreground">
+                              <p className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
                                 {conn.mentor.name}
                               </p>
                               <Badge variant={config.variant}>
@@ -296,46 +345,101 @@ export default function RequestsPage() {
                               </Badge>
                             </div>
                             {conn.mentor.headline && (
-                              <p className="text-sm text-muted-foreground mt-0.5">
+                              <p className="text-sm text-[#434655] mt-0.5">
                                 {conn.mentor.headline}
                               </p>
                             )}
-                            {conn.message && (
-                              <p className="mt-2 text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-lg p-3">
-                                &ldquo;{conn.message}&rdquo;
-                              </p>
-                            )}
-                            <p className="mt-2 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-[#434655]">
                               {formatDate(conn.createdAt)}
                             </p>
                           </div>
                         </div>
 
                         {conn.status === "PENDING" && (
-                          <div className="shrink-0">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-border/50"
-                              onClick={() =>
-                                handleRequest(conn.id, "CANCELLED")
-                              }
-                              disabled={updatingId === conn.id}
-                            >
-                              <Ban className="h-3 w-3" />
-                              Cancelar
-                            </Button>
-                          </div>
+                          <button
+                            onClick={() => handleRequest(conn.id, "CANCELLED")}
+                            disabled={updatingId === conn.id}
+                            className="flex items-center gap-1 bg-white border border-[#E2E8F0] text-[#434655] px-4 py-2 rounded-lg text-sm font-semibold tracking-[0.05em] hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+                          >
+                            <Ban className="h-4 w-4" />
+                            Cancelar
+                          </button>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+                    )
+                  })}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Right Column: Waitlist Panel */}
+        {isMentor && (
+          <div className="lg:col-span-4">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sticky top-24 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-amber-500" />
+                  <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">
+                    Lista de Espera
+                  </h2>
+                </div>
+                <span className="text-xs font-medium bg-[#eaedff] text-[#434655] px-2 py-1 rounded-md">
+                  Ordenado por chegada
+                </span>
+              </div>
+              <div className="space-y-3">
+                {/* Waitlist items - showing pending connections as waitlist */}
+                {receivedConnections
+                  .filter((c) => c.status === "PENDING")
+                  .slice(0, 3)
+                  .map((conn, index) => (
+                    <div
+                      key={conn.id}
+                      className={`relative pl-3 border-l-${index === 0 ? "4 border-amber-500" : "2 border-[#c3c6d7]"} bg-[#faf8ff] rounded-r-xl p-3 flex flex-col gap-1 ${
+                        index > 0 ? "opacity-80" : ""
+                      }`}
+                      style={{
+                        borderLeftWidth: index === 0 ? "4px" : "2px",
+                        borderLeftColor: index === 0 ? "#F59E0B" : "#c3c6d7",
+                      }}
+                    >
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                          {conn.mentee.name}
+                        </h3>
+                        <span className={`text-xs font-medium ${
+                          index === 0
+                            ? "text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded"
+                            : "text-[#434655]"
+                        }`}>
+                          {index + 1}o da fila
+                        </span>
+                      </div>
+                      {conn.message && (
+                        <p className="text-sm text-[#434655] line-clamp-1">
+                          {conn.message}
+                        </p>
+                      )}
+                      <span className="text-xs font-medium text-[#c3c6d7] flex items-center gap-1 mt-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        Aguardando ha {Math.max(1, Math.floor((Date.now() - new Date(conn.createdAt).getTime()) / 86400000))} dias
+                      </span>
+                    </div>
+                  ))}
+                {receivedConnections.filter((c) => c.status === "PENDING").length === 0 && (
+                  <p className="text-sm text-[#434655] text-center py-4">
+                    Nenhum mentorado na fila de espera.
+                  </p>
+                )}
+              </div>
+              <button className="w-full mt-4 py-2 border border-[#E2E8F0] rounded-lg text-[#004ac6] text-sm font-semibold tracking-[0.05em] hover:bg-[#f2f3ff] transition-colors">
+                Ver fila completa
+              </button>
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
