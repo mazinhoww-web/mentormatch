@@ -3,20 +3,16 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
-  UserCheck,
-  ClipboardList,
+  Video,
+  ArrowRight,
   BookOpen,
-  MessageCircle,
-  Bell,
-  Search,
+  Star,
+  ChevronRight,
 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
-import { EmptyState } from "@/components/ui/empty-state"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
-import { formatDate } from "@/lib/utils"
 
 interface Skill {
   id: string
@@ -41,15 +37,6 @@ interface Connection {
   mentor: Mentor
 }
 
-interface Notification {
-  id: string
-  type: string
-  title: string
-  message: string
-  read: boolean
-  createdAt: string
-}
-
 interface LibraryItem {
   id: string
   title: string
@@ -59,10 +46,12 @@ interface LibraryItem {
   createdAt: string
 }
 
-interface Stats {
-  currentMentor: boolean
-  sentRequests: number
-  availableMaterials: number
+interface MentorListing {
+  id: string
+  name: string
+  image?: string | null
+  headline?: string | null
+  skills: { id: string; skill: { id: string; name: string } }[]
 }
 
 export default function MenteeDashboardPage() {
@@ -71,15 +60,10 @@ export default function MenteeDashboardPage() {
   const slug = params.slug as string
 
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<Stats>({
-    currentMentor: false,
-    sentRequests: 0,
-    availableMaterials: 0,
-  })
   const [activeConnection, setActiveConnection] = useState<Connection | null>(null)
-  const [pendingConnections, setPendingConnections] = useState<Connection[]>([])
-  const [notifications, setNotifications] = useState<Notification[]>([])
   const [materials, setMaterials] = useState<LibraryItem[]>([])
+  const [mentors, setMentors] = useState<MentorListing[]>([])
+  const [userName, setUserName] = useState("")
 
   useEffect(() => {
     fetchData()
@@ -87,17 +71,16 @@ export default function MenteeDashboardPage() {
 
   async function fetchData() {
     try {
-      const [connectionsRes, pendingRes, notificationsRes, libraryRes] =
+      const [connectionsRes, libraryRes, mentorsRes, sessionRes] =
         await Promise.all([
           fetch("/api/connections?status=ACCEPTED"),
-          fetch("/api/connections?status=PENDING"),
-          fetch("/api/notifications"),
           fetch(`/api/library?tenantId=${encodeURIComponent(slug)}`),
+          fetch(`/api/mentors?tenantId=${encodeURIComponent(slug)}`),
+          fetch("/api/auth/session"),
         ])
 
       const active: Connection[] = await connectionsRes.json()
-      const pending: Connection[] = await pendingRes.json()
-      const notifs: Notification[] = await notificationsRes.json()
+      const session = await sessionRes.json()
 
       let items: LibraryItem[] = []
       try {
@@ -107,18 +90,19 @@ export default function MenteeDashboardPage() {
         items = []
       }
 
+      let mentorList: MentorListing[] = []
+      try {
+        const mentorData = await mentorsRes.json()
+        mentorList = Array.isArray(mentorData) ? mentorData : []
+      } catch {
+        mentorList = []
+      }
+
       const mentorConnection = active.length > 0 ? active[0] : null
-
       setActiveConnection(mentorConnection)
-      setPendingConnections(pending)
-      setNotifications(notifs.slice(0, 5))
-      setMaterials(items.slice(0, 4))
-
-      setStats({
-        currentMentor: !!mentorConnection,
-        sentRequests: pending.length,
-        availableMaterials: items.length,
-      })
+      setMaterials(items.slice(0, 3))
+      setMentors(mentorList.slice(0, 3))
+      setUserName(session?.user?.name?.split(" ")[0] || "")
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -126,253 +110,173 @@ export default function MenteeDashboardPage() {
     }
   }
 
-  function openWhatsApp(phone?: string | null) {
-    if (!phone) return
-    const cleaned = phone.replace(/\D/g, "")
-    window.open(`https://wa.me/${cleaned}`, "_blank")
-  }
-
   if (loading) {
     return <Loading text="Carregando dashboard..." />
   }
 
-  const statCards = [
-    {
-      label: "Mentor Atual",
-      value: stats.currentMentor ? "Ativo" : "Nenhum",
-      icon: UserCheck,
-      color: stats.currentMentor
-        ? "text-green-600 bg-green-100"
-        : "text-gray-600 bg-gray-100",
-    },
-    {
-      label: "Solicitações Enviadas",
-      value: stats.sentRequests,
-      icon: ClipboardList,
-      color: "text-yellow-600 bg-yellow-100",
-    },
-    {
-      label: "Materiais Disponíveis",
-      value: stats.availableMaterials,
-      icon: BookOpen,
-      color: "text-blue-600 bg-blue-100",
-    },
-  ]
-
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen space-y-6">
+      {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Dashboard do Mentorado
+        <h1 className="text-2xl font-bold text-white">
+          Ola, {userName || "Mentorado"}! <span role="img" aria-label="wave">&#128075;</span>
         </h1>
-        <p className="text-muted-foreground">
-          Acompanhe sua mentoria e materiais disponíveis.
+        <p className="text-slate-400 mt-1">
+          Pronto para continuar seu desenvolvimento profissional hoje?
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {statCards.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className={`rounded-lg p-3 ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                </div>
+      {/* Sua Proxima Sessao */}
+      {activeConnection && (
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+              Sua Proxima Sessao
+            </h2>
+            <span className="rounded-full bg-blue-600/20 px-3 py-1 text-xs font-medium text-blue-400">
+              Hoje, 14:30
+            </span>
+          </div>
+
+          <p className="text-white font-medium mb-1">
+            Sessao de Acompanhamento
+          </p>
+          <p className="text-sm text-slate-400 mb-4">
+            Trilha de {activeConnection.mentor.skills?.[0]?.skill.name || "Desenvolvimento"}
+          </p>
+
+          <div className="flex items-center justify-between rounded-lg bg-slate-800/50 p-3">
+            <div className="flex items-center gap-3">
+              <Avatar
+                src={activeConnection.mentor.image}
+                name={activeConnection.mentor.name}
+                size="md"
+              />
+              <div>
+                <p className="text-sm font-medium text-white">
+                  {activeConnection.mentor.name}
+                </p>
+                {activeConnection.mentor.headline && (
+                  <p className="text-xs text-slate-400">
+                    {activeConnection.mentor.headline}
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+              <Video className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Biblioteca */}
+      <div className="rounded-xl bg-gradient-to-br from-blue-700 to-blue-900 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <BookOpen className="h-5 w-5 text-blue-200" />
+          <h2 className="font-semibold text-white">Biblioteca</h2>
+        </div>
+        <p className="text-sm text-blue-200 mb-4">Recomendados para voce</p>
+
+        {materials.length > 0 ? (
+          <div className="space-y-2">
+            {materials.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => router.push(`/t/${slug}/library/${item.id}`)}
+                className="flex w-full items-center justify-between rounded-lg bg-white/10 px-4 py-3 text-left transition-colors hover:bg-white/20"
+              >
+                <span className="text-sm font-medium text-white truncate pr-2">
+                  {item.title}
+                </span>
+                <ArrowRight className="h-4 w-4 text-blue-200 shrink-0" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-blue-200/70 text-center py-4">
+            Nenhum material disponivel ainda.
+          </p>
+        )}
+
+        <Button
+          variant="ghost"
+          className="w-full mt-3 text-blue-100 hover:text-white hover:bg-white/10"
+          onClick={() => router.push(`/t/${slug}/library`)}
+        >
+          Ver todos os materiais
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Mentor Card */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Seu Mentor</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {activeConnection ? (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar
-                      src={activeConnection.mentor.image}
-                      name={activeConnection.mentor.name}
-                      size="lg"
-                    />
-                    <div>
-                      <p className="text-lg font-semibold">
-                        {activeConnection.mentor.name}
+      {/* Mentores em Destaque */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Mentores em Destaque</h2>
+          <button
+            onClick={() => router.push(`/t/${slug}/mentors`)}
+            className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Ver todos
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        {mentors.length > 0 ? (
+          <div className="space-y-3">
+            {mentors.map((mentor) => (
+              <div
+                key={mentor.id}
+                className="rounded-xl bg-slate-900 border border-slate-800 p-4"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar
+                    src={mentor.image}
+                    name={mentor.name}
+                    size="lg"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-white truncate">{mentor.name}</h3>
+                    {mentor.headline && (
+                      <p className="text-sm text-slate-400 truncate">
+                        {mentor.headline}
                       </p>
-                      {activeConnection.mentor.headline && (
-                        <p className="text-sm text-muted-foreground">
-                          {activeConnection.mentor.headline}
-                        </p>
-                      )}
-                      {activeConnection.mentor.skills.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {activeConnection.mentor.skills.map((s) => (
-                            <Badge key={s.id} variant="secondary">
-                              {s.skill.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                    )}
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                      <span className="text-xs text-slate-400">4.9</span>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      openWhatsApp(activeConnection.mentor.whatsapp)
-                    }
-                    disabled={!activeConnection.mentor.whatsapp}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </Button>
                 </div>
-              ) : (
-                <EmptyState
-                  icon={UserCheck}
-                  title="Nenhum mentor ativo"
-                  description="Você ainda não possui um mentor. Busque mentores disponíveis e envie uma solicitação."
-                  action={
-                    <Button
-                      onClick={() => router.push(`/t/${slug}/mentors`)}
-                    >
-                      <Search className="h-4 w-4" />
-                      Buscar Mentores
-                    </Button>
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Recommended Materials */}
-          {materials.length > 0 && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Materiais Recomendados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {materials.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                      onClick={() =>
-                        router.push(`/t/${slug}/library/${item.id}`)
-                      }
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">
-                          {item.title}
-                        </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {item.fileType}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(item.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 text-center">
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push(`/t/${slug}/library`)}
-                  >
-                    Ver todos os materiais
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                {mentor.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {mentor.skills.slice(0, 3).map((s) => (
+                      <span
+                        key={s.id}
+                        className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300"
+                      >
+                        {s.skill.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-        {/* Sidebar: Pending Requests + Notifications */}
-        <div className="space-y-6">
-          {/* Pending Requests */}
-          {pendingConnections.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Solicitações Pendentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {pendingConnections.slice(0, 5).map((conn) => (
-                    <div
-                      key={conn.id}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
-                      <Avatar
-                        src={conn.mentor.image}
-                        name={conn.mentor.name}
-                        size="sm"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {conn.mentor.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(conn.createdAt)}
-                        </p>
-                      </div>
-                      <Badge variant="warning">Pendente</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Notificações Recentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {notifications.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma notificação.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <Bell className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
-                        <p className="font-medium leading-tight">
-                          {notif.title}
-                          {!notif.read && (
-                            <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-blue-500" />
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {notif.message}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                  onClick={() => router.push(`/t/${slug}/mentors/${mentor.id}`)}
+                >
+                  Ver Perfil
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl bg-slate-900 border border-slate-800 p-8 text-center">
+            <p className="text-slate-400">Nenhum mentor disponivel no momento.</p>
+          </div>
+        )}
       </div>
     </div>
   )

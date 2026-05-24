@@ -5,26 +5,13 @@ import { useParams, useRouter } from "next/navigation"
 import {
   ArrowLeft,
   MessageCircle,
-  ExternalLink,
-  GraduationCap,
-  Briefcase,
-  Clock,
+  MapPin,
+  Play,
   Send,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogContent,
-  DialogFooter,
-} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
 
 interface Skill {
@@ -48,6 +35,28 @@ interface MentorProfile {
   skills: Skill[]
 }
 
+interface ExperienceEntry {
+  company: string
+  role: string
+  dates: string
+  description: string
+}
+
+function parseExperience(experience?: string | null): ExperienceEntry[] {
+  if (!experience) return []
+  // Try to split by double newlines for entries
+  const entries = experience.split(/\n\n+/).filter(Boolean)
+  return entries.map((entry) => {
+    const lines = entry.split("\n").filter(Boolean)
+    return {
+      company: lines[0] || "Empresa",
+      role: lines[1] || "",
+      dates: lines[2] || "",
+      description: lines.slice(3).join(" ") || lines.slice(1).join(" ") || "",
+    }
+  })
+}
+
 export default function MentorProfilePage() {
   const params = useParams()
   const router = useRouter()
@@ -56,11 +65,7 @@ export default function MentorProfilePage() {
 
   const [loading, setLoading] = useState(true)
   const [mentor, setMentor] = useState<MentorProfile | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [message, setMessage] = useState("")
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
 
   useEffect(() => {
     async function fetchMentor() {
@@ -81,39 +86,6 @@ export default function MentorProfilePage() {
     fetchMentor()
   }, [slug, mentorId])
 
-  async function handleRequestMentorship() {
-    if (message.trim().length < 10) {
-      setError("A mensagem deve ter pelo menos 10 caracteres.")
-      return
-    }
-
-    setSubmitting(true)
-    setError("")
-    try {
-      const res = await fetch("/api/connections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentorId, message: message.trim() }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || "Erro ao enviar solicitação.")
-        return
-      }
-
-      setSubmitted(true)
-      setDialogOpen(false)
-      setMessage("")
-    } catch (err) {
-      console.error("Erro ao enviar solicitação:", err)
-      setError("Erro ao enviar solicitação. Tente novamente.")
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   function openWhatsApp(phone?: string | null) {
     if (!phone) return
     const cleaned = phone.replace(/\D/g, "")
@@ -126,226 +98,176 @@ export default function MentorProfilePage() {
 
   if (!mentor) {
     return (
-      <div className="space-y-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
-        </Button>
+      <div className="min-h-screen bg-white">
+        <div className="p-4">
+          <Button variant="ghost" onClick={() => router.back()} className="text-gray-600">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
         <div className="text-center py-16">
-          <p className="text-lg font-medium">Mentor não encontrado</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            O perfil que você procura não existe ou não está mais disponível.
+          <p className="text-lg font-medium text-gray-900">Mentor nao encontrado</p>
+          <p className="text-sm text-gray-500 mt-1">
+            O perfil que voce procura nao existe ou nao esta mais disponivel.
           </p>
         </div>
       </div>
     )
   }
 
-  const availableSlots = Math.max(0, mentor.maxMentees - mentor.activeConnections)
-  const isAtCapacity = availableSlots === 0
+  const experienceEntries = parseExperience(mentor.experience)
+  const primarySkills = mentor.skills.slice(0, 3)
+  const secondarySkills = mentor.skills.slice(3)
 
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => router.push(`/t/${slug}/mentors`)}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Voltar para mentores
-      </Button>
+    <div className="min-h-screen bg-white -mx-4 -mt-6 sm:-mx-6 lg:-mx-8 lg:-mt-6">
+      <div className="max-w-lg mx-auto px-4 py-6">
+        {/* Back button */}
+        <button
+          onClick={() => router.push(`/t/${slug}/mentors`)}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para mentores
+        </button>
 
-      {/* Profile Card */}
-      <Card>
-        <CardContent className="p-6 sm:p-8">
-          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
-            {/* Avatar */}
-            <Avatar
-              src={mentor.image}
-              name={mentor.name}
-              size="xl"
-              className="shrink-0"
-            />
+        {/* Avatar */}
+        <div className="flex justify-center mb-4">
+          <Avatar
+            src={mentor.image}
+            name={mentor.name}
+            size="xl"
+            className="h-28 w-28 text-3xl"
+          />
+        </div>
 
-            {/* Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-bold">{mentor.name}</h1>
-              {mentor.headline && (
-                <p className="mt-1 text-lg text-muted-foreground">
-                  {mentor.headline}
-                </p>
-              )}
-
-              {/* Availability */}
-              <div className="mt-3">
-                <Badge variant={isAtCapacity ? "warning" : "success"}>
-                  {isAtCapacity
-                    ? "Sem vagas disponíveis"
-                    : `${availableSlots}/${mentor.maxMentees} vagas disponíveis`}
-                </Badge>
-              </div>
-
-              {/* Skills */}
-              {mentor.skills.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
-                  {mentor.skills.map((s) => (
-                    <Badge key={s.id} variant="secondary">
-                      {s.skill.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="mt-6 flex flex-wrap gap-3 justify-center sm:justify-start">
-                {submitted ? (
-                  <Button disabled>
-                    <Send className="h-4 w-4" />
-                    Solicitação Enviada
-                  </Button>
-                ) : isAtCapacity ? (
-                  <Button
-                    onClick={() => setDialogOpen(true)}
-                    variant="secondary"
-                  >
-                    <Clock className="h-4 w-4" />
-                    Entrar na fila de espera
-                  </Button>
-                ) : (
-                  <Button onClick={() => setDialogOpen(true)}>
-                    <Send className="h-4 w-4" />
-                    Solicitar Mentoria
-                  </Button>
-                )}
-
-                {mentor.whatsapp && (
-                  <Button
-                    variant="outline"
-                    onClick={() => openWhatsApp(mentor.whatsapp)}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </Button>
-                )}
-
-                {mentor.linkedin && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      window.open(mentor.linkedin!, "_blank")
-                    }
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    LinkedIn
-                  </Button>
-                )}
-              </div>
-            </div>
+        {/* Name and headline */}
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">{mentor.name}</h1>
+          {mentor.headline && (
+            <p className="mt-1 text-blue-600 font-medium">{mentor.headline}</p>
+          )}
+          <div className="flex items-center justify-center gap-1 mt-2 text-sm text-gray-500">
+            <MapPin className="h-4 w-4" />
+            <span>Sao Paulo, SP (Remoto)</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Details */}
-      <div className="grid gap-6 md:grid-cols-2">
         {/* Bio */}
         {mentor.bio && (
-          <Card className="md:col-span-2">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-3">Sobre</h2>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.bio}
-              </p>
-            </CardContent>
-          </Card>
+          <p className="text-gray-600 text-center leading-relaxed mb-6">
+            {mentor.bio}
+          </p>
+        )}
+
+        {/* Action buttons */}
+        <div className="space-y-3 mb-8">
+          {submitted ? (
+            <Button disabled className="w-full h-12 bg-gray-300 text-gray-500">
+              <Send className="h-4 w-4" />
+              Solicitacao Enviada
+            </Button>
+          ) : (
+            <Button
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium"
+              onClick={() => router.push(`/t/${slug}/confirm/${mentorId}`)}
+            >
+              Solicitar Mentoria
+            </Button>
+          )}
+
+          {mentor.whatsapp && (
+            <button
+              onClick={() => openWhatsApp(mentor.whatsapp)}
+              className="w-full flex items-center justify-center gap-2 h-12 rounded-md border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            >
+              <MessageCircle className="h-5 w-5" />
+              WhatsApp
+            </button>
+          )}
+        </div>
+
+        {/* Habilidades */}
+        {mentor.skills.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Habilidades</h2>
+            <div className="flex flex-wrap gap-2">
+              {primarySkills.map((s) => (
+                <span
+                  key={s.id}
+                  className="rounded-full bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+                >
+                  {s.skill.name}
+                </span>
+              ))}
+              {secondarySkills.map((s) => (
+                <span
+                  key={s.id}
+                  className="rounded-full border border-blue-600 px-3 py-1 text-sm font-medium text-blue-600"
+                >
+                  {s.skill.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Apresentacao (Video) */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Apresentacao</h2>
+          <div className="relative rounded-xl bg-gray-100 aspect-video flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
+            <button className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors">
+              <Play className="h-7 w-7 text-blue-600 ml-1" />
+            </button>
+          </div>
+        </div>
+
+        {/* Experiencia */}
+        {(experienceEntries.length > 0 || mentor.experience) && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Experiencia</h2>
+            {experienceEntries.length > 0 ? (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-200" />
+
+                <div className="space-y-6">
+                  {experienceEntries.map((entry, i) => (
+                    <div key={i} className="relative pl-7">
+                      {/* Timeline dot */}
+                      <div className="absolute left-0 top-1.5 h-[15px] w-[15px] rounded-full bg-blue-600 border-2 border-white" />
+
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{entry.company}</h3>
+                        {entry.dates && (
+                          <p className="text-sm text-gray-400">{entry.dates}</p>
+                        )}
+                        {entry.role && (
+                          <p className="text-sm font-medium text-gray-700 mt-0.5">{entry.role}</p>
+                        )}
+                        {entry.description && (
+                          <p className="text-sm text-gray-500 mt-1">{entry.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : mentor.experience ? (
+              <p className="text-gray-600 whitespace-pre-line">{mentor.experience}</p>
+            ) : null}
+          </div>
         )}
 
         {/* Education */}
         {mentor.education && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Formação</h2>
-              </div>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.education}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Experience */}
-        {mentor.experience && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Briefcase className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Experiência</h2>
-              </div>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.experience}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Formacao</h2>
+            <p className="text-gray-600 whitespace-pre-line">{mentor.education}</p>
+          </div>
         )}
       </div>
-
-      {/* Request Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogHeader>
-          <DialogTitle>
-            {isAtCapacity
-              ? "Entrar na fila de espera"
-              : "Solicitar Mentoria"}
-          </DialogTitle>
-          <DialogDescription>
-            {isAtCapacity
-              ? `${mentor.name} está sem vagas no momento. Envie uma mensagem para entrar na fila de espera.`
-              : `Envie uma mensagem para ${mentor.name} explicando por que gostaria de ser mentorado(a).`}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="request-message">Mensagem</Label>
-              <Textarea
-                id="request-message"
-                placeholder="Olá! Gostaria de ser mentorado(a) por você porque..."
-                value={message}
-                onChange={(e) => {
-                  setMessage(e.target.value)
-                  setError("")
-                }}
-                rows={5}
-              />
-              <p className="text-xs text-muted-foreground">
-                Mínimo de 10 caracteres. {message.length}/500
-              </p>
-            </div>
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
-          </div>
-        </DialogContent>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setDialogOpen(false)
-              setError("")
-            }}
-            disabled={submitting}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleRequestMentorship}
-            disabled={submitting || message.trim().length < 10}
-          >
-            {submitting ? "Enviando..." : "Enviar Solicitação"}
-          </Button>
-        </DialogFooter>
-      </Dialog>
     </div>
   )
 }

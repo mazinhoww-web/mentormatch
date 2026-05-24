@@ -9,6 +9,7 @@ import {
   Ban,
   Inbox,
   Send,
+  Clock,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -52,7 +53,7 @@ const statusConfig: Record<
   ACCEPTED: { label: "Aceita", variant: "success" },
   REJECTED: { label: "Rejeitada", variant: "destructive" },
   CANCELLED: { label: "Cancelada", variant: "secondary" },
-  COMPLETED: { label: "Concluída", variant: "secondary" },
+  COMPLETED: { label: "Concluida", variant: "secondary" },
 }
 
 export default function RequestsPage() {
@@ -92,7 +93,7 @@ export default function RequestsPage() {
         setTab("sent")
       }
     } catch (error) {
-      console.error("Erro ao carregar solicitações:", error)
+      console.error("Erro ao carregar solicitacoes:", error)
     } finally {
       setLoading(false)
     }
@@ -114,40 +115,48 @@ export default function RequestsPage() {
         fetchData()
       }
     } catch (error) {
-      console.error("Erro ao atualizar solicitação:", error)
+      console.error("Erro ao atualizar solicitacao:", error)
     } finally {
       setUpdatingId(null)
     }
   }
 
   if (loading) {
-    return <Loading text="Carregando solicitações..." />
+    return <Loading text="Carregando solicitacoes..." />
   }
 
   const isMentor = userRole === "MENTOR"
+  const pendingCount = receivedConnections.filter((c) => c.status === "PENDING").length
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Solicitações</h1>
-        <p className="text-muted-foreground">
-          Gerencie suas solicitações de mentoria.
-        </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Solicitacoes</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Gerencie suas solicitacoes de mentoria.
+          </p>
+        </div>
+        {pendingCount > 0 && isMentor && (
+          <div className="flex items-center gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-2">
+            <Clock className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm text-yellow-500 font-medium">
+              {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
-        <TabsList>
+        <TabsList className="bg-muted/50 border border-border">
           {isMentor && (
             <TabsTrigger value="received">
               <Inbox className="mr-1.5 h-4 w-4" />
               Recebidas
-              {receivedConnections.filter((c) => c.status === "PENDING").length >
-                0 && (
+              {pendingCount > 0 && (
                 <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground">
-                  {
-                    receivedConnections.filter((c) => c.status === "PENDING")
-                      .length
-                  }
+                  {pendingCount}
                 </span>
               )}
             </TabsTrigger>
@@ -164,16 +173,16 @@ export default function RequestsPage() {
             {receivedConnections.length === 0 ? (
               <EmptyState
                 icon={Inbox}
-                title="Nenhuma solicitação recebida"
-                description="Você ainda não recebeu solicitações de mentoria."
+                title="Nenhuma solicitacao recebida"
+                description="Voce ainda nao recebeu solicitacoes de mentoria."
               />
             ) : (
-              <div className="space-y-4 mt-4">
+              <div className="space-y-3 mt-4">
                 {receivedConnections.map((conn) => {
                   const config = statusConfig[conn.status] || statusConfig.PENDING
                   return (
-                    <Card key={conn.id}>
-                      <CardContent className="p-4 sm:p-6">
+                    <Card key={conn.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+                      <CardContent className="p-4 sm:p-5">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex items-start gap-3">
                             <Avatar
@@ -183,7 +192,7 @@ export default function RequestsPage() {
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-medium">
+                                <p className="font-medium text-foreground">
                                   {conn.mentee.name}
                                 </p>
                                 <Badge variant={config.variant}>
@@ -196,9 +205,21 @@ export default function RequestsPage() {
                                 </p>
                               )}
                               {conn.message && (
-                                <p className="mt-2 text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
+                                <p className="mt-2 text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-lg p-3">
                                   &ldquo;{conn.message}&rdquo;
                                 </p>
+                              )}
+                              {conn.mentee.skills && conn.mentee.skills.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {conn.mentee.skills.slice(0, 3).map((s) => (
+                                    <span
+                                      key={s.id}
+                                      className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                                    >
+                                      {s.skill.name}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                               <p className="mt-2 text-xs text-muted-foreground">
                                 {formatDate(conn.createdAt)}
@@ -214,6 +235,7 @@ export default function RequestsPage() {
                                   handleRequest(conn.id, "ACCEPTED")
                                 }
                                 disabled={updatingId === conn.id}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Check className="h-3 w-3" />
                                 Aceitar
@@ -221,6 +243,7 @@ export default function RequestsPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
                                 onClick={() =>
                                   handleRequest(conn.id, "REJECTED")
                                 }
@@ -246,16 +269,16 @@ export default function RequestsPage() {
           {sentConnections.length === 0 ? (
             <EmptyState
               icon={Send}
-              title="Nenhuma solicitação enviada"
-              description="Você ainda não enviou solicitações de mentoria."
+              title="Nenhuma solicitacao enviada"
+              description="Voce ainda nao enviou solicitacoes de mentoria."
             />
           ) : (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-3 mt-4">
               {sentConnections.map((conn) => {
                 const config = statusConfig[conn.status] || statusConfig.PENDING
                 return (
-                  <Card key={conn.id}>
-                    <CardContent className="p-4 sm:p-6">
+                  <Card key={conn.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+                    <CardContent className="p-4 sm:p-5">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex items-start gap-3">
                           <Avatar
@@ -265,7 +288,7 @@ export default function RequestsPage() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium">
+                              <p className="font-medium text-foreground">
                                 {conn.mentor.name}
                               </p>
                               <Badge variant={config.variant}>
@@ -278,7 +301,7 @@ export default function RequestsPage() {
                               </p>
                             )}
                             {conn.message && (
-                              <p className="mt-2 text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
+                              <p className="mt-2 text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-lg p-3">
                                 &ldquo;{conn.message}&rdquo;
                               </p>
                             )}
@@ -293,6 +316,7 @@ export default function RequestsPage() {
                             <Button
                               size="sm"
                               variant="outline"
+                              className="border-border/50"
                               onClick={() =>
                                 handleRequest(conn.id, "CANCELLED")
                               }

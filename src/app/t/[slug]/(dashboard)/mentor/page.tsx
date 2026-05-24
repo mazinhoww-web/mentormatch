@@ -1,24 +1,24 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import {
   Users,
-  ClipboardList,
-  CalendarCheck,
-  UserCheck,
-  MessageCircle,
+  Clock,
+  Star,
+  TrendingUp,
+  BookOpen,
+  Calendar,
+  AlertCircle,
+  ArrowRight,
   Check,
   X,
-  Bell,
 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
-import { EmptyState } from "@/components/ui/empty-state"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
-import { formatDate } from "@/lib/utils"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface Skill {
   id: string
@@ -43,15 +43,6 @@ interface Connection {
   mentee: Mentee
 }
 
-interface Notification {
-  id: string
-  type: string
-  title: string
-  message: string
-  read: boolean
-  createdAt: string
-}
-
 interface Stats {
   activeMentees: number
   pendingRequests: number
@@ -61,6 +52,7 @@ interface Stats {
 
 export default function MentorDashboardPage() {
   const params = useParams()
+  const router = useRouter()
   const slug = params.slug as string
 
   const [loading, setLoading] = useState(true)
@@ -72,7 +64,6 @@ export default function MentorDashboardPage() {
   })
   const [activeConnections, setActiveConnections] = useState<Connection[]>([])
   const [pendingConnections, setPendingConnections] = useState<Connection[]>([])
-  const [notifications, setNotifications] = useState<Notification[]>([])
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -81,19 +72,16 @@ export default function MentorDashboardPage() {
 
   async function fetchData() {
     try {
-      const [connectionsRes, pendingRes, notificationsRes] = await Promise.all([
+      const [connectionsRes, pendingRes] = await Promise.all([
         fetch("/api/connections?status=ACCEPTED"),
         fetch("/api/connections?status=PENDING"),
-        fetch("/api/notifications"),
       ])
 
       const active: Connection[] = await connectionsRes.json()
       const pending: Connection[] = await pendingRes.json()
-      const notifs: Notification[] = await notificationsRes.json()
 
       setActiveConnections(active)
       setPendingConnections(pending)
-      setNotifications(notifs.slice(0, 5))
 
       setStats({
         activeMentees: active.length,
@@ -121,214 +109,241 @@ export default function MentorDashboardPage() {
         fetchData()
       }
     } catch (error) {
-      console.error("Erro ao atualizar solicitação:", error)
+      console.error("Erro ao atualizar solicitacao:", error)
     } finally {
       setUpdatingId(null)
     }
-  }
-
-  function openWhatsApp(phone?: string | null) {
-    if (!phone) return
-    const cleaned = phone.replace(/\D/g, "")
-    window.open(`https://wa.me/${cleaned}`, "_blank")
   }
 
   if (loading) {
     return <Loading text="Carregando dashboard..." />
   }
 
-  const statCards = [
-    { label: "Mentorados Ativos", value: stats.activeMentees, icon: Users, color: "text-blue-600 bg-blue-100" },
-    { label: "Solicitações Pendentes", value: stats.pendingRequests, icon: ClipboardList, color: "text-yellow-600 bg-yellow-100" },
-    { label: "Vagas Disponíveis", value: stats.availableSlots, icon: UserCheck, color: "text-green-600 bg-green-100" },
-    { label: "Total de Sessões", value: stats.totalSessions, icon: CalendarCheck, color: "text-purple-600 bg-purple-100" },
-  ]
+  const menteeStatuses = ["EM DIA", "AGUARDANDO", "ATIVO"]
+  const statusColors: Record<string, string> = {
+    "EM DIA": "bg-green-500/20 text-green-400",
+    AGUARDANDO: "bg-yellow-500/20 text-yellow-400",
+    ATIVO: "bg-blue-500/20 text-blue-400",
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard do Mentor</h1>
-        <p className="text-muted-foreground">
-          Acompanhe seus mentorados e solicitações.
+        <h1 className="text-2xl font-bold text-white">Visao Geral</h1>
+        <p className="text-slate-400 mt-1">
+          Acompanhe seu impacto e gerencie suas mentorias.
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className={`rounded-lg p-3 ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                </div>
+      {/* Stat Cards */}
+      <div className="space-y-3">
+        {/* Total de Mentorados */}
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20">
+              <Users className="h-6 w-6 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-slate-400">Total de Mentorados</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold text-white">{stats.activeMentees}</p>
+                {stats.activeMentees > 0 && (
+                  <span className="flex items-center gap-0.5 text-xs text-green-400">
+                    <TrendingUp className="h-3 w-3" />
+                    +{Math.min(stats.activeMentees, 2)} este mes
+                  </span>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Active Mentees */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Mentorados Ativos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {activeConnections.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title="Nenhum mentorado ativo"
-                  description="Você ainda não possui mentorados. Aguarde solicitações de mentoria."
-                />
-              ) : (
-                <div className="space-y-4">
-                  {activeConnections.map((conn) => (
-                    <div
-                      key={conn.id}
-                      className="flex items-center justify-between rounded-lg border p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={conn.mentee.image}
-                          name={conn.mentee.name}
-                          size="md"
-                        />
-                        <div>
-                          <p className="font-medium">{conn.mentee.name}</p>
-                          {conn.mentee.skills.length > 0 && (
-                            <p className="text-sm text-muted-foreground">
-                              {conn.mentee.skills
-                                .map((s) => s.skill.name)
-                                .join(", ")}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openWhatsApp(conn.mentee.whatsapp)}
-                        disabled={!conn.mentee.whatsapp}
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        WhatsApp
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Sidebar: Pending + Notifications */}
-        <div className="space-y-6">
-          {/* Pending Requests */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Solicitações Pendentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {pendingConnections.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma solicitação pendente.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {pendingConnections.slice(0, 5).map((conn) => (
-                    <div
-                      key={conn.id}
-                      className="rounded-lg border p-3 space-y-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          src={conn.mentee.image}
-                          name={conn.mentee.name}
-                          size="sm"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {conn.mentee.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(conn.createdAt)}
-                          </p>
-                        </div>
+        {/* Horas de Mentoria */}
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600/20">
+              <Clock className="h-6 w-6 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-400">Horas de Mentoria</p>
+              <p className="text-2xl font-bold text-white">
+                {stats.activeMentees * 12}h
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Nota Media */}
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-600/20">
+              <Star className="h-6 w-6 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-400">Nota Media</p>
+              <div className="flex items-center gap-1">
+                <p className="text-2xl font-bold text-white">4.8</p>
+                <span className="text-sm text-slate-400">/ 5.0</span>
+                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 ml-1" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Meus Mentorados Ativos */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Meus Mentorados Ativos</h2>
+          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+            {stats.activeMentees} de 4 slots preenchidos
+          </span>
+        </div>
+
+        {activeConnections.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="Nenhum mentorado ativo"
+            description="Voce ainda nao possui mentorados. Aguarde solicitacoes de mentoria."
+          />
+        ) : (
+          <div className="space-y-3">
+            {activeConnections.map((conn, index) => {
+              const progress = [85, 60, 45, 30][index % 4]
+              const status = menteeStatuses[index % menteeStatuses.length]
+              const nextMeeting = ["Amanha as 14:00", "Quinta as 10:00", "Sexta as 16:00"][index % 3]
+
+              return (
+                <div
+                  key={conn.id}
+                  className="rounded-xl bg-slate-900 border border-slate-800 p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar
+                      src={conn.mentee.image}
+                      name={conn.mentee.name}
+                      size="md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-medium text-white truncate">
+                          {conn.mentee.name}
+                        </h3>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusColors[status]}`}>
+                          {status}
+                        </span>
                       </div>
-                      {conn.message && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {conn.message}
+                      {conn.mentee.skills.length > 0 && (
+                        <p className="text-sm text-slate-400 mt-0.5">
+                          {conn.mentee.skills.map((s) => s.skill.name).join(", ")}
                         </p>
                       )}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleRequest(conn.id, "ACCEPTED")}
-                          disabled={updatingId === conn.id}
-                        >
-                          <Check className="h-3 w-3" />
-                          Aceitar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => handleRequest(conn.id, "REJECTED")}
-                          disabled={updatingId === conn.id}
-                        >
-                          <X className="h-3 w-3" />
-                          Recusar
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Notificações Recentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {notifications.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma notificação.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <Bell className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
-                        <p className="font-medium leading-tight">
-                          {notif.title}
-                          {!notif.read && (
-                            <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-blue-500" />
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {notif.message}
-                        </p>
+                      {/* Progress bar */}
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-slate-400">Progresso</span>
+                          <span className="text-white font-medium">{progress}% Concluido</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-slate-800">
+                          <div
+                            className="h-1.5 rounded-full bg-blue-600"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
                       </div>
+
+                      <p className="text-xs text-slate-500 mt-2">
+                        Proxima reuniao: {nextMeeting}
+                      </p>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Solicitacoes Pendentes Banner */}
+      {pendingConnections.length > 0 && (
+        <div className="rounded-xl bg-gradient-to-r from-orange-600/20 to-yellow-600/20 border border-orange-500/30 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20">
+              <AlertCircle className="h-5 w-5 text-orange-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-white">Solicitacoes Pendentes</h3>
+              <p className="text-sm text-slate-300">
+                Voce tem {pendingConnections.length} nova{pendingConnections.length > 1 ? "s" : ""} solicitacao{pendingConnections.length > 1 ? "oes" : ""} de mentoria
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 space-y-2">
+            {pendingConnections.slice(0, 3).map((conn) => (
+              <div key={conn.id} className="flex items-center justify-between rounded-lg bg-slate-900/50 p-3">
+                <div className="flex items-center gap-2">
+                  <Avatar src={conn.mentee.image} name={conn.mentee.name} size="sm" />
+                  <span className="text-sm text-white truncate">{conn.mentee.name}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="h-8 bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => handleRequest(conn.id, "ACCEPTED")}
+                    disabled={updatingId === conn.id}
+                  >
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 border-slate-600 text-slate-300 hover:bg-slate-800"
+                    onClick={() => handleRequest(conn.id, "REJECTED")}
+                    disabled={updatingId === conn.id}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
+            onClick={() => router.push(`/t/${slug}/requests`)}
+          >
+            Analisar Solicitacoes
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Acesso Rapido */}
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-3">Acesso Rapido</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => router.push(`/t/${slug}/library`)}
+            className="flex flex-col items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 p-5 transition-colors hover:bg-slate-800"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20">
+              <BookOpen className="h-6 w-6 text-blue-400" />
+            </div>
+            <span className="text-sm font-medium text-white">Biblioteca</span>
+          </button>
+
+          <button
+            onClick={() => router.push(`/t/${slug}/notifications`)}
+            className="flex flex-col items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 p-5 transition-colors hover:bg-slate-800"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600/20">
+              <Calendar className="h-6 w-6 text-green-400" />
+            </div>
+            <span className="text-sm font-medium text-white">Agenda</span>
+          </button>
         </div>
       </div>
     </div>

@@ -10,6 +10,8 @@ import {
   ShieldAlert,
   Mail,
   Calendar,
+  Clock,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,13 +39,14 @@ interface User {
   status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED"
   headline: string | null
   createdAt: string
+  skills?: { id: string; skill: { id: string; name: string } }[]
   _count: {
     mentorConns: number
     menteeConns: number
   }
 }
 
-type TabValue = "all" | "pending" | "approved" | "suspended"
+type TabValue = "mentors" | "mentees"
 
 const statusBadgeVariant: Record<string, "warning" | "success" | "destructive" | "secondary"> = {
   PENDING: "warning",
@@ -65,12 +68,26 @@ const roleLabels: Record<string, string> = {
   ADMIN: "Admin",
 }
 
+function timeAgo(dateStr: string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 60) return `Ha ${diffMins} minuto${diffMins !== 1 ? "s" : ""}`
+  if (diffHours < 24) return `Ha ${diffHours} hora${diffHours !== 1 ? "s" : ""}`
+  if (diffDays < 30) return `Ha ${diffDays} dia${diffDays !== 1 ? "s" : ""}`
+  return formatDate(dateStr)
+}
+
 export default function AdminUsersPage() {
   const params = useParams<{ slug: string }>()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [activeTab, setActiveTab] = useState<TabValue>("all")
+  const [activeTab, setActiveTab] = useState<TabValue>("mentors")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -82,7 +99,7 @@ export default function AdminUsersPage() {
         setUsers(data)
       }
     } catch (error) {
-      console.error("Erro ao buscar usuários:", error)
+      console.error("Erro ao buscar usuarios:", error)
     } finally {
       setLoading(false)
     }
@@ -92,16 +109,21 @@ export default function AdminUsersPage() {
     fetchUsers()
   }, [fetchUsers])
 
-  const filteredUsers = useMemo(() => {
-    let result = users
+  const pendingCount = useMemo(() => users.filter((u) => u.status === "PENDING").length, [users])
+  const approvedToday = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    return users.filter((u) => u.status === "APPROVED" && u.createdAt.slice(0, 10) === today).length
+  }, [users])
+  const totalActive = useMemo(() => users.filter((u) => u.status === "APPROVED").length, [users])
 
-    // Filter by tab status
-    if (activeTab === "pending") {
-      result = result.filter((u) => u.status === "PENDING")
-    } else if (activeTab === "approved") {
-      result = result.filter((u) => u.status === "APPROVED")
-    } else if (activeTab === "suspended") {
-      result = result.filter((u) => u.status === "SUSPENDED")
+  const filteredUsers = useMemo(() => {
+    let result = users.filter((u) => u.status === "PENDING")
+
+    // Filter by tab role
+    if (activeTab === "mentors") {
+      result = result.filter((u) => u.role === "MENTOR")
+    } else {
+      result = result.filter((u) => u.role === "MENTEE")
     }
 
     // Filter by search
@@ -116,15 +138,6 @@ export default function AdminUsersPage() {
 
     return result
   }, [users, activeTab, search])
-
-  const counts = useMemo(() => {
-    return {
-      all: users.length,
-      pending: users.filter((u) => u.status === "PENDING").length,
-      approved: users.filter((u) => u.status === "APPROVED").length,
-      suspended: users.filter((u) => u.status === "SUSPENDED").length,
-    }
-  }, [users])
 
   async function handleUpdateStatus(userId: string, status: "APPROVED" | "REJECTED" | "SUSPENDED") {
     setActionLoading(userId)
@@ -145,173 +158,223 @@ export default function AdminUsersPage() {
         }
       }
     } catch (error) {
-      console.error("Erro ao atualizar usuário:", error)
+      console.error("Erro ao atualizar usuario:", error)
     } finally {
       setActionLoading(null)
     }
   }
 
   if (loading) {
-    return <Loading text="Carregando usuários..." />
+    return <Loading text="Carregando usuarios..." />
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Gerenciar Usuários</h1>
-        <p className="text-muted-foreground">
-          Gerencie os usuários da sua organização
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Aprovacao de Usuarios</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Gerencie as solicitacoes de acesso a plataforma.
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome ou email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-yellow-500/10 p-2.5">
+              <Clock className="h-5 w-5 text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-foreground">{pendingCount}</p>
+              <p className="text-xs text-muted-foreground">Pendentes</p>
+              <p className="text-xs text-muted-foreground">usuarios</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-green-500/10 p-2.5">
+              <UserCheck className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-foreground">{approvedToday}</p>
+              <p className="text-xs text-muted-foreground">Aprovados hoje</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-500/10 p-2.5">
+              <Users className="h-5 w-5 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-foreground">{totalActive}</p>
+              <p className="text-xs text-muted-foreground">Total de usuarios</p>
+              <p className="text-xs text-muted-foreground">ativos</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs: Mentores / Mentorados */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="all">
-            Todos ({counts.all})
-          </TabsTrigger>
-          <TabsTrigger value="pending">
-            Pendentes ({counts.pending})
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            Aprovados ({counts.approved})
-          </TabsTrigger>
-          <TabsTrigger value="suspended">
-            Suspensos ({counts.suspended})
-          </TabsTrigger>
+        <TabsList className="bg-muted/50 border border-border">
+          <TabsTrigger value="mentors">Mentores</TabsTrigger>
+          <TabsTrigger value="mentees">Mentorados</TabsTrigger>
         </TabsList>
 
-        {/* All tabs share the same content layout */}
-        {(["all", "pending", "approved", "suspended"] as TabValue[]).map((tab) => (
+        {/* Search */}
+        <div className="relative max-w-md mt-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou e-mail..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 bg-card/50 border-border/50"
+          />
+        </div>
+
+        {/* User cards - shared for both tabs */}
+        {(["mentors", "mentees"] as TabValue[]).map((tab) => (
           <TabsContent key={tab} value={tab}>
             {filteredUsers.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="Nenhum usuário encontrado"
+                title="Nenhum usuario encontrado"
                 description={
                   search
                     ? "Tente ajustar sua busca"
-                    : "Ainda não há usuários nesta categoria"
+                    : "Nao ha usuarios pendentes nesta categoria"
                 }
               />
             ) : (
-              <div className="rounded-lg border">
-                {/* Table header */}
-                <div className="hidden sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b bg-muted/50 px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  <div>Usuário</div>
-                  <div className="w-24 text-center">Função</div>
-                  <div className="w-24 text-center">Status</div>
-                  <div className="w-28 text-center">Membro desde</div>
-                  <div className="w-48 text-right">Ações</div>
-                </div>
+              <div className="space-y-3 mt-4">
+                {filteredUsers.map((user) => {
+                  const borderColor =
+                    user.role === "MENTOR"
+                      ? "border-l-blue-500"
+                      : "border-l-purple-500"
 
-                {/* User rows */}
-                <div className="divide-y">
-                  {filteredUsers.map((user) => (
+                  return (
                     <div
                       key={user.id}
-                      className="flex flex-col gap-3 px-4 py-4 hover:bg-muted/30 transition-colors cursor-pointer sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto] sm:items-center sm:gap-4"
-                      onClick={() => setSelectedUser(user)}
+                      className={`rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 sm:p-5 border-l-4 ${borderColor} hover:bg-card/80 transition-colors`}
                     >
-                      {/* User info */}
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={user.image}
-                          name={user.name}
-                          size="md"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {user.email}
-                          </p>
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        {/* User info */}
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <Avatar
+                            src={user.image}
+                            name={user.name}
+                            size="md"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-foreground">
+                                {user.name}
+                              </p>
+                              <Badge
+                                className={
+                                  user.role === "MENTOR"
+                                    ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                    : "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                                }
+                              >
+                                {roleLabels[user.role]}
+                              </Badge>
+                            </div>
+                            {user.headline && (
+                              <p className="text-sm text-muted-foreground mt-0.5">
+                                Cargo: {user.headline}
+                              </p>
+                            )}
+                            {/* Skill badges */}
+                            {user.skills && user.skills.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {user.skills.slice(0, 4).map((s) => (
+                                  <span
+                                    key={s.id}
+                                    className="inline-flex items-center rounded-md bg-muted/50 border border-border/50 px-2 py-0.5 text-xs text-muted-foreground"
+                                  >
+                                    {s.skill.name}
+                                  </span>
+                                ))}
+                                {user.skills.length > 4 && (
+                                  <span className="inline-flex items-center rounded-md bg-muted/50 border border-border/50 px-2 py-0.5 text-xs text-muted-foreground">
+                                    +{user.skills.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {timeAgo(user.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Role */}
-                      <div className="w-24 text-center">
-                        <Badge variant="outline">{roleLabels[user.role]}</Badge>
-                      </div>
-
-                      {/* Status */}
-                      <div className="w-24 text-center">
-                        <Badge variant={statusBadgeVariant[user.status]}>
-                          {statusLabels[user.status]}
-                        </Badge>
-                      </div>
-
-                      {/* Date */}
-                      <div className="w-28 text-center text-xs text-muted-foreground">
-                        {formatDate(user.createdAt)}
-                      </div>
-
-                      {/* Actions */}
-                      <div
-                        className="flex items-center justify-end gap-2 w-48"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {user.status === "PENDING" && (
-                          <>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-border/50"
+                            onClick={() => setSelectedUser(user)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            Ver Detalhes
+                          </Button>
+                          {user.status === "PENDING" && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
+                                disabled={actionLoading === user.id}
+                                onClick={() => handleUpdateStatus(user.id, "REJECTED")}
+                              >
+                                <UserX className="h-3.5 w-3.5" />
+                                Reprovar
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                disabled={actionLoading === user.id}
+                                onClick={() => handleUpdateStatus(user.id, "APPROVED")}
+                              >
+                                <UserCheck className="h-3.5 w-3.5" />
+                                Aprovar
+                              </Button>
+                            </>
+                          )}
+                          {user.status === "APPROVED" && user.role !== "ADMIN" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-border/50"
+                              disabled={actionLoading === user.id}
+                              onClick={() => handleUpdateStatus(user.id, "SUSPENDED")}
+                            >
+                              <ShieldAlert className="h-3.5 w-3.5" />
+                              Suspender
+                            </Button>
+                          )}
+                          {user.status === "SUSPENDED" && (
                             <Button
                               size="sm"
                               className="bg-green-600 hover:bg-green-700 text-white"
                               disabled={actionLoading === user.id}
                               onClick={() => handleUpdateStatus(user.id, "APPROVED")}
                             >
-                              <UserCheck className="h-4 w-4" />
-                              Aprovar
+                              <UserCheck className="h-3.5 w-3.5" />
+                              Reativar
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              disabled={actionLoading === user.id}
-                              onClick={() => handleUpdateStatus(user.id, "REJECTED")}
-                            >
-                              <UserX className="h-4 w-4" />
-                              Rejeitar
-                            </Button>
-                          </>
-                        )}
-                        {user.status === "APPROVED" && user.role !== "ADMIN" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={actionLoading === user.id}
-                            onClick={() => handleUpdateStatus(user.id, "SUSPENDED")}
-                          >
-                            <ShieldAlert className="h-4 w-4" />
-                            Suspender
-                          </Button>
-                        )}
-                        {user.status === "SUSPENDED" && (
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={actionLoading === user.id}
-                            onClick={() => handleUpdateStatus(user.id, "APPROVED")}
-                          >
-                            <UserCheck className="h-4 w-4" />
-                            Reativar
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )
+                })}
               </div>
             )}
           </TabsContent>
@@ -323,9 +386,9 @@ export default function AdminUsersPage() {
         {selectedUser && (
           <>
             <DialogHeader>
-              <DialogTitle>Detalhes do Usuário</DialogTitle>
+              <DialogTitle>Detalhes do Usuario</DialogTitle>
               <DialogDescription>
-                Informações completas do usuário selecionado
+                Informacoes completas do usuario selecionado
               </DialogDescription>
             </DialogHeader>
             <DialogContent>
@@ -355,7 +418,15 @@ export default function AdminUsersPage() {
                   <span>Membro desde {formatDate(selectedUser.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline">{roleLabels[selectedUser.role]}</Badge>
+                  <Badge
+                    className={
+                      selectedUser.role === "MENTOR"
+                        ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                        : "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                    }
+                  >
+                    {roleLabels[selectedUser.role]}
+                  </Badge>
                   <Badge variant={statusBadgeVariant[selectedUser.status]}>
                     {statusLabels[selectedUser.status]}
                   </Badge>
@@ -383,7 +454,7 @@ export default function AdminUsersPage() {
               {selectedUser.status === "PENDING" && (
                 <>
                   <Button
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={actionLoading === selectedUser.id}
                     onClick={() => handleUpdateStatus(selectedUser.id, "APPROVED")}
                   >
@@ -394,7 +465,7 @@ export default function AdminUsersPage() {
                     disabled={actionLoading === selectedUser.id}
                     onClick={() => handleUpdateStatus(selectedUser.id, "REJECTED")}
                   >
-                    Rejeitar
+                    Reprovar
                   </Button>
                 </>
               )}
