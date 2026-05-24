@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Hanken_Grotesk, Inter } from "next/font/google"
 import { Providers } from "@/components/providers"
+import { ServiceWorkerRegister } from "@/components/sw-register"
 import "./globals.css"
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -49,6 +50,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <ServiceWorkerRegister />
       </body>
     </html>
   )

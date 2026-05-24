@@ -14,6 +14,8 @@ interface DashboardLayoutProps {
   userName: string
   userAvatarSrc?: string | null
   onMobileMenuOpen?: () => void
+  brandColor?: string | null
+  secondaryColor?: string | null
 }
 
 export function DashboardLayout({
@@ -23,9 +25,18 @@ export function DashboardLayout({
   userName,
   userAvatarSrc,
   onMobileMenuOpen,
+  brandColor,
+  secondaryColor,
 }: DashboardLayoutProps) {
   return (
-    <div className="dark min-h-screen bg-background">
+    <div
+      className="dark min-h-screen bg-background"
+      data-tenant={tenantSlug}
+      style={{
+        '--tenant-primary': brandColor || undefined,
+        '--tenant-secondary': secondaryColor || undefined,
+      } as React.CSSProperties}
+    >
       <Sidebar tenantSlug={tenantSlug} role={role} userName={userName} />
 
       {/* Main content area */}

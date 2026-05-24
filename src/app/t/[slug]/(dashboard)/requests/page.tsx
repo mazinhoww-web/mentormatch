@@ -47,6 +47,24 @@ interface Connection {
   mentee: User
 }
 
+interface WaitlistEntry {
+  id: string
+  position: number
+  createdAt: string
+  mentee: {
+    id: string
+    name: string
+    image?: string | null
+    headline?: string | null
+  }
+  mentor: {
+    id: string
+    name: string
+    image?: string | null
+    headline?: string | null
+  }
+}
+
 type TabValue = "received" | "sent"
 
 const statusConfig: Record<
@@ -70,6 +88,8 @@ export default function RequestsPage() {
   const [sentConnections, setSentConnections] = useState<Connection[]>([])
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string>("")
+  const [waitlistEntries, setWaitlistEntries] = useState<WaitlistEntry[]>([])
+  const [removingWaitlistId, setRemovingWaitlistId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -77,15 +97,25 @@ export default function RequestsPage() {
 
   async function fetchData() {
     try {
-      const [connectionsRes, sessionRes] = await Promise.all([
+      const [connectionsRes, sessionRes, waitlistRes] = await Promise.all([
         fetch("/api/connections"),
         fetch("/api/auth/session"),
+        fetch("/api/waitlist"),
       ])
 
       const connections: Connection[] = await connectionsRes.json()
       const session = await sessionRes.json()
       const role = session?.user?.role || "MENTEE"
       setUserRole(role)
+
+      let waitlistData: WaitlistEntry[] = []
+      try {
+        const wData = await waitlistRes.json()
+        waitlistData = Array.isArray(wData) ? wData : []
+      } catch {
+        waitlistData = []
+      }
+      setWaitlistEntries(waitlistData)
 
       if (role === "MENTOR") {
         setReceivedConnections(connections)
@@ -100,6 +130,25 @@ export default function RequestsPage() {
       console.error("Erro ao carregar solicitacoes:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleRemoveFromWaitlist(entryId: string) {
+    setRemovingWaitlistId(entryId)
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: entryId }),
+      })
+
+      if (res.ok) {
+        fetchData()
+      }
+    } catch (error) {
+      console.error("Erro ao remover da lista de espera:", error)
+    } finally {
+      setRemovingWaitlistId(null)
     }
   }
 
@@ -374,71 +423,132 @@ export default function RequestsPage() {
         </div>
 
         {/* Right Column: Waitlist Panel */}
-        {isMentor && (
-          <div className="lg:col-span-4">
-            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sticky top-24 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-amber-500" />
-                  <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">
-                    Lista de Espera
-                  </h2>
-                </div>
+        <div className="lg:col-span-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sticky top-24 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-500" />
+                <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">
+                  Fila de Espera
+                </h2>
+              </div>
+              {isMentor && (
                 <span className="text-xs font-medium bg-[#eaedff] text-[#434655] px-2 py-1 rounded-md">
                   Ordenado por chegada
                 </span>
-              </div>
-              <div className="space-y-3">
-                {/* Waitlist items - showing pending connections as waitlist */}
-                {receivedConnections
-                  .filter((c) => c.status === "PENDING")
-                  .slice(0, 3)
-                  .map((conn, index) => (
+              )}
+            </div>
+            <div className="space-y-3">
+              {isMentor ? (
+                <>
+                  {waitlistEntries.map((entry, index) => (
                     <div
-                      key={conn.id}
-                      className={`relative pl-3 border-l-${index === 0 ? "4 border-amber-500" : "2 border-[#c3c6d7]"} bg-[#faf8ff] rounded-r-xl p-3 flex flex-col gap-1 ${
-                        index > 0 ? "opacity-80" : ""
-                      }`}
+                      key={entry.id}
+                      className="bg-[#faf8ff] rounded-r-xl p-3 flex flex-col gap-1"
                       style={{
                         borderLeftWidth: index === 0 ? "4px" : "2px",
+                        borderLeftStyle: "solid",
                         borderLeftColor: index === 0 ? "#F59E0B" : "#c3c6d7",
                       }}
                     >
                       <div className="flex justify-between items-start">
-                        <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
-                          {conn.mentee.name}
-                        </h3>
-                        <span className={`text-xs font-medium ${
-                          index === 0
-                            ? "text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded"
-                            : "text-[#434655]"
-                        }`}>
-                          {index + 1}o da fila
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            src={entry.mentee.image}
+                            name={entry.mentee.name}
+                            size="sm"
+                          />
+                          <div>
+                            <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                              {entry.mentee.name}
+                            </h3>
+                            {entry.mentee.headline && (
+                              <p className="text-xs text-[#434655]">
+                                {entry.mentee.headline}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-xs font-medium shrink-0 ${
+                            index === 0
+                              ? "text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded"
+                              : "text-[#434655]"
+                          }`}
+                        >
+                          {entry.position}o
                         </span>
                       </div>
-                      {conn.message && (
-                        <p className="text-sm text-[#434655] line-clamp-1">
-                          {conn.message}
-                        </p>
-                      )}
-                      <span className="text-xs font-medium text-[#c3c6d7] flex items-center gap-1 mt-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        Aguardando ha {Math.max(1, Math.floor((Date.now() - new Date(conn.createdAt).getTime()) / 86400000))} dias
-                      </span>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs font-medium text-[#c3c6d7] flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          Aguardando ha{" "}
+                          {Math.max(
+                            1,
+                            Math.floor(
+                              (Date.now() - new Date(entry.createdAt).getTime()) /
+                                86400000
+                            )
+                          )}{" "}
+                          dias
+                        </span>
+                        <button
+                          onClick={() => handleRemoveFromWaitlist(entry.id)}
+                          disabled={removingWaitlistId === entry.id}
+                          className="text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                        >
+                          {removingWaitlistId === entry.id ? "..." : "Remover"}
+                        </button>
+                      </div>
                     </div>
                   ))}
-                {receivedConnections.filter((c) => c.status === "PENDING").length === 0 && (
-                  <p className="text-sm text-[#434655] text-center py-4">
-                    Nenhum mentorado na fila de espera.
-                  </p>
-                )}
-              </div>
-              <button className="w-full mt-4 py-2 border border-[#E2E8F0] rounded-lg text-[#004ac6] text-sm font-semibold tracking-[0.05em] hover:bg-[#f2f3ff] transition-colors">
-                Ver fila completa
-              </button>
+                  {waitlistEntries.length === 0 && (
+                    <p className="text-sm text-[#434655] text-center py-4">
+                      Nenhum mentorado na fila de espera.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  {waitlistEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="bg-[#faf8ff] rounded-xl p-3 flex flex-col gap-1 border border-[#E2E8F0]"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            src={entry.mentor.image}
+                            name={entry.mentor.name}
+                            size="sm"
+                          />
+                          <div>
+                            <h3 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                              {entry.mentor.name}
+                            </h3>
+                            {entry.mentor.headline && (
+                              <p className="text-xs text-[#434655]">
+                                {entry.mentor.headline}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded shrink-0">
+                          {entry.position}o na fila
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {waitlistEntries.length === 0 && (
+                    <p className="text-sm text-[#434655] text-center py-4">
+                      Voce nao esta em nenhuma fila de espera.
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

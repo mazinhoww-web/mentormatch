@@ -98,6 +98,17 @@ function BarChart({ data }: { data: { label: string; value: number; color: strin
   )
 }
 
+async function downloadCsv(type: string, tenantId?: string) {
+  const url = `/api/admin/export?type=${type}${tenantId ? `&tenantId=${tenantId}` : ""}`
+  const res = await fetch(url)
+  const blob = await res.blob()
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = `relatorio-${type}.csv`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
 export default function AdminReportsPage() {
   const params = useParams<{ slug: string }>()
   const [data, setData] = useState<ReportData | null>(null)
@@ -165,7 +176,10 @@ export default function AdminReportsPage() {
             <CalendarDays className="h-4 w-4" />
             Este Mes
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-600 transition-colors shadow-sm flex-1 sm:flex-none">
+          <button
+            onClick={() => downloadCsv("connections")}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-600 transition-colors shadow-sm flex-1 sm:flex-none"
+          >
             <Download className="h-4 w-4" />
             Exportar
           </button>

@@ -33,6 +33,8 @@ export default async function TenantDashboardLayout({
       tenantSlug={slug}
       role={session.user.role as "MENTOR" | "MENTEE" | "ADMIN"}
       userName={session.user.name}
+      brandColor={tenant.brandColor}
+      secondaryColor={tenant.secondaryColor}
     >
       {children}
     </DashboardLayout>

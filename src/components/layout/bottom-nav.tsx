@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, BookOpen, User } from "lucide-react"
+import { LayoutDashboard, Users, BookOpen, User, ClipboardList } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface BottomNavProps {
@@ -19,6 +19,7 @@ export function BottomNav({ tenantSlug, role }: BottomNavProps) {
 
   const items = [
     { label: "Dashboard", href: dashboardHref, icon: LayoutDashboard },
+    { label: "Conexoes", href: `${base}/processo`, icon: ClipboardList },
     { label: "Mentores", href: `${base}/mentors`, icon: Users },
     { label: "Biblioteca", href: `${base}/library`, icon: BookOpen },
     { label: "Perfil", href: `${base}/profile`, icon: User },

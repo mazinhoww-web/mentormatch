@@ -13,6 +13,7 @@ import {
   Clock,
   Eye,
   X,
+  Download,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -81,6 +82,16 @@ function timeAgo(dateStr: string): string {
   if (diffHours < 24) return `Ha ${diffHours} hora${diffHours !== 1 ? "s" : ""}`
   if (diffDays < 30) return `Ha ${diffDays} dia${diffDays !== 1 ? "s" : ""}`
   return formatDate(dateStr)
+}
+
+async function downloadUsersCsv() {
+  const res = await fetch("/api/admin/export?type=users")
+  const blob = await res.blob()
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = "usuarios.csv"
+  a.click()
+  URL.revokeObjectURL(a.href)
 }
 
 export default function AdminUsersPage() {
@@ -199,7 +210,8 @@ export default function AdminUsersPage() {
       {/* Filters & Search */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 flex-1 md:flex-none">
           <button
             onClick={() => setActiveTab("mentors")}
             className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-semibold tracking-wide transition-all ${
@@ -220,6 +232,14 @@ export default function AdminUsersPage() {
           >
             Mentorados
           </button>
+        </div>
+        <button
+          onClick={downloadUsersCsv}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-semibold tracking-wide hover:bg-blue-600 transition-colors shadow-sm"
+        >
+          <Download className="h-4 w-4" />
+          Exportar
+        </button>
         </div>
         {/* Search */}
         <div className="relative w-full md:w-80">
