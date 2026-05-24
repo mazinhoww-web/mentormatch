@@ -1,32 +1,41 @@
-import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export default auth((req) => {
+const publicPaths = ["/login", "/register", "/forgot-password", "/reset-password", "/api/auth", "/api/invitations"]
+
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const isAuthenticated = !!req.auth
 
-  const publicPaths = ["/login", "/register", "/forgot-password", "/reset-password", "/api/auth"]
+  if (
+    pathname === "/" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/icons") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.json" ||
+    pathname === "/sw.js"
+  ) {
+    return NextResponse.next()
+  }
+
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
-
-  if (!isAuthenticated && !isPublicPath && pathname !== "/") {
-    return NextResponse.redirect(new URL("/login", req.url))
+  if (isPublicPath) {
+    return NextResponse.next()
   }
 
-  if (isAuthenticated && (pathname === "/login" || pathname === "/register")) {
-    const tenantSlug = req.auth?.user?.tenantSlug || "default"
-    const role = req.auth?.user?.role?.toLowerCase() || "mentee"
-    return NextResponse.redirect(new URL(`/t/${tenantSlug}/${role}`, req.url))
-  }
+  const sessionToken =
+    req.cookies.get("authjs.session-token")?.value ||
+    req.cookies.get("__Secure-authjs.session-token")?.value ||
+    req.cookies.get("next-auth.session-token")?.value ||
+    req.cookies.get("__Secure-next-auth.session-token")?.value
 
-  if (pathname.startsWith("/t/") && pathname.includes("/admin")) {
-    if (req.auth?.user?.role !== "ADMIN") {
-      const tenantSlug = req.auth?.user?.tenantSlug || "default"
-      return NextResponse.redirect(new URL(`/t/${tenantSlug}/mentee`, req.url))
-    }
+  if (!sessionToken) {
+    const loginUrl = new URL("/login", req.url)
+    loginUrl.searchParams.set("callbackUrl", pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js).*)"],
