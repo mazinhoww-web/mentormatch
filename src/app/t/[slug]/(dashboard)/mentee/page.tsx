@@ -8,6 +8,7 @@ import {
   BookOpen,
   Star,
   ChevronRight,
+  Clock,
 } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -115,168 +116,164 @@ export default function MenteeDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-6">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">
+    <div className="space-y-4">
+      {/* Personalized Greeting */}
+      <section className="mb-8">
+        <h1 className="text-[28px] md:text-4xl font-bold tracking-tight text-slate-900 mb-2">
           Ola, {userName || "Mentorado"}! <span role="img" aria-label="wave">&#128075;</span>
         </h1>
-        <p className="text-slate-400 mt-1">
+        <p className="text-lg text-slate-500">
           Pronto para continuar seu desenvolvimento profissional hoje?
         </p>
-      </div>
+      </section>
 
-      {/* Sua Proxima Sessao */}
-      {activeConnection && (
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
-              Sua Proxima Sessao
-            </h2>
-            <span className="rounded-full bg-blue-600/20 px-3 py-1 text-xs font-medium text-blue-400">
-              Hoje, 14:30
-            </span>
-          </div>
-
-          <p className="text-white font-medium mb-1">
-            Sessao de Acompanhamento
-          </p>
-          <p className="text-sm text-slate-400 mb-4">
-            Trilha de {activeConnection.mentor.skills?.[0]?.skill.name || "Desenvolvimento"}
-          </p>
-
-          <div className="flex items-center justify-between rounded-lg bg-slate-800/50 p-3">
-            <div className="flex items-center gap-3">
-              <Avatar
-                src={activeConnection.mentor.image}
-                name={activeConnection.mentor.name}
-                size="md"
-              />
-              <div>
-                <p className="text-sm font-medium text-white">
-                  {activeConnection.mentor.name}
-                </p>
-                {activeConnection.mentor.headline && (
-                  <p className="text-xs text-slate-400">
-                    {activeConnection.mentor.headline}
-                  </p>
-                )}
-              </div>
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Mentorship Status Box (Spans 8 cols on desktop) */}
+        <div className="col-span-1 md:col-span-8 bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Sua Proxima Sessao</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Trilha de {activeConnection?.mentor.skills?.[0]?.skill.name || "Lideranca Tecnica"}
+              </p>
             </div>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+            <div className="bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 shrink-0">
+              <Clock className="h-4 w-4" />
+              <span>Hoje, 14:30</span>
+            </div>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-4 hover:border-blue-300 transition-colors">
+            <Avatar
+              src={activeConnection?.mentor.image}
+              name={activeConnection?.mentor.name || "Roberto Almeida"}
+              size="lg"
+              className="w-14 h-14 shrink-0"
+            />
+            <div className="flex-grow min-w-0">
+              <h3 className="text-sm font-semibold tracking-wide text-slate-900">
+                {activeConnection?.mentor.name || "Roberto Almeida"}
+              </h3>
+              <p className="text-sm text-slate-500">
+                {activeConnection?.mentor.headline || "Engineering Manager @ CloudTech"}
+              </p>
+            </div>
+            {/* Desktop Button */}
+            <button
+              className="hidden sm:flex bg-blue-700 text-white text-sm font-semibold tracking-wide px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors items-center gap-2 active:scale-95"
+            >
+              <Video className="h-4 w-4" />
+              Entrar na Sala
+            </button>
+            {/* Mobile Button */}
+            <button
+              className="sm:hidden bg-blue-700 text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors active:scale-95 shrink-0"
+            >
               <Video className="h-5 w-5" />
             </button>
           </div>
         </div>
-      )}
 
-      {/* Biblioteca */}
-      <div className="rounded-xl bg-gradient-to-br from-blue-700 to-blue-900 p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen className="h-5 w-5 text-blue-200" />
-          <h2 className="font-semibold text-white">Biblioteca</h2>
-        </div>
-        <p className="text-sm text-blue-200 mb-4">Recomendados para voce</p>
-
-        {materials.length > 0 ? (
-          <div className="space-y-2">
-            {materials.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => router.push(`/t/${slug}/library/${item.id}`)}
-                className="flex w-full items-center justify-between rounded-lg bg-white/10 px-4 py-3 text-left transition-colors hover:bg-white/20"
-              >
-                <span className="text-sm font-medium text-white truncate pr-2">
-                  {item.title}
-                </span>
-                <ArrowRight className="h-4 w-4 text-blue-200 shrink-0" />
-              </button>
-            ))}
+        {/* Library Quick Access (Spans 4 cols on desktop) */}
+        <div className="col-span-1 md:col-span-4 bg-blue-600 border border-blue-500/20 rounded-xl p-4 relative overflow-hidden group">
+          {/* Decorative background element */}
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="mb-4 flex items-center gap-2 text-white">
+              <BookOpen className="h-5 w-5" />
+              <h2 className="text-xl font-semibold">Biblioteca</h2>
+            </div>
+            <div className="space-y-3 flex-grow flex flex-col justify-end">
+              <p className="text-sm text-white/80 mb-2">Recomendados para voce</p>
+              {materials.length > 0 ? (
+                materials.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => router.push(`/t/${slug}/library/${item.id}`)}
+                    className="bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-lg p-3 flex items-center justify-between hover:bg-white transition-colors group/link cursor-pointer text-left w-full"
+                  >
+                    <span className="text-xs font-medium text-slate-900 truncate pr-4">{item.title}</span>
+                    <ArrowRight className="h-4 w-4 text-slate-500 group-hover/link:text-blue-700 transition-colors shrink-0" />
+                  </button>
+                ))
+              ) : (
+                <>
+                  <button
+                    onClick={() => router.push(`/t/${slug}/library`)}
+                    className="bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-lg p-3 flex items-center justify-between hover:bg-white transition-colors group/link cursor-pointer text-left w-full"
+                  >
+                    <span className="text-xs font-medium text-slate-900 truncate pr-4">Frameworks de Feedback 1:1</span>
+                    <ArrowRight className="h-4 w-4 text-slate-500 group-hover/link:text-blue-700 transition-colors shrink-0" />
+                  </button>
+                  <button
+                    onClick={() => router.push(`/t/${slug}/library`)}
+                    className="bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-lg p-3 flex items-center justify-between hover:bg-white transition-colors group/link cursor-pointer text-left w-full"
+                  >
+                    <span className="text-xs font-medium text-slate-900 truncate pr-4">Transicao para Gestao</span>
+                    <ArrowRight className="h-4 w-4 text-slate-500 group-hover/link:text-blue-700 transition-colors shrink-0" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-        ) : (
-          <p className="text-sm text-blue-200/70 text-center py-4">
-            Nenhum material disponivel ainda.
-          </p>
-        )}
-
-        <Button
-          variant="ghost"
-          className="w-full mt-3 text-blue-100 hover:text-white hover:bg-white/10"
-          onClick={() => router.push(`/t/${slug}/library`)}
-        >
-          Ver todos os materiais
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Mentores em Destaque */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Mentores em Destaque</h2>
-          <button
-            onClick={() => router.push(`/t/${slug}/mentors`)}
-            className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            Ver todos
-            <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
 
-        {mentors.length > 0 ? (
-          <div className="space-y-3">
-            {mentors.map((mentor) => (
+        {/* Featured Mentors Full Width Area */}
+        <div className="col-span-1 md:col-span-12 mt-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-slate-900">Mentores em Destaque</h2>
+            <button
+              onClick={() => router.push(`/t/${slug}/mentors`)}
+              className="text-sm font-semibold tracking-wide text-blue-700 hover:underline flex items-center gap-1"
+            >
+              Ver todos <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          {/* Grid of Mentor Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(mentors.length > 0 ? mentors : [
+              { id: "placeholder-1", name: "Mentor Disponivel", image: null, headline: "Mentor na plataforma", skills: [] },
+            ]).map((mentor) => (
               <div
                 key={mentor.id}
-                className="rounded-xl bg-slate-900 border border-slate-800 p-4"
+                className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] hover:border-blue-300 transition-all cursor-pointer group flex flex-col"
               >
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-start gap-4 mb-4">
                   <Avatar
                     src={mentor.image}
                     name={mentor.name}
                     size="lg"
+                    className="border border-slate-200 shrink-0"
                   />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-white truncate">{mentor.name}</h3>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold tracking-wide text-slate-900 group-hover:text-blue-700 transition-colors">{mentor.name}</h3>
                     {mentor.headline && (
-                      <p className="text-sm text-slate-400 truncate">
-                        {mentor.headline}
-                      </p>
+                      <p className="text-sm text-slate-500">{mentor.headline}</p>
                     )}
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                      <span className="text-xs text-slate-400">4.9</span>
-                    </div>
                   </div>
                 </div>
-
                 {mentor.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
+                  <div className="flex flex-wrap gap-2 mb-4 flex-grow content-start">
                     {mentor.skills.slice(0, 3).map((s) => (
                       <span
                         key={s.id}
-                        className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300"
+                        className="px-2.5 py-1 bg-blue-50 text-slate-500 text-xs font-medium rounded-full"
                       >
                         {s.skill.name}
                       </span>
                     ))}
                   </div>
                 )}
-
-                <Button
-                  variant="outline"
-                  className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                <button
                   onClick={() => router.push(`/t/${slug}/mentors/${mentor.id}`)}
+                  className="w-full border border-blue-700 text-blue-700 text-sm font-semibold tracking-wide py-2 rounded-lg hover:bg-blue-50 transition-colors mt-auto"
                 >
                   Ver Perfil
-                </Button>
+                </button>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="rounded-xl bg-slate-900 border border-slate-800 p-8 text-center">
-            <p className="text-slate-400">Nenhum mentor disponivel no momento.</p>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )
