@@ -5,26 +5,19 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
+import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from "lucide-react"
 
 import { registerSchema, type RegisterInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
-    register,
+    register: registerField,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
@@ -53,103 +46,147 @@ export default function RegisterPage() {
 
       router.push("/select-profile")
     } catch {
-      setError("Erro de conexão. Tente novamente.")
+      setError("Erro de conexao. Tente novamente.")
     }
   }
 
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl">Criar conta</CardTitle>
-        <CardDescription>
-          Preencha seus dados para começar
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="flex flex-col items-center">
+      {/* Logo */}
+      <div className="mb-8 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2563eb]">
+          <GraduationCap className="h-6 w-6 text-white" />
+        </div>
+        <span className="text-2xl font-bold text-gray-900">MentorMatch</span>
+      </div>
+
+      {/* Card */}
+      <div className="w-full rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold text-gray-900">Criar conta</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Preencha seus dados para comecar na plataforma.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="name" error={!!errors.name}>
+          {/* Name */}
+          <div>
+            <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
               Nome completo
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Seu nome"
-              {...register("name")}
-            />
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                {...registerField("name")}
+              />
+            </div>
             {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" error={!!errors.email}>
-              E-mail
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              {...register("email")}
-            />
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+              E-mail corporativo
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                id="email"
+                type="email"
+                placeholder="seu@empresa.com"
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                {...registerField("email")}
+              />
+            </div>
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" error={!!errors.password}>
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
               Senha
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="********"
-              {...register("password")}
-            />
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="********"
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                {...registerField("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
+              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword" error={!!errors.confirmPassword}>
+          {/* Confirm Password */}
+          <div>
+            <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
               Confirmar senha
-            </Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="********"
-              {...register("confirmPassword")}
-            />
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="********"
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                {...registerField("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword.message}
-              </p>
+              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-lg bg-[#2563eb] text-sm font-medium text-white hover:bg-[#1d4ed8]"
+            disabled={isSubmitting}
+          >
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
             Criar conta
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Já tem uma conta?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+          <p className="text-center text-sm text-gray-500">
+            Ja tem uma conta?{" "}
+            <Link href="/login" className="font-medium text-[#2563eb] hover:underline">
               Entrar
             </Link>
           </p>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

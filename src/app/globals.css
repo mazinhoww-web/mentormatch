@@ -71,6 +71,37 @@
   --sidebar-ring: #6366f1;
 }
 
+.dark {
+  --background: #0a0f1e;
+  --foreground: #ffffff;
+  --card: #111827;
+  --card-foreground: #ffffff;
+  --popover: #1a1f36;
+  --popover-foreground: #ffffff;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1f36;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1a1f36;
+  --muted-foreground: #94a3b8;
+  --accent: #1e3a5f;
+  --accent-foreground: #e2e8f0;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1f2937;
+  --input: #1f2937;
+  --ring: #3b82f6;
+  --radius: 0.5rem;
+  --sidebar: #0f1629;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1f36;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #1f2937;
+  --sidebar-ring: #3b82f6;
+}
+
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }

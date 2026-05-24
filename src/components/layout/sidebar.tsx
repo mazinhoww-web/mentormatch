@@ -15,7 +15,6 @@ import {
   ClipboardList,
   Sparkles,
   LogOut,
-  Menu,
   X,
   GraduationCap,
 } from "lucide-react"
@@ -42,21 +41,21 @@ function getNavItems(tenantSlug: string, role: Role): NavItem[] {
   if (role === "ADMIN") {
     return [
       { label: "Dashboard", href: `${base}/admin`, icon: LayoutDashboard },
-      { label: "Usuários", href: `${base}/admin/users`, icon: Users },
+      { label: "Usuarios", href: `${base}/admin/users`, icon: Users },
       { label: "Habilidades", href: `${base}/admin/skills`, icon: Sparkles },
       { label: "Biblioteca", href: `${base}/admin/library`, icon: BookOpen },
-      { label: "Relatórios", href: `${base}/admin/reports`, icon: BarChart3 },
-      { label: "Configurações", href: `${base}/admin/settings`, icon: Settings },
+      { label: "Relatorios", href: `${base}/admin/reports`, icon: BarChart3 },
+      { label: "Configuracoes", href: `${base}/admin/settings`, icon: Settings },
     ]
   }
 
   if (role === "MENTOR") {
     return [
       { label: "Dashboard", href: `${base}/mentor`, icon: LayoutDashboard },
-      { label: "Solicitações", href: `${base}/requests`, icon: ClipboardList },
+      { label: "Solicitacoes", href: `${base}/requests`, icon: ClipboardList },
       { label: "Buscar Mentores", href: `${base}/mentors`, icon: Search },
       { label: "Biblioteca", href: `${base}/library`, icon: BookOpen },
-      { label: "Notificações", href: `${base}/notifications`, icon: Bell },
+      { label: "Notificacoes", href: `${base}/notifications`, icon: Bell },
       { label: "Perfil", href: `${base}/profile`, icon: User },
     ]
   }
@@ -66,7 +65,7 @@ function getNavItems(tenantSlug: string, role: Role): NavItem[] {
     { label: "Dashboard", href: `${base}/mentee`, icon: LayoutDashboard },
     { label: "Buscar Mentores", href: `${base}/mentors`, icon: Search },
     { label: "Biblioteca", href: `${base}/library`, icon: BookOpen },
-    { label: "Notificações", href: `${base}/notifications`, icon: Bell },
+    { label: "Notificacoes", href: `${base}/notifications`, icon: Bell },
     { label: "Perfil", href: `${base}/profile`, icon: User },
   ]
 }
@@ -150,16 +149,6 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-40 inline-flex h-10 w-10 items-center justify-center rounded-lg border bg-background text-foreground shadow-sm lg:hidden"
-        aria-label="Abrir menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -168,7 +157,7 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
         />
       )}
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar (slide-over drawer) */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-72 transform border-r border-sidebar-border bg-sidebar transition-transform duration-200 ease-in-out lg:hidden",
@@ -186,7 +175,7 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - only visible on lg+ */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-sidebar-border lg:bg-sidebar">
         {sidebarContent}
       </aside>
