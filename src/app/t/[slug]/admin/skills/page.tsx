@@ -37,8 +37,9 @@ import {
 interface Skill {
   id: string
   name: string
-  global: boolean
-  tenantId: string | null
+  category?: string | null
+  isActive?: boolean
+  usageCount?: number
   type?: "soft" | "hard"
   suggestedBy?: string
   suggestedByRole?: string
@@ -439,7 +440,7 @@ export default function AdminSkillsPage() {
                     Usada por {skill._count?.users ?? 0} usuario{(skill._count?.users ?? 0) !== 1 ? "s" : ""}
                   </span>
                   {/* Edit/Delete on hover */}
-                  {!skill.global && (
+                  {(
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"

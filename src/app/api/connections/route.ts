@@ -35,7 +35,7 @@ export async function GET(request: Request) {
             image: true,
             headline: true,
             skills: {
-              where: { type: "TEACHING" },
+              where: { isTeaching: true },
               include: { skill: true },
             },
           },
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
             image: true,
             headline: true,
             skills: {
-              where: { type: "LEARNING" },
+              where: { isTeaching: false },
               include: { skill: true },
             },
           },
