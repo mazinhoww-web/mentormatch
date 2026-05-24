@@ -143,7 +143,7 @@ export default function AdminSettingsPage() {
   ]
 
   return (
-    <div className="not-dark space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">Configuracoes</h1>

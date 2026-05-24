@@ -158,7 +158,7 @@ export default function AdminReportsPage() {
   ]
 
   return (
-    <div className="not-dark space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
