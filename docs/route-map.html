@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MentorMatch - Mapa de Rotas (33 telas)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; line-height: 1.6; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 2rem; margin-bottom: 8px; }
+  h1 span { color: #6366f1; }
+  .subtitle { color: #64748b; margin-bottom: 32px; font-size: 1.1rem; }
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #6366f1; display: inline-block; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s; }
+  .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .card-header { background: #f1f5f9; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+  .card-route { font-family: monospace; font-size: 0.85rem; color: #6366f1; font-weight: 600; }
+  .card-type { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; background: #ddd6fe; color: #5b21b6; margin-left: 8px; }
+  .card-type.api { background: #d1fae5; color: #065f46; }
+  .card-type.admin { background: #fee2e2; color: #991b1b; }
+  .card-body { padding: 16px; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .card-desc { font-size: 0.875rem; color: #64748b; margin-bottom: 12px; }
+  .wireframe { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.78rem; color: #475569; }
+  .wireframe .w-bar { height: 8px; background: #e2e8f0; border-radius: 4px; margin: 4px 0; }
+  .wireframe .w-bar.primary { background: #c7d2fe; }
+  .wireframe .w-bar.short { width: 40%; }
+  .wireframe .w-bar.medium { width: 65%; }
+  .wireframe .w-row { display: flex; gap: 8px; margin: 4px 0; }
+  .wireframe .w-box { background: #e2e8f0; border-radius: 6px; padding: 6px 10px; flex: 1; text-align: center; font-size: 0.7rem; color: #64748b; }
+  .wireframe .w-box.accent { background: #c7d2fe; color: #4338ca; }
+  .wireframe .w-circle { width: 32px; height: 32px; border-radius: 50%; background: #c7d2fe; display: inline-block; }
+  .wireframe .w-circle.sm { width: 20px; height: 20px; }
+  .wireframe .w-btn { background: #6366f1; color: white; padding: 4px 12px; border-radius: 6px; display: inline-block; font-size: 0.7rem; }
+  .wireframe .w-btn.outline { background: white; color: #6366f1; border: 1px solid #6366f1; }
+  .wireframe .w-btn.danger { background: #ef4444; }
+  .wireframe .w-btn.success { background: #22c55e; }
+  .wireframe .w-input { border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 8px; width: 100%; margin: 3px 0; font-size: 0.7rem; color: #9ca3af; }
+  .wireframe .w-badge { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 0.65rem; background: #e2e8f0; margin: 1px; }
+  .wireframe .w-badge.primary { background: #c7d2fe; color: #4338ca; }
+  .wireframe .w-badge.warn { background: #fef3c7; color: #92400e; }
+  .wireframe .w-badge.success { background: #d1fae5; color: #065f46; }
+  .wireframe .w-badge.danger { background: #fee2e2; color: #991b1b; }
+  .wireframe .w-sidebar { background: #f1f5f9; padding: 8px; border-radius: 6px; min-width: 100px; }
+  .wireframe .w-sidebar-item { padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; margin: 2px 0; }
+  .wireframe .w-sidebar-item.active { background: #c7d2fe; color: #4338ca; }
+  .wireframe .w-card { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin: 4px 0; }
+  .wireframe .w-stat { text-align: center; padding: 8px; }
+  .wireframe .w-stat-value { font-size: 1.2rem; font-weight: 700; color: #6366f1; }
+  .wireframe .w-stat-label { font-size: 0.6rem; color: #94a3b8; }
+  .wireframe .w-heading { font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; }
+  .wireframe .w-text { font-size: 0.7rem; color: #94a3b8; }
+  .wireframe .w-divider { border-top: 1px solid #e2e8f0; margin: 8px 0; }
+  .wireframe .w-flex { display: flex; align-items: center; gap: 6px; }
+  .wireframe .w-gap { gap: 8px; }
+  .wireframe .w-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .wireframe .w-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .stats-bar { display: flex; gap: 16px; margin: 24px 0; flex-wrap: wrap; }
+  .stat-item { background: white; border: 1px solid #e2e8f0; padding: 16px 24px; border-radius: 8px; text-align: center; }
+  .stat-value { font-size: 2rem; font-weight: 700; color: #6366f1; }
+  .stat-label { font-size: 0.85rem; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Mentor<span>Match</span> - Mapa de Rotas</h1>
+<p class="subtitle">33 rotas implementadas no MVP &mdash; Referência visual e funcional de cada tela</p>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-value">10</div><div class="stat-label">Auth & Onboarding</div></div>
+  <div class="stat-item"><div class="stat-value">10</div><div class="stat-label">Dashboard</div></div>
+  <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">Admin</div></div>
+  <div class="stat-item"><div class="stat-value">13</div><div class="stat-label">API Endpoints</div></div>
+  <div class="stat-item"><div class="stat-value">2</div><div class="stat-label">Landing & 404</div></div>
+</div>
+
+<!-- ───────── LANDING & 404 ───────── -->
+<div class="section">
+<div class="section-title">Landing Page & 404</div>
+<div class="grid">
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Landing Page</div>
+    <div class="card-desc">Página pública inicial com CTA de cadastro e overview do produto.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+        <div class="w-flex"><div class="w-circle sm"></div> <b>MentorMatch</b></div>
+        <div class="w-flex"><span class="w-btn outline">Entrar</span> <span class="w-btn">Começar agora</span></div>
+      </div>
+      <div style="text-align:center;padding:24px 0">
+        <div class="w-heading" style="font-size:1.1rem">Conecte <span style="color:#6366f1">mentores</span> e <span style="color:#6366f1">mentorados</span></div>
+        <div class="w-text" style="margin:8px 0">Plataforma white-label de mentoria empresarial</div>
+        <span class="w-btn">Criar conta gratuita →</span>
+      </div>
+      <div class="w-grid3">
+        <div class="w-card" style="text-align:center"><div class="w-circle sm" style="margin:0 auto 4px"></div><div style="font-size:0.7rem;font-weight:600">Matching</div><div class="w-text">Por habilidades</div></div>
+        <div class="w-card" style="text-align:center"><div class="w-circle sm" style="margin:0 auto 4px"></div><div style="font-size:0.7rem;font-weight:600">Biblioteca</div><div class="w-text">Materiais</div></div>
+        <div class="w-card" style="text-align:center"><div class="w-circle sm" style="margin:0 auto 4px"></div><div style="font-size:0.7rem;font-weight:600">Multitenant</div><div class="w-text">Por empresa</div></div>
+      </div>
+      <div class="w-divider"></div>
+      <div style="text-align:center"><div style="font-weight:600;margin-bottom:6px">Plano Free inclui</div>
+        <div class="w-text">✓ 50 usuários · ✓ 10 mentores · ✓ 500MB · ✓ Dashboard</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/not-found (404)</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Página 404</div>
+    <div class="card-desc">Exibida quando o usuário acessa uma rota inexistente.</div>
+    <div class="wireframe" style="text-align:center;padding:24px">
+      <div class="w-circle" style="margin:0 auto 8px;width:48px;height:48px;line-height:48px">🔍</div>
+      <div style="font-size:2rem;font-weight:700;color:#6366f1">404</div>
+      <div class="w-heading">Página não encontrada</div>
+      <div class="w-text" style="margin:6px 0">A página que você está procurando não existe ou foi movida.</div>
+      <span class="w-btn">Voltar ao início</span>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- ───────── AUTH ───────── -->
+<div class="section">
+<div class="section-title">Autenticação & Onboarding</div>
+<div class="grid">
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/login</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Login</div>
+    <div class="card-desc">Tela de login com email/senha. Layout dividido: branding à esquerda, formulário à direita.</div>
+    <div class="wireframe">
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:6px;padding:12px;color:white;font-size:0.7rem">
+          <b>MentorMatch</b><br><span style="opacity:0.8;font-size:0.6rem">Conecte-se ao seu mentor ideal</span>
+          <div style="margin-top:12px;opacity:0.7;font-size:0.6rem">+500 mentores · +2000 conexões · +50 empresas</div>
+        </div>
+        <div style="flex:1">
+          <div class="w-heading">Bem-vindo de volta</div>
+          <div class="w-text">Entre com suas credenciais</div>
+          <div class="w-input">email@exemplo.com</div>
+          <div class="w-input">••••••••</div>
+          <div class="w-text" style="text-align:right;color:#6366f1">Esqueceu a senha?</div>
+          <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:6px">Entrar</span>
+          <div class="w-text" style="text-align:center;margin-top:6px">Não tem conta? <span style="color:#6366f1">Criar conta</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/register</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Cadastro</div>
+    <div class="card-desc">Formulário de criação de conta com nome, email, senha e confirmação.</div>
+    <div class="wireframe">
+      <div class="w-heading">Criar conta</div>
+      <div class="w-text">Preencha seus dados para começar</div>
+      <div class="w-input">Nome completo</div>
+      <div class="w-input">email@exemplo.com</div>
+      <div class="w-input">••••••••</div>
+      <div class="w-input">Confirmar senha</div>
+      <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:6px">Criar conta</span>
+      <div class="w-text" style="text-align:center;margin-top:6px">Já tem conta? <span style="color:#6366f1">Entrar</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/forgot-password</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Esqueceu a Senha</div>
+    <div class="card-desc">Campo de email para solicitar link de redefinição de senha.</div>
+    <div class="wireframe">
+      <div class="w-heading">Esqueceu sua senha?</div>
+      <div class="w-text">Digite seu e-mail para receber o link de redefinição</div>
+      <div class="w-input">email@exemplo.com</div>
+      <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:6px">Enviar link</span>
+      <div class="w-text" style="text-align:center;margin-top:6px">← Voltar ao <span style="color:#6366f1">Login</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/reset-password?token=...</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Redefinir Senha</div>
+    <div class="card-desc">Formulário para criar nova senha após clicar no link de recuperação.</div>
+    <div class="wireframe">
+      <div class="w-heading">Redefinir senha</div>
+      <div class="w-text">Digite sua nova senha abaixo</div>
+      <div class="w-input">Nova senha</div>
+      <div class="w-input">Confirmar nova senha</div>
+      <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:6px">Redefinir senha</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/select-profile</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Seleção de Perfil</div>
+    <div class="card-desc">Usuário escolhe entre ser Mentor ou Mentorado. Dois cards grandes clicáveis.</div>
+    <div class="wireframe" style="text-align:center">
+      <div class="w-heading">Qual é o seu perfil?</div>
+      <div class="w-text">Escolha como deseja participar do programa</div>
+      <div class="w-grid2" style="margin-top:8px">
+        <div class="w-card" style="padding:16px;cursor:pointer;border:2px solid #c7d2fe">
+          <div style="font-size:1.2rem">📖</div>
+          <div style="font-weight:700;margin:4px 0">Quero ser Mentor</div>
+          <div class="w-text">Compartilhe seu conhecimento e experiência</div>
+        </div>
+        <div class="w-card" style="padding:16px;cursor:pointer">
+          <div style="font-size:1.2rem">🎓</div>
+          <div style="font-weight:700;margin:4px 0">Quero ser Mentorado</div>
+          <div class="w-text">Aprenda com profissionais experientes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/onboarding/mentor</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Cadastro de Mentor</div>
+    <div class="card-desc">Formulário completo com foto, dados profissionais, bio, WhatsApp e seletor de habilidades.</div>
+    <div class="wireframe">
+      <div class="w-heading">Complete seu perfil de Mentor</div>
+      <div class="w-flex" style="margin-bottom:8px"><div class="w-circle"></div> <span class="w-btn outline">📷 Enviar foto</span></div>
+      <div class="w-input">Nome completo</div>
+      <div class="w-input">Título profissional</div>
+      <div class="w-input" style="min-height:40px">Bio (sobre você)</div>
+      <div class="w-input">Formação</div>
+      <div class="w-input">Experiência</div>
+      <div class="w-input">LinkedIn</div>
+      <div class="w-input">WhatsApp</div>
+      <div style="margin:6px 0"><b style="font-size:0.7rem">Habilidades que ensino:</b></div>
+      <div class="w-flex" style="flex-wrap:wrap;gap:4px">
+        <span class="w-badge primary">Liderança ×</span>
+        <span class="w-badge primary">Gestão ×</span>
+        <div class="w-flex"><div class="w-input" style="width:120px">Nova skill</div><span class="w-btn outline">+</span></div>
+      </div>
+      <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:8px">Finalizar cadastro</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/onboarding/mentee</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Cadastro de Mentorado</div>
+    <div class="card-desc">Formulário similar ao mentor mas com habilidades que deseja aprender.</div>
+    <div class="wireframe">
+      <div class="w-heading">Complete seu perfil de Mentorado</div>
+      <div class="w-flex" style="margin-bottom:8px"><div class="w-circle"></div> <span class="w-btn outline">📷 Enviar foto</span></div>
+      <div class="w-input">Nome completo</div>
+      <div class="w-input">Título (opcional)</div>
+      <div class="w-input" style="min-height:40px">Conte um pouco sobre você</div>
+      <div class="w-input">Formação</div>
+      <div class="w-input">LinkedIn</div>
+      <div class="w-input">WhatsApp</div>
+      <div style="margin:6px 0"><b style="font-size:0.7rem">Habilidades que quero aprender:</b></div>
+      <div class="w-flex" style="flex-wrap:wrap;gap:4px">
+        <span class="w-badge primary">Data Science ×</span>
+        <span class="w-badge primary">Produto ×</span>
+      </div>
+      <span class="w-btn" style="width:100%;text-align:center;display:block;margin-top:8px">Finalizar cadastro</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/welcome</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Boas-vindas / Sucesso</div>
+    <div class="card-desc">Tela de confirmação após completar o cadastro com sucesso.</div>
+    <div class="wireframe" style="text-align:center;padding:20px">
+      <div style="font-size:2rem">🎉</div>
+      <div class="w-heading" style="margin:8px 0">Cadastro realizado com sucesso!</div>
+      <div class="w-text">Seu perfil está sendo analisado. Você receberá uma notificação quando for aprovado.</div>
+      <span class="w-btn" style="margin-top:12px">Ir para o Dashboard</span>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- ───────── DASHBOARD ───────── -->
+<div class="section">
+<div class="section-title">Dashboard (Tenant: /t/[slug]/...)</div>
+<div class="grid">
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/mentor</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Dashboard do Mentor</div>
+    <div class="card-desc">Visão geral com métricas, mentorados ativos, solicitações pendentes e notificações recentes.</div>
+    <div class="wireframe">
+      <div style="display:flex;gap:6px">
+        <div class="w-sidebar">
+          <div style="font-weight:700;font-size:0.7rem;margin-bottom:6px">🎓 MentorMatch</div>
+          <div class="w-sidebar-item active">📊 Dashboard</div>
+          <div class="w-sidebar-item">📋 Solicitações</div>
+          <div class="w-sidebar-item">🔍 Mentores</div>
+          <div class="w-sidebar-item">📚 Biblioteca</div>
+          <div class="w-sidebar-item">🔔 Notificações</div>
+          <div class="w-sidebar-item">👤 Perfil</div>
+        </div>
+        <div style="flex:1">
+          <div class="w-heading">Dashboard</div>
+          <div class="w-grid2" style="margin:6px 0">
+            <div class="w-card w-stat"><div class="w-stat-value">3</div><div class="w-stat-label">Mentorados</div></div>
+            <div class="w-card w-stat"><div class="w-stat-value">2</div><div class="w-stat-label">Pendentes</div></div>
+            <div class="w-card w-stat"><div class="w-stat-value">1</div><div class="w-stat-label">Vagas</div></div>
+            <div class="w-card w-stat"><div class="w-stat-value">12</div><div class="w-stat-label">Sessões</div></div>
+          </div>
+          <div style="font-weight:600;font-size:0.75rem;margin:6px 0">Mentorados Ativos</div>
+          <div class="w-card"><div class="w-flex"><div class="w-circle sm"></div> <span style="font-size:0.7rem">João Silva</span> <span class="w-badge primary">Liderança</span> <span class="w-btn" style="font-size:0.6rem;margin-left:auto">WhatsApp</span></div></div>
+          <div class="w-card"><div class="w-flex"><div class="w-circle sm"></div> <span style="font-size:0.7rem">Maria Santos</span> <span class="w-badge primary">Produto</span> <span class="w-btn" style="font-size:0.6rem;margin-left:auto">WhatsApp</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/mentee</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Dashboard do Mentorado</div>
+    <div class="card-desc">Visão com mentor atual, solicitações enviadas, materiais recomendados. EmptyState se sem mentor.</div>
+    <div class="wireframe">
+      <div style="display:flex;gap:6px">
+        <div class="w-sidebar">
+          <div style="font-weight:700;font-size:0.7rem;margin-bottom:6px">🎓 MentorMatch</div>
+          <div class="w-sidebar-item active">📊 Dashboard</div>
+          <div class="w-sidebar-item">🔍 Mentores</div>
+          <div class="w-sidebar-item">📚 Biblioteca</div>
+          <div class="w-sidebar-item">🔔 Notificações</div>
+          <div class="w-sidebar-item">👤 Perfil</div>
+        </div>
+        <div style="flex:1">
+          <div class="w-heading">Dashboard</div>
+          <div class="w-grid3" style="margin:6px 0">
+            <div class="w-card w-stat"><div class="w-stat-value">1</div><div class="w-stat-label">Mentor</div></div>
+            <div class="w-card w-stat"><div class="w-stat-value">2</div><div class="w-stat-label">Solicitações</div></div>
+            <div class="w-card w-stat"><div class="w-stat-value">8</div><div class="w-stat-label">Materiais</div></div>
+          </div>
+          <div style="font-weight:600;font-size:0.75rem;margin:6px 0">Seu Mentor</div>
+          <div class="w-card"><div class="w-flex"><div class="w-circle"></div> <div><div style="font-weight:600;font-size:0.75rem">Ana Costa</div><div class="w-text">Product Manager</div><div class="w-flex" style="margin-top:4px"><span class="w-badge primary">Produto</span><span class="w-badge primary">Liderança</span></div></div><span class="w-btn" style="margin-left:auto;font-size:0.6rem">WhatsApp</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/mentors</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Busca de Mentores</div>
+    <div class="card-desc">Lista filtrada de mentores com busca por texto e chips de habilidades.</div>
+    <div class="wireframe">
+      <div class="w-heading">Encontrar Mentores</div>
+      <div class="w-input" style="margin-bottom:6px">🔍 Buscar por nome ou habilidade...</div>
+      <div class="w-flex" style="flex-wrap:wrap;gap:3px;margin-bottom:8px">
+        <span class="w-badge primary">Liderança</span><span class="w-badge">Produto</span><span class="w-badge">Design</span><span class="w-badge">Data Science</span><span class="w-badge">Marketing</span>
+      </div>
+      <div class="w-grid2">
+        <div class="w-card" style="padding:10px;text-align:center">
+          <div class="w-circle" style="margin:0 auto 4px"></div>
+          <div style="font-weight:600;font-size:0.75rem">Ana Costa</div>
+          <div class="w-text">Product Manager</div>
+          <div style="margin:4px 0"><span class="w-badge primary">Produto</span> <span class="w-badge primary">Liderança</span></div>
+          <div class="w-text"><span class="w-badge success">2/4 vagas</span></div>
+          <span class="w-btn outline" style="margin-top:4px;font-size:0.6rem">Ver Perfil</span>
+        </div>
+        <div class="w-card" style="padding:10px;text-align:center">
+          <div class="w-circle" style="margin:0 auto 4px"></div>
+          <div style="font-weight:600;font-size:0.75rem">Carlos Lima</div>
+          <div class="w-text">Tech Lead</div>
+          <div style="margin:4px 0"><span class="w-badge primary">Engenharia</span></div>
+          <div class="w-text"><span class="w-badge warn">4/4 vagas</span></div>
+          <span class="w-btn outline" style="margin-top:4px;font-size:0.6rem">Ver Perfil</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/mentors/[id]</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Perfil do Mentor</div>
+    <div class="card-desc">Perfil completo com bio, formação, experiência, skills e botão de solicitação/fila de espera.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="margin-bottom:8px"><span class="w-btn outline" style="font-size:0.6rem">← Voltar</span></div>
+      <div class="w-flex" style="gap:12px;margin-bottom:8px">
+        <div class="w-circle" style="width:48px;height:48px"></div>
+        <div>
+          <div style="font-weight:700">Ana Costa</div>
+          <div class="w-text">Product Manager na TechCorp</div>
+          <div style="margin:4px 0"><span class="w-badge success">2/4 vagas disponíveis</span></div>
+        </div>
+      </div>
+      <div class="w-divider"></div>
+      <div style="font-weight:600;font-size:0.75rem">Sobre</div>
+      <div class="w-bar"></div><div class="w-bar medium"></div><div class="w-bar short"></div>
+      <div style="font-weight:600;font-size:0.75rem;margin-top:8px">Habilidades</div>
+      <div class="w-flex" style="flex-wrap:wrap;gap:3px;margin:4px 0"><span class="w-badge primary">Produto</span><span class="w-badge primary">Liderança</span><span class="w-badge primary">Estratégia</span></div>
+      <div style="font-weight:600;font-size:0.75rem;margin-top:8px">Formação</div>
+      <div class="w-bar medium"></div>
+      <div class="w-divider"></div>
+      <div class="w-flex" style="gap:6px">
+        <span class="w-btn">Solicitar Mentoria</span>
+        <span class="w-btn outline">WhatsApp</span>
+        <span class="w-btn outline">LinkedIn</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/requests</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Solicitações</div>
+    <div class="card-desc">Tabs Recebidas/Enviadas. Cards com avatar, mensagem, data, status badge e ações.</div>
+    <div class="wireframe">
+      <div class="w-heading">Solicitações</div>
+      <div class="w-flex" style="gap:0;margin-bottom:8px;background:#f1f5f9;border-radius:6px;padding:3px">
+        <div style="flex:1;text-align:center;padding:4px;background:white;border-radius:4px;font-size:0.7rem;font-weight:600">Recebidas <span class="w-badge primary">2</span></div>
+        <div style="flex:1;text-align:center;padding:4px;font-size:0.7rem;color:#94a3b8">Enviadas</div>
+      </div>
+      <div class="w-card">
+        <div class="w-flex">
+          <div class="w-circle sm"></div>
+          <div style="flex:1"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Pedro Souza</span> <span class="w-badge warn">Pendente</span></div>
+          <div class="w-text" style="background:#f8fafc;padding:4px;border-radius:4px;margin:3px 0">"Gostaria de aprender sobre liderança..."</div>
+          <div class="w-text">14 mai 2026</div></div>
+          <div class="w-flex" style="gap:3px"><span class="w-btn success" style="font-size:0.6rem">✓ Aceitar</span><span class="w-btn danger" style="font-size:0.6rem">✕ Recusar</span></div>
+        </div>
+      </div>
+      <div class="w-card">
+        <div class="w-flex">
+          <div class="w-circle sm"></div>
+          <div style="flex:1"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Laura Mendes</span> <span class="w-badge success">Aceita</span></div>
+          <div class="w-text">10 mai 2026</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/notifications</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Centro de Notificações</div>
+    <div class="card-desc">Lista agrupada por data com ícones por tipo, indicador de não lida e ação de marcar todas como lidas.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between"><div class="w-heading">Notificações</div><span class="w-btn outline" style="font-size:0.6rem">✓✓ Marcar todas como lidas</span></div>
+      <div style="font-size:0.65rem;color:#94a3b8;font-weight:600;margin:8px 0 4px">HOJE</div>
+      <div class="w-card" style="border-left:3px solid #6366f1;background:#f5f3ff">
+        <div class="w-flex"><div class="w-circle sm" style="background:#ddd6fe"></div><div><div class="w-flex"><span style="font-size:0.7rem;font-weight:600">Nova solicitação</span> <span style="width:6px;height:6px;border-radius:50%;background:#6366f1;display:inline-block"></span></div><div class="w-text">Pedro Souza quer ser seu mentorado</div></div></div>
+      </div>
+      <div class="w-card">
+        <div class="w-flex"><div class="w-circle sm" style="background:#d1fae5"></div><div><div style="font-size:0.7rem;font-weight:600">Conta aprovada</div><div class="w-text">Sua conta foi aprovada!</div></div></div>
+      </div>
+      <div style="font-size:0.65rem;color:#94a3b8;font-weight:600;margin:8px 0 4px">ONTEM</div>
+      <div class="w-card" style="opacity:0.7">
+        <div class="w-flex"><div class="w-circle sm" style="background:#e2e8f0"></div><div><div style="font-size:0.7rem;font-weight:600">Novo material</div><div class="w-text">Guia de liderança foi adicionado</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/profile</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Configurações de Perfil</div>
+    <div class="card-desc">Formulário pré-preenchido para editar dados pessoais, contato e habilidades. Upload de foto.</div>
+    <div class="wireframe">
+      <div class="w-heading">Meu Perfil</div>
+      <div class="w-card"><div class="w-flex"><div class="w-circle" style="width:40px;height:40px"></div><span class="w-btn outline" style="font-size:0.6rem">📷 Alterar foto</span></div></div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.7rem;margin-bottom:4px">Informações Pessoais</div>
+        <div class="w-input">Ana Costa</div>
+        <div class="w-input">Product Manager na TechCorp</div>
+        <div class="w-input" style="min-height:30px">Bio...</div>
+      </div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.7rem;margin-bottom:4px">Contato</div>
+        <div class="w-input">+55 11 99999-9999</div>
+        <div class="w-input">linkedin.com/in/anacosta</div>
+      </div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.7rem;margin-bottom:4px">Habilidades</div>
+        <div class="w-flex" style="flex-wrap:wrap;gap:3px"><span class="w-badge primary">Produto ×</span><span class="w-badge primary">Liderança ×</span></div>
+      </div>
+      <span class="w-btn" style="margin-top:6px">💾 Salvar alterações</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/library</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Biblioteca de Materiais</div>
+    <div class="card-desc">Grid de materiais com busca, filtro por tipo, upload para mentores/admin. Cards com tipo, título e download.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between"><div class="w-heading">Biblioteca</div><span class="w-btn">+ Enviar Material</span></div>
+      <div class="w-flex" style="gap:4px;margin:6px 0"><div class="w-input" style="flex:1">🔍 Buscar materiais...</div><select class="w-input" style="width:80px"><option>Todos</option></select></div>
+      <div class="w-grid2" style="margin-top:6px">
+        <div class="w-card"><div class="w-flex"><div class="w-circle sm" style="background:#fee2e2;color:#991b1b;font-size:0.6rem;line-height:20px;text-align:center">PDF</div><div><div style="font-weight:600;font-size:0.7rem">Guia de Liderança</div><div class="w-text">Fundamentos de gestão</div><div class="w-flex" style="margin-top:3px"><span class="w-badge">PDF</span><span class="w-text">12 mai</span></div></div></div><div class="w-flex" style="margin-top:4px;gap:3px"><span class="w-btn outline" style="font-size:0.55rem">👁 Ver</span><span class="w-btn outline" style="font-size:0.55rem">⬇ Baixar</span></div></div>
+        <div class="w-card"><div class="w-flex"><div class="w-circle sm" style="background:#f3e8ff;color:#6b21a8;font-size:0.5rem;line-height:20px;text-align:center">VID</div><div><div style="font-weight:600;font-size:0.7rem">Workshop de Produto</div><div class="w-text">Gravação da sessão</div><div class="w-flex" style="margin-top:3px"><span class="w-badge">Vídeo</span><span class="w-text">8 mai</span></div></div></div><div style="margin-top:4px"><span class="w-btn outline" style="font-size:0.55rem">⬇ Baixar</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/library/[id]</span><span class="card-type">page</span></div>
+  <div class="card-body">
+    <div class="card-title">Visualização de PDF</div>
+    <div class="card-desc">Visualizador inline de PDF com iframe, metadados do arquivo e botão de download.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between;margin-bottom:6px">
+        <div class="w-flex"><span class="w-btn outline" style="font-size:0.6rem">← Voltar</span><div><div style="font-weight:600;font-size:0.75rem">Guia de Liderança</div><div class="w-text">Por Ana Costa · 12 mai 2026</div></div></div>
+        <span class="w-btn outline" style="font-size:0.6rem">⬇ Baixar</span>
+      </div>
+      <div style="background:#e2e8f0;border-radius:6px;height:120px;display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center"><div style="font-size:1.5rem">📄</div><div class="w-text">Visualizador de PDF (iframe)</div><div class="w-text">Conteúdo do documento renderizado aqui</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">Estado vazio (busca)</span><span class="card-type">component</span></div>
+  <div class="card-body">
+    <div class="card-title">Busca Sem Resultados</div>
+    <div class="card-desc">EmptyState exibido quando a busca de mentores não retorna resultados.</div>
+    <div class="wireframe" style="text-align:center;padding:20px">
+      <div class="w-circle" style="margin:0 auto 8px;width:40px;height:40px;background:#f1f5f9;line-height:40px">🔍</div>
+      <div class="w-heading">Nenhum mentor encontrado</div>
+      <div class="w-text">Tente buscar com outros termos ou remover os filtros aplicados.</div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- ───────── ADMIN ───────── -->
+<div class="section">
+<div class="section-title">Administração</div>
+<div class="grid">
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/admin/users</span><span class="card-type admin">admin</span></div>
+  <div class="card-body">
+    <div class="card-title">Gestão de Usuários</div>
+    <div class="card-desc">Lista com tabs por status, busca, e ações de aprovar/rejeitar/suspender. Dialog de detalhes.</div>
+    <div class="wireframe">
+      <div style="display:flex;gap:6px">
+        <div class="w-sidebar">
+          <div style="font-weight:700;font-size:0.7rem;margin-bottom:6px">🎓 MentorMatch</div>
+          <div class="w-sidebar-item">📊 Dashboard</div>
+          <div class="w-sidebar-item active">👥 Usuários</div>
+          <div class="w-sidebar-item">⚡ Habilidades</div>
+          <div class="w-sidebar-item">📚 Biblioteca</div>
+          <div class="w-sidebar-item">📈 Relatórios</div>
+          <div class="w-sidebar-item">⚙ Config</div>
+        </div>
+        <div style="flex:1">
+          <div class="w-heading">Usuários</div>
+          <div class="w-input" style="margin-bottom:4px">🔍 Buscar...</div>
+          <div class="w-flex" style="gap:0;margin-bottom:6px;background:#f1f5f9;border-radius:6px;padding:2px;font-size:0.6rem">
+            <div style="flex:1;text-align:center;padding:3px;background:white;border-radius:4px;font-weight:600">Todos (15)</div>
+            <div style="flex:1;text-align:center;padding:3px;color:#94a3b8">Pendentes (3)</div>
+            <div style="flex:1;text-align:center;padding:3px;color:#94a3b8">Aprovados</div>
+          </div>
+          <div class="w-card"><div class="w-flex"><div class="w-circle sm"></div><div style="flex:1"><span style="font-size:0.7rem;font-weight:600">Pedro Souza</span><br><span class="w-text">pedro@email.com</span></div><span class="w-badge">Mentor</span><span class="w-badge warn">Pendente</span><span class="w-btn success" style="font-size:0.55rem">✓</span><span class="w-btn danger" style="font-size:0.55rem">✕</span></div></div>
+          <div class="w-card"><div class="w-flex"><div class="w-circle sm"></div><div style="flex:1"><span style="font-size:0.7rem;font-weight:600">Laura Mendes</span><br><span class="w-text">laura@email.com</span></div><span class="w-badge">Mentorado</span><span class="w-badge success">Aprovado</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/admin/skills</span><span class="card-type admin">admin</span></div>
+  <div class="card-body">
+    <div class="card-title">Gestão de Habilidades</div>
+    <div class="card-desc">Lista de skills com contagem de uso, criar/editar/deletar. Distinção global vs tenant.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between"><div class="w-heading">Habilidades</div><span class="w-btn" style="font-size:0.6rem">+ Adicionar</span></div>
+      <div class="w-input" style="margin:6px 0">🔍 Buscar habilidade...</div>
+      <div class="w-card"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Liderança</span><span class="w-badge">12 usuários</span><span class="w-badge success">Global</span><span class="w-text" style="margin-left:auto">somente leitura</span></div></div>
+      <div class="w-card"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Design Thinking</span><span class="w-badge">5 usuários</span><span class="w-badge">Organização</span><span class="w-btn outline" style="font-size:0.55rem;margin-left:auto">✏</span><span class="w-btn danger" style="font-size:0.55rem">🗑</span></div></div>
+      <div class="w-card"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Data Science</span><span class="w-badge">8 usuários</span><span class="w-badge success">Global</span><span class="w-text" style="margin-left:auto">somente leitura</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/admin/library</span><span class="card-type admin">admin</span></div>
+  <div class="card-body">
+    <div class="card-title">Gestão da Biblioteca</div>
+    <div class="card-desc">Tabela de materiais com upload, tipos, tamanho, quem enviou. Deletar com confirmação.</div>
+    <div class="wireframe">
+      <div class="w-flex" style="justify-content:space-between"><div class="w-heading">Biblioteca</div><span class="w-btn" style="font-size:0.6rem">+ Enviar Material</span></div>
+      <div class="w-input" style="margin:6px 0">🔍 Buscar...</div>
+      <div class="w-card"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Guia de Liderança</span><span class="w-badge danger">PDF</span><span class="w-text">2.4 MB</span><span class="w-text">Ana Costa</span><span class="w-text">12/05</span><span class="w-btn danger" style="font-size:0.55rem;margin-left:auto">🗑</span></div></div>
+      <div class="w-card"><div class="w-flex"><span style="font-weight:600;font-size:0.7rem">Workshop de Produto</span><span class="w-badge" style="background:#f3e8ff;color:#6b21a8">Vídeo</span><span class="w-text">150 MB</span><span class="w-text">Admin</span><span class="w-text">08/05</span><span class="w-btn danger" style="font-size:0.55rem;margin-left:auto">🗑</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/admin/reports</span><span class="card-type admin">admin</span></div>
+  <div class="card-body">
+    <div class="card-title">Relatórios</div>
+    <div class="card-desc">Cards de métricas, utilização de capacidade dos mentores, ranking de habilidades, conexões recentes.</div>
+    <div class="wireframe">
+      <div class="w-heading">Relatórios</div>
+      <div class="w-grid3" style="margin:6px 0">
+        <div class="w-card w-stat"><div class="w-stat-value" style="font-size:1rem">15</div><div class="w-stat-label">Usuários</div></div>
+        <div class="w-card w-stat"><div class="w-stat-value" style="font-size:1rem;color:#22c55e">5</div><div class="w-stat-label">Mentores</div></div>
+        <div class="w-card w-stat"><div class="w-stat-value" style="font-size:1rem;color:#eab308">8</div><div class="w-stat-label">Mentorados</div></div>
+      </div>
+      <div class="w-grid2">
+        <div class="w-card w-stat"><div class="w-stat-value" style="font-size:1rem">12</div><div class="w-stat-label">Conexões Ativas</div></div>
+        <div class="w-card w-stat"><div class="w-stat-value" style="font-size:1rem;color:#f97316">3</div><div class="w-stat-label">Pendentes</div></div>
+      </div>
+      <div style="font-weight:600;font-size:0.75rem;margin:8px 0 4px">Capacidade dos Mentores</div>
+      <div class="w-card"><div class="w-text">Ana Costa 3/4</div><div style="background:#e2e8f0;border-radius:4px;height:6px"><div style="width:75%;background:#22c55e;border-radius:4px;height:6px"></div></div></div>
+      <div class="w-card"><div class="w-text">Carlos Lima 4/4</div><div style="background:#e2e8f0;border-radius:4px;height:6px"><div style="width:100%;background:#ef4444;border-radius:4px;height:6px"></div></div></div>
+      <div style="font-weight:600;font-size:0.75rem;margin:8px 0 4px">Skills Populares</div>
+      <div class="w-card"><div class="w-flex"><span style="font-size:0.7rem">1. Liderança</span><span class="w-badge">12</span></div></div>
+      <div class="w-card"><div class="w-flex"><span style="font-size:0.7rem">2. Produto</span><span class="w-badge">9</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/t/[slug]/admin/settings</span><span class="card-type admin">admin</span></div>
+  <div class="card-body">
+    <div class="card-title">Configurações do Tenant</div>
+    <div class="card-desc">Branding (nome, logo, cor), info do plano Free, configuração de max mentorados por mentor.</div>
+    <div class="wireframe">
+      <div class="w-heading">Configurações</div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.75rem;margin-bottom:4px">Branding</div>
+        <div class="w-input">Nome da organização</div>
+        <div class="w-flex"><div class="w-circle sm" style="background:#6366f1"></div><div class="w-input" style="flex:1">Cor: #6366f1</div></div>
+        <span class="w-btn outline" style="font-size:0.6rem">📷 Logo</span>
+      </div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.75rem;margin-bottom:4px">Plano Atual: <span class="w-badge primary">Free</span></div>
+        <div class="w-text">✓ 50 usuários · ✓ 10 mentores · ✓ 500MB</div>
+        <span class="w-btn" style="opacity:0.5;font-size:0.6rem;margin-top:4px">Fazer Upgrade (em breve)</span>
+      </div>
+      <div class="w-card">
+        <div style="font-weight:600;font-size:0.75rem;margin-bottom:4px">Geral</div>
+        <div class="w-text">Máx. mentorados por mentor:</div>
+        <div class="w-input" style="width:60px">4</div>
+      </div>
+      <span class="w-btn" style="margin-top:6px">💾 Salvar</span>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- ───────── API ───────── -->
+<div class="section">
+<div class="section-title">API Endpoints (13 rotas)</div>
+<div class="grid">
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/auth/[...nextauth]</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">NextAuth Handler</div><div class="card-desc">GET/POST - Gerencia sessões, login/logout e callbacks do NextAuth v5.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/auth/register</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Registro</div><div class="card-desc">POST - Cria usuário com hash bcrypt, status PENDING. Valida email único.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/auth/forgot-password</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Esqueceu a Senha</div><div class="card-desc">POST - Gera token de verificação (1h), envia email via Resend. Sempre retorna sucesso.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/auth/reset-password</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Redefinir Senha</div><div class="card-desc">POST - Valida token, hash nova senha, atualiza usuário, deleta token usado.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/auth/complete-profile</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Completar Perfil</div><div class="card-desc">POST - Atualiza perfil com role, skills, bio. Cria skills inexistentes. Requer autenticação.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/upload</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Upload de Arquivo</div><div class="card-desc">POST - Upload via Vercel Blob, retorna URL. Requer autenticação.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/mentors</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Buscar Mentores</div><div class="card-desc">GET - Lista mentores APPROVED do tenant. Filtro por skill, busca por nome. Inclui contagem de conexões.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/connections</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Conexões</div><div class="card-desc">GET/POST/PATCH - Lista conexões, cria solicitação (com waitlist se lotado), aceita/rejeita (com promoção de fila).</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/notifications</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Notificações</div><div class="card-desc">GET/PATCH - Lista notificações do usuário. Marca individual ou todas como lidas.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/skills</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Habilidades</div><div class="card-desc">GET/POST - Lista skills (global + tenant). Cria novas com verificação de duplicata.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/library</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Biblioteca</div><div class="card-desc">GET/POST - Lista materiais do tenant. Cria item (requer ADMIN ou MENTOR).</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/admin/users</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Admin: Usuários</div><div class="card-desc">GET/PATCH - Lista com filtros. Aprova/rejeita/suspende. Envia email e notificação ao aprovar.</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-route">/api/admin/reports</span><span class="card-type api">API</span></div>
+  <div class="card-body"><div class="card-title">Admin: Relatórios</div><div class="card-desc">GET - Stats do tenant, conexões por mês, waitlist, library items, top 10 skills por uso.</div></div>
+</div>
+
+</div></div>
+
+<div style="text-align:center;padding:32px;color:#94a3b8;font-size:0.85rem">
+  MentorMatch MVP &mdash; 87 arquivos &middot; 21.475 linhas de código &middot; 33 rotas &middot; Build passing ✓
+</div>
+
+</div>
+</body>
+</html>
