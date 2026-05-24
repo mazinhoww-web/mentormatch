@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { email } = schema.parse(body)
 
-    const user = await db.user.findUnique({
+    const user = await db.user.findFirst({
       where: { email },
     })
 

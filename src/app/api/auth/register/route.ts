@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)
 
-    const existingUser = await db.user.findUnique({
+    const existingUser = await db.user.findFirst({
       where: { email },
     })
 

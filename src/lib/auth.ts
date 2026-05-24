@@ -21,7 +21,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const user = await db.user.findUnique({
+        const user = await db.user.findFirst({
           where: { email: credentials.email as string },
         })
 
@@ -57,9 +57,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         })
         if (dbUser) {
-          token.role = dbUser.role
+          token.role = dbUser.role ?? undefined
           token.status = dbUser.status
-          token.tenantId = dbUser.tenantId
+          token.tenantId = dbUser.tenantId ?? undefined
           token.tenantSlug = dbUser.tenant?.slug
         }
       }
@@ -68,7 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub!
-        session.user.role = token.role as string
+        session.user.role = token.role as "SUPER_ADMIN" | "ADMIN" | "MENTOR" | "MENTEE"
         session.user.status = token.status as string
         session.user.tenantId = token.tenantId as string
         session.user.tenantSlug = token.tenantSlug as string

@@ -41,10 +41,16 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    await db.user.update({
+    const userToUpdate = await db.user.findFirst({
       where: { email: verificationToken.identifier },
-      data: { password: hashedPassword },
     })
+
+    if (userToUpdate) {
+      await db.user.update({
+        where: { id: userToUpdate.id },
+        data: { password: hashedPassword },
+      })
+    }
 
     await db.verificationToken.delete({
       where: {
