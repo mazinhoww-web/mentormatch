@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = profileSchema.parse(body)
 
-    const skillType = data.role === "MENTOR" ? "TEACHING" : "LEARNING"
+    const isTeaching = data.role === "MENTOR"
 
     const updatedUser = await db.$transaction(async (tx) => {
       // Update user profile
@@ -56,22 +56,14 @@ export async function POST(request: Request) {
 
       // Create or find skills, then create UserSkill records
       for (const skillName of data.skills) {
-        let skill = await tx.skill.findFirst({
-          where: {
-            name: skillName,
-            OR: [
-              { tenantId: user.tenantId },
-              { global: true },
-            ],
-          },
+        let skill = await tx.skill.findUnique({
+          where: { name: skillName },
         })
 
         if (!skill) {
           skill = await tx.skill.create({
             data: {
               name: skillName,
-              tenantId: user.tenantId,
-              global: false,
             },
           })
         }
@@ -80,7 +72,7 @@ export async function POST(request: Request) {
           data: {
             userId: session.user.id,
             skillId: skill.id,
-            type: skillType,
+            isTeaching,
           },
         })
       }

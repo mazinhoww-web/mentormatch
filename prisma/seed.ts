@@ -4,17 +4,22 @@ import bcrypt from "bcryptjs"
 const prisma = new PrismaClient()
 
 async function main() {
+  // ─── Plans ──────────────────────────────────────────────────
   const freePlan = await prisma.plan.upsert({
-    where: { tier: "FREE" },
+    where: { slug: "free" },
     update: {},
     create: {
       name: "Free",
-      tier: "FREE",
-      price: 0,
+      slug: "free",
+      description: "Plano gratuito para comecar",
+      priceMonthly: 0,
+      priceYearly: 0,
       maxUsers: 50,
-      maxMentors: 10,
-      maxLibraryMb: 500,
+      maxConnections: 100,
+      maxLibraryItems: 10,
+      maxAdmins: 1,
       features: {
+        basic_analytics: true,
         email_notifications: true,
         dashboard: true,
         library: true,
@@ -24,17 +29,23 @@ async function main() {
   })
 
   await prisma.plan.upsert({
-    where: { tier: "STARTER" },
+    where: { slug: "starter" },
     update: {},
     create: {
       name: "Starter",
-      tier: "STARTER",
-      price: 9900,
+      slug: "starter",
+      description: "Para pequenas equipes",
+      priceMonthly: 299,
+      priceYearly: 2990,
       maxUsers: 200,
-      maxMentors: 50,
-      maxLibraryMb: 5000,
+      maxConnections: 500,
+      maxLibraryItems: 50,
+      maxAdmins: 3,
       features: {
+        basic_analytics: true,
         email_notifications: true,
+        push_notifications: true,
+        priority_support: true,
         dashboard: true,
         library: true,
         skills_management: true,
@@ -44,53 +55,99 @@ async function main() {
   })
 
   await prisma.plan.upsert({
-    where: { tier: "PROFESSIONAL" },
+    where: { slug: "pro" },
     update: {},
     create: {
-      name: "Professional",
-      tier: "PROFESSIONAL",
-      price: 29900,
+      name: "Pro",
+      slug: "pro",
+      description: "Para empresas em crescimento",
+      priceMonthly: 799,
+      priceYearly: 7990,
       maxUsers: 1000,
-      maxMentors: 200,
-      maxLibraryMb: 50000,
+      maxConnections: 999999,
+      maxLibraryItems: 500,
+      maxAdmins: 10,
       features: {
+        advanced_analytics: true,
         email_notifications: true,
         push_notifications: true,
+        priority_support: true,
         dashboard: true,
         library: true,
         skills_management: true,
         custom_branding: true,
-        advanced_reports: true,
         api_access: true,
       },
     },
   })
 
   await prisma.plan.upsert({
-    where: { tier: "ENTERPRISE" },
+    where: { slug: "enterprise" },
     update: {},
     create: {
       name: "Enterprise",
-      tier: "ENTERPRISE",
-      price: 0,
+      slug: "enterprise",
+      description: "Para grandes organizacoes",
+      priceMonthly: 0,
+      priceYearly: 0,
       maxUsers: 999999,
-      maxMentors: 999999,
-      maxLibraryMb: 999999,
+      maxConnections: 999999,
+      maxLibraryItems: 999999,
+      maxAdmins: 999999,
       features: {
-        email_notifications: true,
-        push_notifications: true,
-        dashboard: true,
-        library: true,
-        skills_management: true,
-        custom_branding: true,
-        advanced_reports: true,
-        api_access: true,
-        sso: true,
+        all_features: true,
         dedicated_support: true,
+        sla: true,
+        custom_integrations: true,
+        sso: true,
+        api_access: true,
       },
     },
   })
 
+  // ─── Skills (20 with categories) ─────────────────────────────
+  const skillsData = [
+    // Technology
+    { name: "JavaScript", category: "Technology" },
+    { name: "Python", category: "Technology" },
+    { name: "React", category: "Technology" },
+    { name: "Node.js", category: "Technology" },
+    { name: "Cloud Computing", category: "Technology" },
+    // Design
+    { name: "UX Design", category: "Design" },
+    { name: "UI Design", category: "Design" },
+    { name: "Design Thinking", category: "Design" },
+    { name: "Figma", category: "Design" },
+    // Management
+    { name: "Lideranca", category: "Management" },
+    { name: "Gestao de Projetos", category: "Management" },
+    { name: "Gestao de Pessoas", category: "Management" },
+    { name: "Agile/Scrum", category: "Management" },
+    // Marketing
+    { name: "Marketing Digital", category: "Marketing" },
+    { name: "Growth", category: "Marketing" },
+    { name: "SEO", category: "Marketing" },
+    { name: "Branding", category: "Marketing" },
+    // Career
+    { name: "Comunicacao", category: "Career" },
+    { name: "Mentoria de Carreira", category: "Career" },
+    { name: "Transicao de Carreira", category: "Career" },
+  ]
+
+  for (const skillData of skillsData) {
+    await prisma.skill.upsert({
+      where: { name: skillData.name },
+      update: {},
+      create: {
+        name: skillData.name,
+        category: skillData.category,
+        usageCount: 0,
+        isActive: true,
+      },
+    })
+  }
+
+  // ─── Default Tenant ─────────────────────────────────────────
   const tenant = await prisma.tenant.upsert({
     where: { slug: "default" },
     update: {},
@@ -98,22 +155,18 @@ async function main() {
       name: "MentorMatch Demo",
       slug: "default",
       brandColor: "#6366f1",
-    },
-  })
-
-  await prisma.subscription.upsert({
-    where: { tenantId: tenant.id },
-    update: {},
-    create: {
-      tenantId: tenant.id,
+      secondaryColor: "#e11d48",
+      maxUsers: 50,
+      maxConnections: 100,
+      maxLibraryItems: 10,
       planId: freePlan.id,
-      active: true,
     },
   })
 
+  // ─── Admin User ─────────────────────────────────────────────
   const adminPassword = await bcrypt.hash("admin123", 10)
   await prisma.user.upsert({
-    where: { email: "admin@mentormatch.com" },
+    where: { email_tenantId: { email: "admin@mentormatch.com", tenantId: tenant.id } },
     update: {},
     create: {
       email: "admin@mentormatch.com",
@@ -125,33 +178,6 @@ async function main() {
       bio: "Administrador da plataforma MentorMatch Demo.",
     },
   })
-
-  const globalSkills = [
-    "Liderança",
-    "Gestão de Projetos",
-    "Comunicação",
-    "Desenvolvimento de Software",
-    "Marketing Digital",
-    "Finanças",
-    "Design",
-    "Data Science",
-    "Produto",
-    "Vendas",
-    "Recursos Humanos",
-    "Estratégia",
-  ]
-
-  for (const skillName of globalSkills) {
-    await prisma.skill.upsert({
-      where: { name_tenantId: { name: skillName, tenantId: tenant.id } },
-      update: {},
-      create: {
-        name: skillName,
-        tenantId: tenant.id,
-        global: true,
-      },
-    })
-  }
 
   console.log("Seed completed successfully!")
 }

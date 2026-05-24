@@ -7,7 +7,7 @@ declare module "next-auth" {
       email: string
       name: string
       image?: string
-      role: string
+      role: "SUPER_ADMIN" | "ADMIN" | "MENTOR" | "MENTEE"
       status: string
       tenantId: string
       tenantSlug: string
@@ -17,7 +17,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    role?: string
+    role?: "SUPER_ADMIN" | "ADMIN" | "MENTOR" | "MENTEE"
     status?: string
     tenantId?: string
     tenantSlug?: string
