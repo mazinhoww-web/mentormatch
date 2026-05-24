@@ -1,17 +1,18 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import {
   Camera,
-  Plus,
-  X,
   Save,
   CheckCircle,
+  LogOut,
+  User,
+  Lock,
+  CalendarClock,
 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -32,7 +33,18 @@ interface UserProfile {
   skills: { id: string; type: string; skill: { id: string; name: string } }[]
 }
 
+const DAYS = [
+  "Segunda-feira",
+  "Terca-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sabado",
+  "Domingo",
+]
+
 export default function ProfilePage() {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
@@ -43,15 +55,23 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [name, setName] = useState("")
-  const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
-  const [education, setEducation] = useState("")
-  const [experience, setExperience] = useState("")
   const [linkedin, setLinkedin] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
   const [image, setImage] = useState("")
-  const [skills, setSkills] = useState<string[]>([])
-  const [newSkill, setNewSkill] = useState("")
+
+  // Security
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
+  // Availability
+  const [availability, setAvailability] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(
+    DAYS.reduce((acc, day) => {
+      acc[day] = { enabled: day !== "Sabado" && day !== "Domingo", start: "09:00", end: "18:00" }
+      return acc
+    }, {} as Record<string, { enabled: boolean; start: string; end: string }>)
+  )
 
   useEffect(() => {
     fetchProfile()
@@ -79,7 +99,6 @@ export default function ProfilePage() {
         skills: [],
       }
 
-      // Try to get detailed profile data from mentor list
       if (session.user.tenantSlug) {
         try {
           const mentorRes = await fetch(
@@ -106,18 +125,10 @@ export default function ProfilePage() {
 
       setProfile(userProfile)
       setName(userProfile.name)
-      setHeadline(userProfile.headline || "")
       setBio(userProfile.bio || "")
-      setEducation(userProfile.education || "")
-      setExperience(userProfile.experience || "")
       setLinkedin(userProfile.linkedin || "")
       setWhatsapp(userProfile.whatsapp || "")
       setImage(userProfile.image || "")
-      setSkills(
-        userProfile.skills.map(
-          (s: { skill: { name: string } }) => s.skill.name
-        )
-      )
     } catch (err) {
       console.error("Erro ao carregar perfil:", err)
     } finally {
@@ -150,23 +161,18 @@ export default function ProfilePage() {
     }
   }
 
-  function addSkill() {
-    const trimmed = newSkill.trim()
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills((prev) => [...prev, trimmed])
-      setNewSkill("")
-    }
+  function toggleDay(day: string) {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], enabled: !prev[day].enabled },
+    }))
   }
 
-  function removeSkill(skillName: string) {
-    setSkills((prev) => prev.filter((s) => s !== skillName))
-  }
-
-  function handleSkillKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      addSkill()
-    }
+  function updateTime(day: string, field: "start" | "end", value: string) {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value },
+    }))
   }
 
   async function handleSave() {
@@ -180,14 +186,10 @@ export default function ProfilePage() {
       const payload = {
         role: profile.role,
         name,
-        headline: headline || undefined,
         bio,
-        education: education || undefined,
-        experience: experience || undefined,
         linkedin: linkedin || "",
         whatsapp,
         image: image || undefined,
-        skills,
       }
 
       const res = await fetch("/api/auth/complete-profile", {
@@ -219,26 +221,32 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="text-center py-16">
-        <p className="text-lg font-medium">Erro ao carregar perfil</p>
-        <p className="text-sm text-muted-foreground mt-1">
-          Não foi possível carregar seus dados. Tente novamente mais tarde.
+        <p className="text-lg font-medium text-[#131b2e]">Erro ao carregar perfil</p>
+        <p className="text-sm text-[#434655] mt-1">
+          Nao foi possivel carregar seus dados. Tente novamente mais tarde.
         </p>
       </div>
     )
   }
 
+  const roleLabel =
+    profile.role === "MENTOR" ? "Mentor de Carreira" : profile.role === "ADMIN" ? "Administrador" : "Mentorado"
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Meu Perfil</h1>
-        <p className="text-muted-foreground">
-          Atualize suas informações pessoais e profissionais.
+    <div className="max-w-5xl mx-auto pb-12">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-[28px] md:text-[36px] leading-[34px] md:leading-[44px] font-bold tracking-[-0.02em] text-[#131b2e] mb-2">
+          Meu Perfil
+        </h1>
+        <p className="text-base leading-6 text-[#434655]">
+          Gerencie suas informacoes pessoais, seguranca e disponibilidade.
         </p>
       </div>
 
       {/* Success Message */}
       {success && (
-        <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 mb-6">
           <CheckCircle className="h-5 w-5 shrink-0" />
           <p className="text-sm font-medium">Perfil atualizado com sucesso!</p>
         </div>
@@ -246,24 +254,35 @@ export default function ProfilePage() {
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 mb-6">
           <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Photo Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Foto</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <Avatar src={image || null} name={name} size="xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Avatar & Quick Actions */}
+        <div className="lg:col-span-4 flex flex-col gap-8">
+          {/* Profile Photo Card */}
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 flex flex-col items-center text-center">
+            <div className="relative w-32 h-32 mb-4 group cursor-pointer">
+              <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#faf8ff] shadow-sm">
+                <Avatar
+                  src={image || null}
+                  name={name}
+                  size="xl"
+                  className="w-full h-full"
+                />
+              </div>
+              <div
+                className="absolute inset-0 bg-[#131b2e]/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Camera className="h-8 w-8 text-white" />
+              </div>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 rounded-full bg-primary p-2 text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                className="absolute bottom-0 right-0 bg-[#004ac6] text-white p-2 rounded-full border-2 border-white hover:bg-[#0053db] transition-colors shadow-sm"
                 disabled={uploading}
               >
                 <Camera className="h-4 w-4" />
@@ -277,183 +296,184 @@ export default function ProfilePage() {
               />
             </div>
             {uploading && (
-              <p className="text-sm text-muted-foreground">Enviando...</p>
+              <p className="text-sm text-[#434655] mt-2">Enviando...</p>
             )}
-            <p className="text-sm text-muted-foreground text-center">
-              Clique no botão para alterar sua foto.
-            </p>
-          </CardContent>
-        </Card>
+            <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">{name}</h2>
+            <p className="text-sm text-[#434655] mb-6">{roleLabel}</p>
+            <button
+              onClick={() => router.push("/login")}
+              className="w-full flex items-center justify-center gap-2 border border-red-500 text-red-500 rounded-lg px-4 py-2.5 text-sm font-semibold tracking-[0.05em] hover:bg-red-50 active:scale-95 transition-all"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da conta
+            </button>
+          </div>
+        </div>
 
-        {/* Profile Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Informações Básicas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome Completo</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Seu nome completo"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={profile.email}
-                    disabled
-                    className="opacity-60"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="headline">Título Profissional</Label>
-                <Input
-                  id="headline"
-                  value={headline}
-                  onChange={(e) => setHeadline(e.target.value)}
-                  placeholder="Ex: Engenheiro de Software Senior"
+        {/* Right Column: Settings Forms */}
+        <div className="lg:col-span-8 flex flex-col gap-8">
+          {/* Personal Info Card */}
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 flex flex-col gap-4">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] border-b border-[#E2E8F0] pb-3 flex items-center gap-2">
+              <User className="h-5 w-5 text-[#004ac6]" />
+              Informacoes Pessoais
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[#434655]">Nome Completo</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Conte um pouco sobre você, sua experiência e objetivos..."
-                  rows={4}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[#434655]">LinkedIn URL</label>
+                <input
+                  type="url"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/..."
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Professional Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Informações Profissionais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="education">Formação</Label>
-                <Textarea
-                  id="education"
-                  value={education}
-                  onChange={(e) => setEducation(e.target.value)}
-                  placeholder="Ex: Bacharelado em Ciência da Computação - USP (2018)"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="experience">Experiência</Label>
-                <Textarea
-                  id="experience"
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
-                  placeholder="Descreva sua experiência profissional..."
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Contato</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input
-                    id="whatsapp"
+              <div className="flex flex-col gap-1 md:col-span-2">
+                <label className="text-xs font-medium text-[#434655]">WhatsApp</label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-[#E2E8F0] bg-[#dae2fd]/30 text-[#434655] text-base">
+                    +55
+                  </span>
+                  <input
+                    type="tel"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="5511999999999"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin">LinkedIn</Label>
-                  <Input
-                    id="linkedin"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder="https://linkedin.com/in/seu-perfil"
+                    placeholder="(11) 90000-0000"
+                    className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-r-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Skills */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Habilidades</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="secondary"
-                    className="gap-1 pr-1"
-                  >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skill)}
-                      className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-                {skills.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma habilidade adicionada.
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={handleSkillKeyDown}
-                  placeholder="Adicionar habilidade..."
-                  className="flex-1"
+              <div className="flex flex-col gap-1 md:col-span-2">
+                <label className="text-xs font-medium text-[#434655]">Biografia Curta</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Conte um pouco sobre voce..."
+                  rows={3}
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors resize-none"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addSkill}
-                  disabled={!newSkill.trim()}
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving} size="lg">
+          {/* Availability Card */}
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 flex flex-col gap-4">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] border-b border-[#E2E8F0] pb-3 flex items-center gap-2">
+              <CalendarClock className="h-5 w-5 text-[#004ac6]" />
+              Disponibilidade
+            </h3>
+            <div className="flex flex-col gap-4 mt-2">
+              {DAYS.slice(0, 2).map((day) => {
+                const dayConfig = availability[day]
+                return (
+                  <div
+                    key={day}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-[#E2E8F0] bg-[#faf8ff]/50"
+                  >
+                    <div className="flex items-center gap-3 mb-2 sm:mb-0">
+                      <button
+                        onClick={() => toggleDay(day)}
+                        className="relative"
+                      >
+                        <div
+                          className={`w-11 h-6 rounded-full transition-colors ${
+                            dayConfig.enabled ? "bg-emerald-500" : "bg-[#dae2fd]"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-[2px] left-[2px] h-5 w-5 bg-white border border-[#E2E8F0] rounded-full transition-transform ${
+                              dayConfig.enabled ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </div>
+                      </button>
+                      <span className="text-sm font-semibold tracking-[0.05em] text-[#131b2e]">
+                        {day}
+                      </span>
+                    </div>
+                    {dayConfig.enabled && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="time"
+                          value={dayConfig.start}
+                          onChange={(e) => updateTime(day, "start", e.target.value)}
+                          className="bg-white border border-[#E2E8F0] rounded-md px-3 py-1.5 focus:outline-none focus:border-[#004ac6] text-[#131b2e] text-sm w-28"
+                        />
+                        <span className="text-[#434655] text-sm">ate</span>
+                        <input
+                          type="time"
+                          value={dayConfig.end}
+                          onChange={(e) => updateTime(day, "end", e.target.value)}
+                          className="bg-white border border-[#E2E8F0] rounded-md px-3 py-1.5 focus:outline-none focus:border-[#004ac6] text-[#131b2e] text-sm w-28"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Security Card */}
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 flex flex-col gap-4">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] border-b border-[#E2E8F0] pb-3 flex items-center gap-2">
+              <Lock className="h-5 w-5 text-[#004ac6]" />
+              Seguranca
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="flex flex-col gap-1 md:col-span-2">
+                <label className="text-xs font-medium text-[#434655]">Senha Atual</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[#434655]">Nova Senha</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[#434655]">Confirmar Nova Senha</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#faf8ff] border border-[#E2E8F0] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] text-[#131b2e] text-base transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Global Action */}
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-[#004ac6] text-white rounded-lg px-8 py-3 text-sm font-semibold tracking-[0.05em] hover:bg-[#0053db] active:scale-95 transition-all w-full sm:w-auto shadow-sm flex items-center justify-center gap-2"
+            >
               <Save className="h-4 w-4" />
-              {saving ? "Salvando..." : "Salvar Alterações"}
-            </Button>
+              {saving ? "Salvando..." : "Salvar Alteracoes"}
+            </button>
           </div>
         </div>
       </div>

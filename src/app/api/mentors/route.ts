@@ -33,7 +33,7 @@ export async function GET(request: Request) {
           ? {
               skills: {
                 some: {
-                  type: "TEACHING",
+                  isTeaching: true,
                   skill: {
                     name: { equals: skill, mode: "insensitive" },
                   },
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
         linkedin: true,
         maxMentees: true,
         skills: {
-          where: { type: "TEACHING" },
+          where: { isTeaching: true },
           include: { skill: true },
         },
         _count: {

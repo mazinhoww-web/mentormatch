@@ -35,7 +35,7 @@ export async function GET(request: Request) {
             image: true,
             headline: true,
             skills: {
-              where: { type: "TEACHING" },
+              where: { isTeaching: true },
               include: { skill: true },
             },
           },
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
             image: true,
             headline: true,
             skills: {
-              where: { type: "LEARNING" },
+              where: { isTeaching: false },
               include: { skill: true },
             },
           },
@@ -331,6 +331,51 @@ export async function PATCH(request: Request) {
         })
 
         // Reorder remaining waitlist entries
+        await db.waitlistEntry.updateMany({
+          where: {
+            mentorId: connection.mentorId,
+            position: { gt: nextInLine.position },
+          },
+          data: { position: { decrement: 1 } },
+        })
+      }
+    }
+
+    // When a connection is COMPLETED or CANCELLED, also check waitlist for promotion
+    if (status === "COMPLETED" || status === "CANCELLED") {
+      const nextInLine = await db.waitlistEntry.findFirst({
+        where: { mentorId: connection.mentorId },
+        orderBy: { position: "asc" },
+        include: {
+          mentee: { select: { id: true, name: true } },
+        },
+      })
+
+      if (nextInLine) {
+        await db.connection.create({
+          data: {
+            mentorId: connection.mentorId,
+            menteeId: nextInLine.menteeId,
+            tenantId: connection.tenantId,
+            status: "PENDING",
+            message: "Promovido da lista de espera",
+          },
+        })
+
+        await db.notification.create({
+          data: {
+            userId: nextInLine.menteeId,
+            tenantId: connection.tenantId,
+            type: "WAITLIST_PROMOTED",
+            title: "Promovido da lista de espera!",
+            message: `Uma vaga se abriu com ${connection.mentor.name}. Sua solicitação foi enviada automaticamente.`,
+          },
+        })
+
+        await db.waitlistEntry.delete({
+          where: { id: nextInLine.id },
+        })
+
         await db.waitlistEntry.updateMany({
           where: {
             mentorId: connection.mentorId,

@@ -5,26 +5,17 @@ import { useParams, useRouter } from "next/navigation"
 import {
   ArrowLeft,
   MessageCircle,
-  ExternalLink,
-  GraduationCap,
-  Briefcase,
-  Clock,
+  MapPin,
+  Play,
   Send,
+  Flame,
+  Briefcase,
+  PlayCircle,
+  Calendar,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogContent,
-  DialogFooter,
-} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
 
 interface Skill {
@@ -48,6 +39,27 @@ interface MentorProfile {
   skills: Skill[]
 }
 
+interface ExperienceEntry {
+  company: string
+  role: string
+  dates: string
+  description: string
+}
+
+function parseExperience(experience?: string | null): ExperienceEntry[] {
+  if (!experience) return []
+  const entries = experience.split(/\n\n+/).filter(Boolean)
+  return entries.map((entry) => {
+    const lines = entry.split("\n").filter(Boolean)
+    return {
+      company: lines[0] || "Empresa",
+      role: lines[1] || "",
+      dates: lines[2] || "",
+      description: lines.slice(3).join(" ") || lines.slice(1).join(" ") || "",
+    }
+  })
+}
+
 export default function MentorProfilePage() {
   const params = useParams()
   const router = useRouter()
@@ -56,21 +68,29 @@ export default function MentorProfilePage() {
 
   const [loading, setLoading] = useState(true)
   const [mentor, setMentor] = useState<MentorProfile | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [message, setMessage] = useState("")
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
+  const [hasActiveConnection, setHasActiveConnection] = useState(false)
 
   useEffect(() => {
     async function fetchMentor() {
       try {
-        const res = await fetch(
-          `/api/mentors?tenantId=${encodeURIComponent(slug)}`
-        )
-        const mentors: MentorProfile[] = await res.json()
+        const [mentorsRes, connectionsRes] = await Promise.all([
+          fetch(`/api/mentors?tenantId=${encodeURIComponent(slug)}`),
+          fetch("/api/connections?status=ACCEPTED"),
+        ])
+        const mentors: MentorProfile[] = await mentorsRes.json()
         const found = mentors.find((m) => m.id === mentorId) || null
         setMentor(found)
+
+        const connections = await connectionsRes.json()
+        if (Array.isArray(connections)) {
+          const active = connections.some(
+            (c: { mentor?: { id: string }; mentorId?: string; status: string }) =>
+              (c.mentor?.id === mentorId || c.mentorId === mentorId) &&
+              c.status === "ACCEPTED"
+          )
+          setHasActiveConnection(active)
+        }
       } catch (err) {
         console.error("Erro ao carregar mentor:", err)
       } finally {
@@ -80,39 +100,6 @@ export default function MentorProfilePage() {
 
     fetchMentor()
   }, [slug, mentorId])
-
-  async function handleRequestMentorship() {
-    if (message.trim().length < 10) {
-      setError("A mensagem deve ter pelo menos 10 caracteres.")
-      return
-    }
-
-    setSubmitting(true)
-    setError("")
-    try {
-      const res = await fetch("/api/connections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentorId, message: message.trim() }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || "Erro ao enviar solicitação.")
-        return
-      }
-
-      setSubmitted(true)
-      setDialogOpen(false)
-      setMessage("")
-    } catch (err) {
-      console.error("Erro ao enviar solicitação:", err)
-      setError("Erro ao enviar solicitação. Tente novamente.")
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   function openWhatsApp(phone?: string | null) {
     if (!phone) return
@@ -126,226 +113,184 @@ export default function MentorProfilePage() {
 
   if (!mentor) {
     return (
-      <div className="space-y-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
-        </Button>
+      <div className="min-h-screen bg-[#faf8ff]">
+        <div className="p-4">
+          <Button variant="ghost" onClick={() => router.back()} className="text-[#434655]">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
         <div className="text-center py-16">
-          <p className="text-lg font-medium">Mentor não encontrado</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            O perfil que você procura não existe ou não está mais disponível.
+          <p className="text-lg font-medium text-[#131b2e]">Mentor nao encontrado</p>
+          <p className="text-sm text-[#434655] mt-1">
+            O perfil que voce procura nao existe ou nao esta mais disponivel.
           </p>
         </div>
       </div>
     )
   }
 
-  const availableSlots = Math.max(0, mentor.maxMentees - mentor.activeConnections)
-  const isAtCapacity = availableSlots === 0
+  const experienceEntries = parseExperience(mentor.experience)
+  const primarySkills = mentor.skills.slice(0, 3)
+  const secondarySkills = mentor.skills.slice(3)
 
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => router.push(`/t/${slug}/mentors`)}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Voltar para mentores
-      </Button>
+    <div className="max-w-[900px] mx-auto flex flex-col gap-8">
+      {/* Profile Header */}
+      <section className="bg-white border border-[#E2E8F0] rounded-xl p-8 flex flex-col items-center text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-md mb-6">
+          <Avatar
+            src={mentor.image}
+            name={mentor.name}
+            size="xl"
+            className="w-full h-full"
+          />
+        </div>
 
-      {/* Profile Card */}
-      <Card>
-        <CardContent className="p-6 sm:p-8">
-          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
-            {/* Avatar */}
-            <Avatar
-              src={mentor.image}
-              name={mentor.name}
-              size="xl"
-              className="shrink-0"
-            />
+        <h2 className="text-[28px] md:text-[36px] leading-[34px] md:leading-[44px] font-bold text-[#131b2e] mb-2">
+          {mentor.name}
+        </h2>
+        {mentor.headline && (
+          <p className="text-lg leading-7 text-[#004ac6] font-medium mb-1">
+            {mentor.headline}
+          </p>
+        )}
+        <p className="text-sm text-[#505f76] mb-6 flex items-center justify-center gap-1">
+          <MapPin className="h-4 w-4" />
+          Sao Paulo, SP (Remoto)
+        </p>
 
-            {/* Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-bold">{mentor.name}</h1>
-              {mentor.headline && (
-                <p className="mt-1 text-lg text-muted-foreground">
-                  {mentor.headline}
-                </p>
-              )}
+        {mentor.bio && (
+          <p className="text-base leading-6 text-[#434655] max-w-2xl mb-8 leading-relaxed">
+            {mentor.bio}
+          </p>
+        )}
 
-              {/* Availability */}
-              <div className="mt-3">
-                <Badge variant={isAtCapacity ? "warning" : "success"}>
-                  {isAtCapacity
-                    ? "Sem vagas disponíveis"
-                    : `${availableSlots}/${mentor.maxMentees} vagas disponíveis`}
-                </Badge>
-              </div>
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-4 justify-center">
+          {submitted ? (
+            <Button disabled className="bg-[#c3c6d7] text-[#434655] px-8 py-3">
+              <Send className="h-4 w-4" />
+              Solicitacao Enviada
+            </Button>
+          ) : (
+            <button
+              className="bg-[#004ac6] text-white text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg hover:bg-[#004ac6]/90 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95"
+              onClick={() => router.push(`/t/${slug}/confirm/${mentorId}`)}
+            >
+              <Calendar className="h-5 w-5" />
+              Solicitar Mentoria
+            </button>
+          )}
 
-              {/* Skills */}
-              {mentor.skills.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
-                  {mentor.skills.map((s) => (
-                    <Badge key={s.id} variant="secondary">
-                      {s.skill.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+          {hasActiveConnection && mentor.whatsapp ? (
+            <button
+              onClick={() => openWhatsApp(mentor.whatsapp)}
+              className="bg-transparent border-2 border-[#004ac6] text-[#004ac6] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg hover:bg-[#dae2fd]/30 transition-colors flex items-center justify-center gap-2 active:scale-95"
+            >
+              <MessageCircle className="h-5 w-5" />
+              WhatsApp
+            </button>
+          ) : mentor.whatsapp ? (
+            <button
+              disabled
+              title="Disponivel apos conexao ativa"
+              className="bg-transparent border-2 border-[#c3c6d7] text-[#c3c6d7] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 opacity-60"
+            >
+              <MessageCircle className="h-5 w-5" />
+              WhatsApp
+            </button>
+          ) : null}
+        </div>
+      </section>
 
-              {/* Action Buttons */}
-              <div className="mt-6 flex flex-wrap gap-3 justify-center sm:justify-start">
-                {submitted ? (
-                  <Button disabled>
-                    <Send className="h-4 w-4" />
-                    Solicitação Enviada
-                  </Button>
-                ) : isAtCapacity ? (
-                  <Button
-                    onClick={() => setDialogOpen(true)}
-                    variant="secondary"
-                  >
-                    <Clock className="h-4 w-4" />
-                    Entrar na fila de espera
-                  </Button>
-                ) : (
-                  <Button onClick={() => setDialogOpen(true)}>
-                    <Send className="h-4 w-4" />
-                    Solicitar Mentoria
-                  </Button>
-                )}
+      {/* Bento Grid Details */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* Skills Card */}
+        {mentor.skills.length > 0 && (
+          <section className="md:col-span-2 bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+            <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-5 flex items-center gap-2">
+              <Flame className="h-5 w-5 text-[#004ac6]" />
+              Habilidades
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {primarySkills.map((s) => (
+                <span
+                  key={s.id}
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-medium"
+                >
+                  {s.skill.name}
+                </span>
+              ))}
+              {secondarySkills.map((s) => (
+                <span
+                  key={s.id}
+                  className="bg-[#dae2fd] text-[#434655] px-4 py-1.5 rounded-full text-xs font-medium"
+                >
+                  {s.skill.name}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
-                {mentor.whatsapp && (
-                  <Button
-                    variant="outline"
-                    onClick={() => openWhatsApp(mentor.whatsapp)}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </Button>
-                )}
-
-                {mentor.linkedin && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      window.open(mentor.linkedin!, "_blank")
-                    }
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    LinkedIn
-                  </Button>
-                )}
+        {/* Video Presentation Card */}
+        <section className={`${mentor.skills.length > 0 ? "md:col-span-3" : "md:col-span-5"} bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)] flex flex-col`}>
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-5 flex items-center gap-2">
+            <PlayCircle className="h-5 w-5 text-[#004ac6]" />
+            Apresentacao
+          </h3>
+          <div className="relative w-full flex-grow min-h-[200px] bg-[#e2e7ff] rounded-lg overflow-hidden group cursor-pointer">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#dae2fd] to-[#c3c6d7]" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover:bg-[#004ac6] transition-colors duration-300 z-10">
+                <Play className="h-8 w-8 text-[#004ac6] group-hover:text-white transition-colors ml-1" />
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Details */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Bio */}
-        {mentor.bio && (
-          <Card className="md:col-span-2">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-3">Sobre</h2>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.bio}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Education */}
-        {mentor.education && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Formação</h2>
-              </div>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.education}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Experience */}
-        {mentor.experience && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Briefcase className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Experiência</h2>
-              </div>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {mentor.experience}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        </section>
       </div>
 
-      {/* Request Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogHeader>
-          <DialogTitle>
-            {isAtCapacity
-              ? "Entrar na fila de espera"
-              : "Solicitar Mentoria"}
-          </DialogTitle>
-          <DialogDescription>
-            {isAtCapacity
-              ? `${mentor.name} está sem vagas no momento. Envie uma mensagem para entrar na fila de espera.`
-              : `Envie uma mensagem para ${mentor.name} explicando por que gostaria de ser mentorado(a).`}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="request-message">Mensagem</Label>
-              <Textarea
-                id="request-message"
-                placeholder="Olá! Gostaria de ser mentorado(a) por você porque..."
-                value={message}
-                onChange={(e) => {
-                  setMessage(e.target.value)
-                  setError("")
-                }}
-                rows={5}
-              />
-              <p className="text-xs text-muted-foreground">
-                Mínimo de 10 caracteres. {message.length}/500
-              </p>
+      {/* Experience Timeline */}
+      {(experienceEntries.length > 0 || mentor.experience) && (
+        <section className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-8 flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-[#004ac6]" />
+            Experiencia
+          </h3>
+          {experienceEntries.length > 0 ? (
+            <div className="flex flex-col gap-8 relative before:absolute before:inset-y-2 before:left-[11px] before:w-[2px] before:bg-[#dae2fd]">
+              {experienceEntries.map((entry, i) => (
+                <div key={i} className="flex gap-6 relative">
+                  <div className={`w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center z-10 shrink-0 mt-1 ${
+                    i === 0 ? "bg-[#004ac6]" : "bg-[#dae2fd]"
+                  }`} />
+                  <div>
+                    <h4 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e] text-lg">
+                      {entry.role || entry.company}
+                    </h4>
+                    <p className="text-sm text-[#004ac6] font-medium mb-2">
+                      {entry.company} {entry.dates && `• ${entry.dates}`}
+                    </p>
+                    {entry.description && (
+                      <p className="text-base leading-6 text-[#434655]">{entry.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
-          </div>
-        </DialogContent>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setDialogOpen(false)
-              setError("")
-            }}
-            disabled={submitting}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleRequestMentorship}
-            disabled={submitting || message.trim().length < 10}
-          >
-            {submitting ? "Enviando..." : "Enviar Solicitação"}
-          </Button>
-        </DialogFooter>
-      </Dialog>
+          ) : mentor.experience ? (
+            <p className="text-[#434655] whitespace-pre-line">{mentor.experience}</p>
+          ) : null}
+        </section>
+      )}
+
+      {/* Education */}
+      {mentor.education && (
+        <section className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.02)]">
+          <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-4">Formacao</h3>
+          <p className="text-[#434655] whitespace-pre-line">{mentor.education}</p>
+        </section>
+      )}
     </div>
   )
 }

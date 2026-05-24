@@ -7,14 +7,51 @@ const registerSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
+  invitationToken: z.string().optional(),
 })
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password } = registerSchema.parse(body)
+    const { name, email, password, invitationToken } = registerSchema.parse(body)
 
-    const existingUser = await db.user.findUnique({
+    // If invitation token is provided, validate it
+    let invitation = null
+    if (invitationToken) {
+      invitation = await db.invitation.findUnique({
+        where: { token: invitationToken },
+      })
+
+      if (!invitation) {
+        return NextResponse.json(
+          { error: "Convite invalido" },
+          { status: 400 }
+        )
+      }
+
+      if (invitation.used) {
+        return NextResponse.json(
+          { error: "Este convite ja foi utilizado" },
+          { status: 400 }
+        )
+      }
+
+      if (new Date() > invitation.expiresAt) {
+        return NextResponse.json(
+          { error: "Este convite expirou" },
+          { status: 400 }
+        )
+      }
+
+      if (invitation.email !== email) {
+        return NextResponse.json(
+          { error: "E-mail nao corresponde ao convite" },
+          { status: 400 }
+        )
+      }
+    }
+
+    const existingUser = await db.user.findFirst({
       where: { email },
     })
 
@@ -32,7 +69,8 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        status: "PENDING",
+        status: invitation ? "APPROVED" : "PENDING",
+        ...(invitation ? { role: invitation.role, tenantId: invitation.tenantId } : {}),
       },
       select: {
         id: true,
@@ -42,6 +80,14 @@ export async function POST(request: Request) {
         createdAt: true,
       },
     })
+
+    // Mark invitation as used
+    if (invitation) {
+      await db.invitation.update({
+        where: { id: invitation.id },
+        data: { used: true },
+      })
+    }
 
     return NextResponse.json(user, { status: 201 })
   } catch (error) {

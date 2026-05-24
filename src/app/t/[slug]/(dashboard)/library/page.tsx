@@ -6,14 +6,18 @@ import {
   BookOpen,
   Search,
   Upload,
-  Download,
   FileText,
   Video,
   Globe,
   File,
   Plus,
+  ArrowRight,
+  Clock,
+  Download,
+  ExternalLink,
+  PlayCircle,
+  Link as LinkIcon,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -30,7 +34,6 @@ import {
 } from "@/components/ui/dialog"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Loading } from "@/components/ui/loading"
-import { formatDate } from "@/lib/utils"
 
 interface UploadedBy {
   id: string
@@ -51,21 +54,15 @@ interface LibraryItem {
 
 const fileTypeConfig: Record<
   string,
-  { label: string; icon: typeof FileText; color: string }
+  { label: string; icon: typeof FileText; iconLabel: string; bgColor: string; textColor: string }
 > = {
-  PDF: { label: "PDF", icon: FileText, color: "text-red-600 bg-red-100" },
-  VIDEO: { label: "Video", icon: Video, color: "text-purple-600 bg-purple-100" },
-  ARTICLE: { label: "Artigo", icon: Globe, color: "text-blue-600 bg-blue-100" },
-  OTHER: { label: "Outro", icon: File, color: "text-gray-600 bg-gray-100" },
+  PDF: { label: "PDF", icon: FileText, iconLabel: "description", bgColor: "bg-red-100", textColor: "text-red-700", },
+  VIDEO: { label: "Video", icon: PlayCircle, iconLabel: "play_circle", bgColor: "bg-blue-600", textColor: "text-white", },
+  ARTICLE: { label: "Artigo", icon: LinkIcon, iconLabel: "link", bgColor: "bg-[#bc4800]", textColor: "text-white", },
+  OTHER: { label: "Outro", icon: File, iconLabel: "file", bgColor: "bg-gray-100", textColor: "text-gray-700", },
 }
 
-const fileTypeFilterOptions = [
-  { value: "", label: "Todos os tipos" },
-  { value: "PDF", label: "PDF" },
-  { value: "VIDEO", label: "Video" },
-  { value: "ARTICLE", label: "Artigo" },
-  { value: "OTHER", label: "Outro" },
-]
+const CATEGORIES = ["Todos", "Carreira", "Tecnico", "Soft Skills", "Lideranca"]
 
 const uploadFileTypeOptions = [
   { value: "PDF", label: "PDF" },
@@ -73,6 +70,21 @@ const uploadFileTypeOptions = [
   { value: "ARTICLE", label: "Artigo" },
   { value: "OTHER", label: "Outro" },
 ]
+
+function getCategory(item: LibraryItem): string {
+  const title = (item.title + " " + (item.description || "")).toLowerCase()
+  if (title.includes("lideranc") || title.includes("okr") || title.includes("gestao")) return "Lideranca"
+  if (title.includes("carreira") || title.includes("cv") || title.includes("curriculo") || title.includes("entrevista") || title.includes("portfolio") || title.includes("github")) return "Carreira"
+  if (title.includes("tecnic") || title.includes("codigo") || title.includes("programacao") || title.includes("tech") || title.includes("arquitetura") || title.includes("clean")) return "Tecnico"
+  if (title.includes("soft") || title.includes("comunicacao") || title.includes("cnv") || title.includes("violenta")) return "Soft Skills"
+  return "Carreira"
+}
+
+function formatSize(bytes?: number | null): string {
+  if (!bytes) return ""
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
 
 export default function LibraryPage() {
   const params = useParams()
@@ -82,7 +94,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<LibraryItem[]>([])
   const [search, setSearch] = useState("")
-  const [fileTypeFilter, setFileTypeFilter] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("Todos")
   const [userRole, setUserRole] = useState("")
 
   // Upload dialog state
@@ -127,7 +139,6 @@ export default function LibraryPage() {
     setUploadError("")
 
     try {
-      // First upload the file
       const formData = new FormData()
       formData.append("file", uploadFile)
 
@@ -143,7 +154,6 @@ export default function LibraryPage() {
 
       const { url } = await uploadRes.json()
 
-      // Then create the library item
       const res = await fetch("/api/library", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -162,7 +172,6 @@ export default function LibraryPage() {
         return
       }
 
-      // Reset form and refresh
       setUploadOpen(false)
       setUploadTitle("")
       setUploadDescription("")
@@ -184,8 +193,9 @@ export default function LibraryPage() {
       !search.trim() ||
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.description?.toLowerCase().includes(search.toLowerCase())
-    const matchesType = !fileTypeFilter || item.fileType === fileTypeFilter
-    return matchesSearch && matchesType
+    const matchesCategory =
+      selectedCategory === "Todos" || getCategory(item) === selectedCategory
+    return matchesSearch && matchesCategory
   })
 
   if (loading) {
@@ -193,55 +203,74 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Biblioteca</h1>
-          <p className="text-muted-foreground">
-            Materiais de apoio para sua jornada de mentoria.
-          </p>
-        </div>
-        {canUpload && (
-          <Button onClick={() => setUploadOpen(true)}>
-            <Upload className="h-4 w-4" />
-            Enviar Material
-          </Button>
-        )}
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por titulo ou descricao..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="w-full sm:w-48">
-          <Select
-            options={fileTypeFilterOptions}
-            value={fileTypeFilter}
-            onChange={(e) => setFileTypeFilter(e.target.value)}
-          />
+    <div className="max-w-5xl mx-auto">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e] mb-2">
+              Biblioteca de Materiais
+            </h1>
+            <p className="text-lg leading-7 text-[#434655]">
+              Explore recursos selecionados para impulsionar seu desenvolvimento.
+            </p>
+          </div>
+          {canUpload && (
+            <Button
+              onClick={() => setUploadOpen(true)}
+              className="bg-[#004ac6] hover:bg-[#0053db] text-white shrink-0"
+            >
+              <Upload className="h-4 w-4" />
+              Enviar
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Items Grid */}
+      {/* Search Bar */}
+      <div className="mb-4 relative max-w-2xl">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-[#737686]" />
+        </div>
+        <input
+          type="text"
+          placeholder="Buscar por titulo, assunto ou formato..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="block w-full pl-10 pr-3 py-3 border border-[#E2E8F0] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#004ac6] focus:border-[#004ac6] text-base text-[#131b2e] placeholder-[#c3c6d7] shadow-sm transition-shadow"
+        />
+      </div>
+
+      {/* Categories (Chips) */}
+      <div className="flex overflow-x-auto pb-2 mb-8 gap-2" style={{ scrollbarWidth: "none" }}>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold tracking-[0.05em] border transition-colors ${
+              selectedCategory === cat
+                ? "bg-[#004ac6] text-white border-[#004ac6]"
+                : "bg-white text-[#434655] border-[#E2E8F0] hover:border-[#004ac6] hover:text-[#004ac6]"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Material Cards Grid */}
       {filteredItems.length === 0 ? (
         <EmptyState
           icon={BookOpen}
           title="Nenhum material encontrado"
           description={
-            search || fileTypeFilter
+            search || selectedCategory !== "Todos"
               ? "Tente alterar os filtros ou termos de busca."
-              : "A biblioteca ainda não possui materiais."
+              : "A biblioteca ainda nao possui materiais."
           }
           action={
-            canUpload && !search && !fileTypeFilter ? (
-              <Button onClick={() => setUploadOpen(true)}>
+            canUpload && !search && selectedCategory === "Todos" ? (
+              <Button onClick={() => setUploadOpen(true)} className="bg-[#004ac6] hover:bg-[#0053db] text-white">
                 <Plus className="h-4 w-4" />
                 Enviar primeiro material
               </Button>
@@ -249,63 +278,56 @@ export default function LibraryPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => {
             const typeConfig = fileTypeConfig[item.fileType] || fileTypeConfig.OTHER
             const TypeIcon = typeConfig.icon
+            const category = getCategory(item)
 
             return (
-              <Card
+              <div
                 key={item.id}
-                className="cursor-pointer transition-shadow hover:shadow-md"
+                className="group bg-white border border-[#E2E8F0] rounded-xl p-5 flex flex-col hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] hover:border-[#c3c6d7] transition-all cursor-pointer"
                 onClick={() => router.push(`/t/${slug}/library/${item.id}`)}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`rounded-lg p-2 shrink-0 ${typeConfig.color}`}
-                    >
-                      <TypeIcon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold line-clamp-2">
-                        {item.title}
-                      </h3>
-                      {item.description && (
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                          {item.description}
-                        </p>
-                      )}
-                      <div className="mt-3 flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {typeConfig.label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(item.createdAt)}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Por {item.uploadedBy.name}
-                      </p>
-                    </div>
+                <div className="flex items-start justify-between mb-2">
+                  <div className={`w-10 h-10 rounded-lg ${typeConfig.bgColor} ${typeConfig.textColor} flex items-center justify-center`}>
+                    <TypeIcon className="h-5 w-5" />
                   </div>
-
-                  <div className="mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.open(item.fileUrl, "_blank")
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                      Baixar
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  <span className="text-xs font-medium px-2 py-1 bg-[#f2f3ff] text-[#434655] rounded-full border border-[#E2E8F0]">
+                    {category}
+                  </span>
+                </div>
+                <h3 className="text-xl leading-7 font-semibold text-[#131b2e] mb-2 line-clamp-2 group-hover:text-[#004ac6] transition-colors">
+                  {item.title}
+                </h3>
+                {item.description && (
+                  <p className="text-sm text-[#434655] mb-4 line-clamp-3 flex-grow">
+                    {item.description}
+                  </p>
+                )}
+                <div className="mt-auto flex items-center justify-between text-[#737686]">
+                  <span className="text-xs font-medium flex items-center gap-1">
+                    {item.fileType === "VIDEO" ? (
+                      <>
+                        <Clock className="h-4 w-4" />
+                        Video
+                      </>
+                    ) : item.fileType === "ARTICLE" ? (
+                      <>
+                        <ExternalLink className="h-4 w-4" />
+                        Link Externo
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        {typeConfig.label}
+                        {item.fileSize ? ` - ${formatSize(item.fileSize)}` : ""}
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
             )
           })}
         </div>
@@ -362,7 +384,7 @@ export default function LibraryPage() {
             </div>
 
             {uploadError && (
-              <p className="text-sm text-destructive">{uploadError}</p>
+              <p className="text-sm text-red-600">{uploadError}</p>
             )}
           </div>
         </DialogContent>
@@ -377,7 +399,7 @@ export default function LibraryPage() {
           >
             Cancelar
           </Button>
-          <Button onClick={handleUpload} disabled={uploading}>
+          <Button onClick={handleUpload} disabled={uploading} className="bg-[#004ac6] hover:bg-[#0053db] text-white">
             {uploading ? "Enviando..." : "Enviar"}
           </Button>
         </DialogFooter>

@@ -4,25 +4,36 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { Loader2, Upload, X } from "lucide-react"
+import Link from "next/link"
+import {
+  Loader2,
+  Upload,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  GraduationCap,
+  User,
+  Link2,
+  Phone,
+  Briefcase,
+  BookOpen,
+  Clock,
+} from "lucide-react"
 
 import { mentorProfileSchema, type MentorProfileInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card"
+
+const steps = [
+  { number: 1, label: "Basico" },
+  { number: 2, label: "Profissional" },
+  { number: 3, label: "Habilidades" },
+]
 
 export default function MentorOnboardingPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [currentStep, setCurrentStep] = useState(1)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [skillInput, setSkillInput] = useState("")
@@ -32,6 +43,7 @@ export default function MentorOnboardingPage() {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<MentorProfileInput>({
     resolver: zodResolver(mentorProfileSchema),
@@ -97,6 +109,22 @@ export default function MentorOnboardingPage() {
     }
   }
 
+  async function handleNext() {
+    if (currentStep === 1) {
+      const valid = await trigger(["name", "whatsapp"])
+      if (valid) setCurrentStep(2)
+    } else if (currentStep === 2) {
+      const valid = await trigger(["headline", "bio"])
+      if (valid) setCurrentStep(3)
+    }
+  }
+
+  function handleBack() {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
   async function onSubmit(data: MentorProfileInput) {
     setError(null)
 
@@ -119,218 +147,324 @@ export default function MentorOnboardingPage() {
 
       router.push("/welcome")
     } catch {
-      setError("Erro de conexão. Tente novamente.")
+      setError("Erro de conexao. Tente novamente.")
     }
   }
 
+  const progressWidth = `${(currentStep / 3) * 100}%`
+
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl">Perfil de Mentor</CardTitle>
-        <CardDescription>
-          Preencha suas informações para se cadastrar como mentor
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="bg-[#F8FAFC] text-[#131b2e] min-h-screen flex flex-col font-sans">
+      {/* TopAppBar */}
+      <header className="fixed top-0 w-full z-50 bg-white border-b border-[#E2E8F0]">
+        <div className="flex justify-between items-center px-6 h-16 w-full max-w-[1280px] mx-auto">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/select-profile"
+              className="p-2 hover:bg-[#f2f3ff] transition-colors rounded-full active:scale-95 duration-150 text-[#434655]"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="font-heading text-[28px] leading-[36px] tracking-[-0.01em] font-bold text-[#004ac6]">
+              MentorMatch
+            </h1>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-8 px-4 md:px-10 w-full max-w-[1280px] mx-auto">
+        <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-[#E2E8F0] p-6 md:p-10">
+          {/* Progress Header */}
+          <div className="mb-8">
+            <h2 className="font-heading text-[28px] leading-[34px] font-bold md:text-[36px] md:leading-[44px] md:tracking-[-0.02em] text-[#131b2e] mb-2">
+              Torne-se um Mentor
+            </h2>
+            <p className="text-[16px] leading-[24px] text-[#434655] mb-6">
+              Compartilhe seu conhecimento e ajude outros profissionais a crescerem.
+            </p>
+
+            {/* Progress Bar */}
+            <div className="flex items-center justify-between relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#e2e7ff] rounded-full -z-10" />
+              <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#004ac6] rounded-full -z-10 transition-all duration-300"
+                style={{ width: progressWidth }}
+              />
+              {steps.map((step) => (
+                <div key={step.number} className="flex flex-col items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[14px] leading-[16px] tracking-[0.05em] font-semibold mb-2 shadow-sm ${
+                      currentStep >= step.number
+                        ? "bg-[#004ac6] text-white"
+                        : "bg-[#dae2fd] text-[#434655]"
+                    }`}
+                  >
+                    {step.number}
+                  </div>
+                  <span
+                    className={`text-[12px] leading-[14px] font-medium ${
+                      currentStep >= step.number ? "text-[#004ac6]" : "text-[#434655]"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="mb-4 rounded-lg bg-[#ffdad6] p-3 text-sm text-[#93000a]">
               {error}
             </div>
           )}
 
-          {/* Photo upload */}
-          <div className="space-y-2">
-            <Label>Foto de perfil</Label>
-            <div className="flex items-center gap-4">
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt="Foto de perfil"
-                  className="h-16 w-16 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Upload className="h-6 w-6 text-muted-foreground" />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Step 1: Basico */}
+            {currentStep === 1 && (
+              <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
+                <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
+                  Informacoes Basicas
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Name */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="fullName">
+                      Nome Completo
+                    </label>
+                    <input
+                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                      id="fullName"
+                      placeholder="Ex: Maria Silva"
+                      type="text"
+                      {...register("name")}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-[#ba1a1a]">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  {/* LinkedIn */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="linkedin">
+                      URL do LinkedIn
+                    </label>
+                    <input
+                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                      id="linkedin"
+                      placeholder="linkedin.com/in/mariasilva"
+                      type="text"
+                      {...register("linkedin")}
+                    />
+                    {errors.linkedin && (
+                      <p className="text-sm text-[#ba1a1a]">{errors.linkedin.message}</p>
+                    )}
+                  </div>
                 </div>
-              )}
-              <label className="cursor-pointer">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Email (display-only, from wireframe) */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="email">
+                      Email Profissional
+                    </label>
+                    <input
+                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                      id="email"
+                      placeholder="maria@empresa.com"
+                      type="email"
+                      readOnly
+                    />
+                  </div>
+
+                  {/* WhatsApp */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="whatsapp">
+                      WhatsApp
+                    </label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-[#E2E8F0] bg-[#f2f3ff] text-[#434655] text-[16px] leading-[24px]">
+                        +55
+                      </span>
+                      <input
+                        className="px-4 py-3 rounded-r-lg text-[16px] leading-[24px] w-full flex-1 border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                        id="whatsapp"
+                        placeholder="(11) 99999-9999"
+                        type="tel"
+                        {...register("whatsapp")}
+                      />
+                    </div>
+                    {errors.whatsapp && (
+                      <p className="text-sm text-[#ba1a1a]">{errors.whatsapp.message}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Profissional */}
+            {currentStep === 2 && (
+              <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
+                <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
+                  Informacoes Profissionais
+                </h3>
+
+                {/* Headline */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
+                    Titulo / Cargo
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Engenheiro de Software Senior"
+                    className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                    {...register("headline")}
+                  />
+                  {errors.headline && (
+                    <p className="text-sm text-[#ba1a1a]">{errors.headline.message}</p>
+                  )}
+                </div>
+
+                {/* Bio */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
+                    Bio / Biografia curta
+                  </label>
+                  <textarea
+                    placeholder="Conte um pouco sobre sua experiencia e como voce pode ajudar mentorados..."
+                    rows={4}
+                    className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all resize-none"
+                    {...register("bio")}
+                  />
+                  {errors.bio && (
+                    <p className="text-sm text-[#ba1a1a]">{errors.bio.message}</p>
+                  )}
+                </div>
+
+                {/* Education */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
+                    Formacao
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Ciencia da Computacao - USP"
+                    className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                    {...register("education")}
+                  />
+                </div>
+
+                {/* Experience */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
+                    Experiencia
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 10 anos em desenvolvimento de software"
+                    className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                    {...register("experience")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Habilidades */}
+            {currentStep === 3 && (
+              <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
+                <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
+                  Habilidades
+                </h3>
+                <div>
+                  <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e] mb-1.5 block">
+                    Habilidades que deseja ensinar
+                  </label>
+                  <p className="mb-3 text-[14px] leading-[20px] text-[#434655]">
+                    Digite uma habilidade e pressione Enter ou clique em Adicionar.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ex: React, Lideranca, Product Management..."
+                      value={skillInput}
+                      onChange={(e) => setSkillInput(e.target.value)}
+                      onKeyDown={handleSkillKeyDown}
+                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addSkill}
+                      className="h-auto py-3 rounded-lg border-[#E2E8F0] px-4 text-[14px] font-semibold text-[#131b2e] hover:border-[#004ac6] hover:text-[#004ac6]"
+                    >
+                      Adicionar
+                    </Button>
+                  </div>
+                  {teachingSkills.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {teachingSkills.map((skill) => (
+                        <Badge key={skill} variant="secondary" className="gap-1 rounded-full px-3 py-1 pr-1.5 bg-[#eaedff] text-[#004ac6] border border-[#c3c6d7]">
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill(skill)}
+                            className="ml-1 rounded-full p-0.5 hover:bg-[#004ac6]/10"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {errors.teachingSkills && (
+                    <p className="mt-1 text-sm text-[#ba1a1a]">
+                      {errors.teachingSkills.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Actions */}
+            <div className="pt-6 mt-8 border-t border-[#E2E8F0] flex justify-between">
+              {currentStep > 1 ? (
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  disabled={uploading}
-                  onClick={() =>
-                    document.getElementById("photo-upload")?.click()
-                  }
+                  onClick={handleBack}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-[#004ac6] text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#f2f3ff] transition-colors border-transparent h-auto"
                 >
-                  {uploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Escolher foto"
-                  )}
+                  <ArrowLeft className="h-5 w-5" />
+                  Voltar
                 </Button>
-                <input
-                  id="photo-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                />
-              </label>
+              ) : (
+                <div />
+              )}
+              {currentStep < 3 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-[#004ac6] text-white px-8 py-3 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-blue-600 transition-colors active:scale-95 flex items-center gap-2 shadow-sm h-auto"
+                >
+                  Proximo Passo
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="bg-[#004ac6] text-white px-8 py-3 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-blue-600 transition-colors active:scale-95 flex items-center gap-2 shadow-sm h-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Finalizar
+                </Button>
+              )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="name" error={!!errors.name}>
-              Nome completo
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Seu nome"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="headline" error={!!errors.headline}>
-              Título profissional
-            </Label>
-            <Input
-              id="headline"
-              type="text"
-              placeholder="Ex: Engenheiro de Software Sênior"
-              {...register("headline")}
-            />
-            {errors.headline && (
-              <p className="text-sm text-destructive">
-                {errors.headline.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bio" error={!!errors.bio}>
-              Bio
-            </Label>
-            <Textarea
-              id="bio"
-              placeholder="Conte um pouco sobre sua experiência e como você pode ajudar mentorados..."
-              rows={4}
-              {...register("bio")}
-            />
-            {errors.bio && (
-              <p className="text-sm text-destructive">{errors.bio.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="education">Formação</Label>
-            <Input
-              id="education"
-              type="text"
-              placeholder="Ex: Ciência da Computação - USP"
-              {...register("education")}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="experience">Experiência</Label>
-            <Input
-              id="experience"
-              type="text"
-              placeholder="Ex: 10 anos em desenvolvimento de software"
-              {...register("experience")}
-            />
-          </div>
-
-          {/* Teaching skills selector */}
-          <div className="space-y-2">
-            <Label error={!!errors.teachingSkills}>
-              Habilidades que deseja ensinar
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Digite uma habilidade e pressione Enter"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={handleSkillKeyDown}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="default"
-                onClick={addSkill}
-              >
-                Adicionar
-              </Button>
-            </div>
-            {teachingSkills.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {teachingSkills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="gap-1 pr-1">
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skill)}
-                      className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-            {errors.teachingSkills && (
-              <p className="text-sm text-destructive">
-                {errors.teachingSkills.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="linkedin">LinkedIn</Label>
-            <Input
-              id="linkedin"
-              type="url"
-              placeholder="https://linkedin.com/in/seu-perfil"
-              {...register("linkedin")}
-            />
-            {errors.linkedin && (
-              <p className="text-sm text-destructive">
-                {errors.linkedin.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp" error={!!errors.whatsapp}>
-              WhatsApp
-            </Label>
-            <Input
-              id="whatsapp"
-              type="tel"
-              placeholder="(11) 99999-9999"
-              {...register("whatsapp")}
-            />
-            {errors.whatsapp && (
-              <p className="text-sm text-destructive">
-                {errors.whatsapp.message}
-              </p>
-            )}
-          </div>
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Finalizar cadastro
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </div>
+      </main>
+    </div>
   )
 }

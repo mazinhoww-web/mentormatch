@@ -10,18 +10,28 @@ datasource db {
 // ─── Multi-tenancy ──────────────────────────────────────────
 
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  logoUrl   String?
-  brandColor String  @default("#6366f1")
-  domain    String?  @unique
-  active    Boolean  @default(true)
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  logoUrl        String?
+  brandColor     String   @default("#6366f1")
+  secondaryColor String?
+  domain         String?  @unique
+  active         Boolean  @default(true)
+
+  // Limits
+  maxUsers       Int      @default(50)
+  maxConnections Int      @default(100)
+  maxLibraryItems Int     @default(10)
+
+  // Plan relation
+  planId         String?
+  plan           Plan?    @relation(fields: [planId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   users         User[]
-  skills        Skill[]
   connections   Connection[]
   libraryItems  LibraryItem[]
   invitations   Invitation[]
@@ -70,9 +80,10 @@ model VerificationToken {
 // ─── Users ──────────────────────────────────────────────────
 
 enum Role {
+  SUPER_ADMIN
+  ADMIN
   MENTOR
   MENTEE
-  ADMIN
 }
 
 enum UserStatus {
@@ -84,7 +95,7 @@ enum UserStatus {
 
 model User {
   id            String     @id @default(cuid())
-  email         String     @unique
+  email         String
   name          String?
   password      String?
   emailVerified DateTime?
@@ -93,6 +104,10 @@ model User {
   status        UserStatus @default(PENDING)
   bio           String?    @db.Text
   headline      String?
+  position      String?
+  department    String?
+  languages     String[]
+  type          String?
   education     String?    @db.Text
   experience    String?    @db.Text
   linkedin      String?
@@ -112,43 +127,41 @@ model User {
   waitlistAsMentor WaitlistEntry[] @relation("WaitlistMentor")
   notifications Notification[]
   libraryItems  LibraryItem[] @relation("UploadedBy")
+  invitationsSent Invitation[] @relation("InvitedBy")
 
+  @@unique([email, tenantId])
   @@index([tenantId])
-  @@index([role])
-  @@index([status])
+  @@index([role, tenantId])
+  @@index([status, tenantId])
 }
 
 // ─── Skills ─────────────────────────────────────────────────
 
 model Skill {
-  id        String   @id @default(cuid())
-  name      String
-  tenantId  String?
-  global    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String   @unique
+  category   String?
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  tenant    Tenant?     @relation(fields: [tenantId], references: [id])
-  users     UserSkill[]
+  users UserSkill[]
 
-  @@unique([name, tenantId])
-  @@index([tenantId])
-}
-
-enum SkillType {
-  TEACHING
-  LEARNING
+  @@index([usageCount])
+  @@index([category])
 }
 
 model UserSkill {
-  id      String    @id @default(cuid())
-  userId  String
-  skillId String
-  type    SkillType
+  id         String  @id @default(cuid())
+  userId     String
+  skillId    String
+  isTeaching Boolean @default(false)
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, skillId, type])
+  @@unique([userId, skillId])
 }
 
 // ─── Connections (Mentoring relationships) ──────────────────
@@ -168,14 +181,17 @@ model Connection {
   tenantId  String
   status    ConnectionStatus @default(PENDING)
   message   String?          @db.Text
+  startedAt DateTime?
+  endedAt   DateTime?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
-  mentor User @relation("MentorConnections", fields: [mentorId], references: [id])
-  mentee User        @relation("MenteeConnections", fields: [menteeId], references: [id])
-  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  mentor User   @relation("MentorConnections", fields: [mentorId], references: [id])
+  mentee User   @relation("MenteeConnections", fields: [menteeId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
-  @@index([mentorId])
+  @@unique([mentorId, menteeId, status])
+  @@index([mentorId, status])
   @@index([menteeId])
   @@index([tenantId])
 }
@@ -193,7 +209,7 @@ model WaitlistEntry {
   mentee User @relation("WaitlistMentee", fields: [menteeId], references: [id])
 
   @@unique([mentorId, menteeId])
-  @@index([mentorId])
+  @@index([mentorId, position])
 }
 
 // ─── Library ────────────────────────────────────────────────
@@ -226,14 +242,19 @@ model LibraryItem {
 // ─── Invitations ────────────────────────────────────────────
 
 model Invitation {
-  id        String   @id @default(cuid())
-  email     String
-  tenantId  String
-  role      Role
-  token     String   @unique @default(cuid())
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  email       String
+  tenantId    String
+  role        Role
+  token       String   @unique @default(cuid())
+  used        Boolean  @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  // Who sent the invitation
+  invitedById String?
+  invitedBy   User?    @relation("InvitedBy", fields: [invitedById], references: [id])
+  type        String?
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
@@ -273,25 +294,22 @@ model Notification {
 
 // ─── Billing ────────────────────────────────────────────────
 
-enum PlanTier {
-  FREE
-  STARTER
-  PROFESSIONAL
-  ENTERPRISE
-}
-
 model Plan {
-  id            String   @id @default(cuid())
-  name          String
-  tier          PlanTier @unique
-  price         Int      @default(0)
-  maxUsers      Int      @default(50)
-  maxMentors    Int      @default(10)
-  maxLibraryMb  Int      @default(500)
-  features      Json?
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String?
+  priceMonthly   Int      @default(0)
+  priceYearly    Int      @default(0)
+  maxUsers       Int      @default(50)
+  maxConnections Int      @default(100)
+  maxLibraryItems Int     @default(10)
+  maxAdmins      Int      @default(1)
+  features       Json?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
+  tenants       Tenant[]
   subscriptions Subscription[]
 }
 

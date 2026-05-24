@@ -1,0 +1,199 @@
+# MentorMatch - Regras de IA (.clauderules)
+
+> Arquivo obrigatorio na raiz do projeto. O Claude Code le automaticamente antes de cada acao.
+
+---
+
+## 1. Stack Tecnologico (Inegociavel)
+
+- **Framework**: Next.js 15 com App Router (NUNCA Pages Router)
+- **Linguagem**: TypeScript (strict mode)
+- **Estilizacao**: Tailwind CSS (NUNCA CSS modules ou styled-components)
+- **Componentes**: shadcn/ui como base
+- **ORM**: Prisma (NUNCA raw SQL diretamente)
+- **Banco**: Vercel Postgres
+- **Auth**: NextAuth.js v5 (Auth.js) com Credentials + Email providers
+- **Uploads**: Vercel Blob
+- **Email**: Resend
+- **Formularios**: React Hook Form + Zod
+- **State**: React Context + Hooks (NUNCA Redux)
+- **Fetch**: Server Actions quando possivel, route handlers quando necessario
+
+## 2. Estrutura de Pastas
+
+```
+app/                        # App Router apenas
+  (auth)/                   # Grupo de rotas de auth
+    login/page.tsx
+    register/page.tsx
+    layout.tsx
+  (dashboard)/              # Grupo de rotas do app principal
+    match/page.tsx          # Diretorio de mentores
+    processo/page.tsx       # Minhas conexoes
+    biblioteca/page.tsx     # Biblioteca
+    perfil/page.tsx         # Meu perfil
+    layout.tsx
+  (admin)/                  # Grupo de rotas do admin
+    dashboard/page.tsx
+    usuarios/page.tsx
+    conexoes/page.tsx
+    biblioteca/page.tsx
+    configuracoes/page.tsx
+    layout.tsx
+  api/                      # API routes (route handlers)
+    auth/[...nextauth]/route.ts
+    users/route.ts
+    mentors/route.ts
+    matches/route.ts
+    skills/route.ts
+    library/route.ts
+    notifications/route.ts
+    admin/users/route.ts
+    admin/connections/route.ts
+    admin/settings/route.ts
+components/
+  ui/                       # shadcn/ui (gerado, nao editar manualmente)
+  layout/                   # Layouts compartilhados
+  forms/                    # Formularios reutilizaveis
+  mentor-card.tsx
+  skill-tag.tsx
+  connection-list.tsx
+  waitlist-manager.tsx
+lib/
+  prisma.ts                 # Singleton do Prisma client
+  auth.ts                   # Configuracao do NextAuth
+  tenant.ts                 # Resolucao de tenant
+  utils.ts                  # Funcoes utilitarias
+  validators.ts             # Schemas Zod
+prisma/
+  schema.prisma             # Schema unico do banco
+types/
+  index.ts                  # Tipos globais
+public/
+  logo.png
+  manifest.json
+middleware.ts               # Middleware de tenant e auth
+```
+
+## 3. Regras de Codigo
+
+### TypeScript
+- SEMPRE usar tipos explicitos em parametros de funcao
+- SEMPRE usar interfaces para props de componentes
+- SEMPRE usar `satisfies` em vez de `as` para assercao de tipo
+- NUNCA usar `any`
+- NUNCA usar `@ts-ignore`
+
+### Componentes
+- SEMPRE usar Server Components por padrao
+- Usar `'use client'` SOMENTE quando necessario (hooks, eventos, browser API)
+- SEMPRE exportar componentes como `export function` (NUNCA `export default` para componentes)
+- SEMPRE usar named exports
+- Nomenclatura: PascalCase para componentes, camelCase para funcoes
+
+### Estilizacao
+- SEMPRE usar classes do Tailwind (NUNCA inline styles)
+- Usar `cn()` do shadcn para condicionais
+- Seguir sistema de cores do shadcn (primary, secondary, etc.)
+- Cores do tenant aplicadas via CSS variables no layout
+
+### Banco de Dados
+- SEMPRE usar Prisma Client (singleton importado de `lib/prisma.ts`)
+- NUNCA escrever SQL raw
+- SEMPRE incluir `tenantId` em queries (RLS)
+- Usar transactions para operacoes que envolvem multiplas tabelas
+
+### Auth
+- SEMPRE usar `auth()` ou `getServerSession()` do NextAuth
+- Proteger rotas no middleware.ts
+- Verificar `isApproved` do usuario em rotas protegidas
+- Verificar `role` para rotas admin
+
+### API
+- Usar Server Actions para operacoes de dados (create, update, delete)
+- Usar Route Handlers (route.ts) SOMENTE para upload/download de arquivos e webhooks
+- SEMPRE validar input com Zod antes de processar
+- SEMPRE retornar respostas JSON padronizadas
+
+### Formularios
+- SEMPRE usar React Hook Form + Zod para validacao
+- SEMPRE mostrar erros de validacao abaixo dos campos
+- SEMPRE desabilitar botao de submit durante loading
+- SEMPRE mostrar toast de sucesso/erro apos submit
+
+## 4. Padroes de Nomenclatura
+
+### Variaveis e Funcoes
+```typescript
+// Portugues para dominio de negocio
+const habilidades = [...]
+const mentor = {...}
+const solicitacao = {...}
+
+// Ingles para tecnico/infra
+const isLoading = false
+const handleSubmit = () => {}
+const fetchMentors = async () => {}
+```
+
+### Arquivos
+```
+# Componentes: PascalCase
+components/MentorCard.tsx
+components/SkillTag.tsx
+
+# Paginas: page.tsx dentro da pasta (rota)
+app/(dashboard)/match/page.tsx
+
+# APIs: route.tsx
+app/api/mentors/route.ts
+
+# Utilitarios: camelCase
+lib/prisma.ts
+lib/utils.ts
+```
+
+## 5. Regras de Seguranca
+
+- SEMPRE verificar autenticacao antes de processar requests
+- SEMPRE verificar pertencimento ao tenant (RLS)
+- SEMPRE sanitizar inputs com Zod
+- SEMPRE hashear senhas com bcrypt (via NextAuth)
+- SEMPRE usar HTTPS em producao
+- NUNCA expor secrets no cliente
+- NUNCA retornar dados de outros tenants
+
+## 6. Regras de UI/UX
+
+- SEMPRE mostrar loading states
+- SEMPRE mostrar empty states com mensagem amigavel
+- SEMPRE usar toasts para feedback de acoes
+- SEMPRE manter consistencia visual com shadcn/ui
+- Mobile-first: todas as telas devem funcionar em mobile
+- PWA: todas as funcionalidades core funcionam offline
+
+## 7. Regras de Git
+
+- Commits em portugues
+- Mensagens descritivas: "feat: adiciona sistema de match"
+- SEMPRE testar `npm run build` antes de commit
+- NUNCA commitar .env files
+
+## 8. Dependencias Permitidas
+
+```json
+{
+  "core": ["next", "react", "react-dom", "typescript"],
+  "styling": ["tailwindcss", "class-variance-authority", "clsx", "tailwind-merge"],
+  "ui": ["@radix-ui/*"],
+  "auth": ["next-auth"],
+  "db": ["@prisma/client", "prisma"],
+  "forms": ["react-hook-form", "@hookform/resolvers", "zod"],
+  "upload": ["@vercel/blob"],
+  "email": ["resend"],
+  "utils": ["bcryptjs", "uuid", "date-fns"],
+  "pwa": ["next-pwa"]
+}
+```
+
+NUNCA adicionar dependencias sem confirmacao.

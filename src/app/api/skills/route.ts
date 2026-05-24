@@ -5,22 +5,9 @@ import { db } from "@/lib/db"
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const tenantId = searchParams.get("tenantId")
-
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: "tenantId é obrigatório" },
-        { status: 400 }
-      )
-    }
-
     const skills = await db.skill.findMany({
       where: {
-        OR: [
-          { tenantId },
-          { global: true },
-        ],
+        isActive: true,
       },
       orderBy: { name: "asc" },
     })
@@ -37,8 +24,7 @@ export async function GET(request: Request) {
 
 const createSkillSchema = z.object({
   name: z.string().min(2),
-  tenantId: z.string().optional(),
-  global: z.boolean().optional().default(false),
+  category: z.string().optional(),
 })
 
 export async function POST(request: Request) {
@@ -58,10 +44,6 @@ export async function POST(request: Request) {
     const existingSkill = await db.skill.findFirst({
       where: {
         name: { equals: data.name, mode: "insensitive" },
-        OR: [
-          { tenantId: data.tenantId ?? session.user.tenantId },
-          { global: true },
-        ],
       },
     })
 
@@ -75,8 +57,7 @@ export async function POST(request: Request) {
     const skill = await db.skill.create({
       data: {
         name: data.name,
-        tenantId: data.global ? null : (data.tenantId ?? session.user.tenantId),
-        global: data.global,
+        category: data.category,
       },
     })
 
