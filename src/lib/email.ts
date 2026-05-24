@@ -63,6 +63,27 @@ export async function sendConnectionRequestEmail(
   })
 }
 
+export async function sendInvitationEmail(email: string, inviterName: string, tenantName: string, token: string) {
+  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/register?token=${token}`
+
+  await getResend().emails.send({
+    from: getFromEmail(),
+    to: email,
+    subject: `Convite para ${tenantName} - MentorMatch`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Voce foi convidado!</h2>
+        <p><strong>${inviterName}</strong> convidou voce para participar do programa <strong>${tenantName}</strong> no MentorMatch.</p>
+        <p>Clique no botao abaixo para criar sua conta:</p>
+        <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">
+          Aceitar Convite
+        </a>
+        <p style="color: #666; font-size: 14px;">Este convite expira em 7 dias.</p>
+      </div>
+    `,
+  })
+}
+
 export async function sendAccountApprovedEmail(email: string, tenantName: string) {
   await getResend().emails.send({
     from: getFromEmail(),

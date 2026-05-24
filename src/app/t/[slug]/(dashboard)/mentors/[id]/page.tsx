@@ -69,16 +69,28 @@ export default function MentorProfilePage() {
   const [loading, setLoading] = useState(true)
   const [mentor, setMentor] = useState<MentorProfile | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [hasActiveConnection, setHasActiveConnection] = useState(false)
 
   useEffect(() => {
     async function fetchMentor() {
       try {
-        const res = await fetch(
-          `/api/mentors?tenantId=${encodeURIComponent(slug)}`
-        )
-        const mentors: MentorProfile[] = await res.json()
+        const [mentorsRes, connectionsRes] = await Promise.all([
+          fetch(`/api/mentors?tenantId=${encodeURIComponent(slug)}`),
+          fetch("/api/connections?status=ACCEPTED"),
+        ])
+        const mentors: MentorProfile[] = await mentorsRes.json()
         const found = mentors.find((m) => m.id === mentorId) || null
         setMentor(found)
+
+        const connections = await connectionsRes.json()
+        if (Array.isArray(connections)) {
+          const active = connections.some(
+            (c: { mentor?: { id: string }; mentorId?: string; status: string }) =>
+              (c.mentor?.id === mentorId || c.mentorId === mentorId) &&
+              c.status === "ACCEPTED"
+          )
+          setHasActiveConnection(active)
+        }
       } catch (err) {
         console.error("Erro ao carregar mentor:", err)
       } finally {
@@ -170,7 +182,7 @@ export default function MentorProfilePage() {
             </button>
           )}
 
-          {mentor.whatsapp && (
+          {hasActiveConnection && mentor.whatsapp ? (
             <button
               onClick={() => openWhatsApp(mentor.whatsapp)}
               className="bg-transparent border-2 border-[#004ac6] text-[#004ac6] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg hover:bg-[#dae2fd]/30 transition-colors flex items-center justify-center gap-2 active:scale-95"
@@ -178,7 +190,16 @@ export default function MentorProfilePage() {
               <MessageCircle className="h-5 w-5" />
               WhatsApp
             </button>
-          )}
+          ) : mentor.whatsapp ? (
+            <button
+              disabled
+              title="Disponivel apos conexao ativa"
+              className="bg-transparent border-2 border-[#c3c6d7] text-[#c3c6d7] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 opacity-60"
+            >
+              <MessageCircle className="h-5 w-5" />
+              WhatsApp
+            </button>
+          ) : null}
         </div>
       </section>
 

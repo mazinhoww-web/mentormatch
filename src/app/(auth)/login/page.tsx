@@ -10,6 +10,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, GraduationCap } from "lucid
 
 import { loginSchema, type LoginInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
+import { featureFlags } from "@/lib/feature-flags"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -109,21 +110,25 @@ export default function LoginPage() {
                 </div>
 
                 {/* Magic Link Button */}
-                <Button
-                  type="button"
-                  onClick={handleMagicLink}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-[#eeefff] py-3.5 px-4 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#b4c5ff] hover:text-[#002a78] hover:shadow-md transition-all active:scale-[0.98] duration-200 mt-2 h-auto"
-                >
-                  <Sparkles className="h-5 w-5" />
-                  Entrar com Link Magico
-                </Button>
+                {featureFlags.magicLink && (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={handleMagicLink}
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 text-[#eeefff] py-3.5 px-4 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#b4c5ff] hover:text-[#002a78] hover:shadow-md transition-all active:scale-[0.98] duration-200 mt-2 h-auto"
+                    >
+                      <Sparkles className="h-5 w-5" />
+                      Entrar com Link Magico
+                    </Button>
 
-                {/* Divider */}
-                <div className="relative flex items-center py-4">
-                  <div className="flex-grow border-t border-[#434655]/30" />
-                  <span className="flex-shrink-0 mx-4 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#8d90a0] uppercase">ou</span>
-                  <div className="flex-grow border-t border-[#434655]/30" />
-                </div>
+                    {/* Divider */}
+                    <div className="relative flex items-center py-4">
+                      <div className="flex-grow border-t border-[#434655]/30" />
+                      <span className="flex-shrink-0 mx-4 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#8d90a0] uppercase">ou</span>
+                      <div className="flex-grow border-t border-[#434655]/30" />
+                    </div>
+                  </>
+                )}
 
                 {/* Password field */}
                 <div className="space-y-2">
