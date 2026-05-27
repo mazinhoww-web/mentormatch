@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         },
       })
 
-      const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
+      const resetUrl = `${process.env.NEXTAUTH_URL || 'https://aurimarnogueira.com.br'}/mentormatch/reset-password?token=${token}`
       await sendPasswordResetEmail(email, resetUrl)
     }
 

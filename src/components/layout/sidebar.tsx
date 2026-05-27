@@ -18,6 +18,7 @@ import {
   X,
   GraduationCap,
 } from "lucide-react"
+import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/ui/avatar"
 
@@ -138,13 +139,13 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
             </p>
           </div>
         </div>
-        <Link
-          href="/api/auth/signout"
-          className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
+        <button
+          onClick={() => signOut({ callbackUrl: "/mentormatch/login" })}
+          className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
           <LogOut className="h-5 w-5 shrink-0" />
           Sair
-        </Link>
+        </button>
       </div>
     </div>
   )

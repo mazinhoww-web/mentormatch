@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     csrfToken: {
       name: "mm.csrf-token",
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" },
+      options: { httpOnly: false, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" },
     },
   },
   providers: [

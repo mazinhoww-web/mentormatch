@@ -64,7 +64,7 @@ export async function sendConnectionRequestEmail(
 }
 
 export async function sendInvitationEmail(email: string, inviterName: string, tenantName: string, token: string) {
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/register?token=${token}`
+  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://aurimarnogueira.com.br'}/mentormatch/register?token=${token}`
 
   await getResend().emails.send({
     from: getFromEmail(),

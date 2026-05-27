@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 import {
   Camera,
   Save,
@@ -301,7 +302,7 @@ export default function ProfilePage() {
             <h2 className="text-xl leading-7 font-semibold text-[#131b2e]">{name}</h2>
             <p className="text-sm text-[#434655] mb-6">{roleLabel}</p>
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => signOut({ callbackUrl: "/mentormatch/login" })}
               className="w-full flex items-center justify-center gap-2 border border-red-500 text-red-500 rounded-lg px-4 py-2.5 text-sm font-semibold tracking-[0.05em] hover:bg-red-50 active:scale-95 transition-all"
             >
               <LogOut className="h-4 w-4" />
