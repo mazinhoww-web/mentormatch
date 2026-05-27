@@ -54,7 +54,7 @@ export default function MentorsPage() {
         if (q.trim()) searchParams.set("q", q.trim())
         if (skill) searchParams.set("skill", skill)
 
-        const res = await fetch(`/api/mentors?${searchParams.toString()}`)
+        const res = await fetch(`/mentormatch/api/mentors?${searchParams.toString()}`)
         const data: Mentor[] = await res.json()
         setMentors(Array.isArray(data) ? data : [])
         setDisplayCount(PAGE_SIZE)

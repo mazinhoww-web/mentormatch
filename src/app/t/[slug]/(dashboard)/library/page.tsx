@@ -113,7 +113,7 @@ export default function LibraryPage() {
   async function fetchData() {
     try {
       const [libraryRes, sessionRes] = await Promise.all([
-        fetch(`/api/library?tenantId=${encodeURIComponent(slug)}`),
+        fetch(`/mentormatch/api/library?tenantId=${encodeURIComponent(slug)}`),
         fetch("/mentormatch/api/auth/session"),
       ])
 

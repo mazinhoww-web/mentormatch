@@ -104,7 +104,7 @@ export default function AdminLibraryPage() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch(`/api/library?tenantId=${params.slug}`)
+      const res = await fetch(`/mentormatch/api/library?tenantId=${params.slug}`)
       if (res.ok) {
         const data = await res.json()
         setItems(data)
@@ -210,7 +210,7 @@ export default function AdminLibraryPage() {
     setDeleting(true)
 
     try {
-      const res = await fetch(`/api/library?id=${selectedItem.id}`, {
+      const res = await fetch(`/mentormatch/api/library?id=${selectedItem.id}`, {
         method: "DELETE",
       })
 

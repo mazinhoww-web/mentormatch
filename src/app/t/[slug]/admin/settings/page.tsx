@@ -50,7 +50,7 @@ export default function AdminSettingsPage() {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/settings?slug=${params.slug}`)
+      const res = await fetch(`/mentormatch/api/admin/settings?slug=${params.slug}`)
       if (res.ok) {
         const data: TenantSettings = await res.json()
         setSettings(data)

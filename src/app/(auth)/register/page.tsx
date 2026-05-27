@@ -50,7 +50,7 @@ function RegisterForm() {
   useEffect(() => {
     if (token) {
       setInvitationLoading(true)
-      fetch(`/api/invitations/${token}`)
+      fetch(`/mentormatch/api/invitations/${token}`)
         .then((res) => res.json())
         .then((data: InvitationData) => {
           setInvitation(data)
@@ -117,7 +117,7 @@ function RegisterForm() {
 
       // Mark invitation as used if we have a token
       if (token && invitation?.valid) {
-        await fetch(`/api/invitations/${token}`, {
+        await fetch(`/mentormatch/api/invitations/${token}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ used: true }),

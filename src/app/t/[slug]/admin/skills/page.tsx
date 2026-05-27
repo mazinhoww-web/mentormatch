@@ -95,7 +95,7 @@ export default function AdminSkillsPage() {
 
   const fetchSkills = useCallback(async () => {
     try {
-      const res = await fetch(`/api/skills?tenantId=${params.slug}`)
+      const res = await fetch(`/mentormatch/api/skills?tenantId=${params.slug}`)
       if (res.ok) {
         const data = await res.json()
         setSkills(data)
@@ -177,7 +177,7 @@ export default function AdminSkillsPage() {
     setError("")
 
     try {
-      const res = await fetch(`/api/skills?id=${selectedSkill.id}`, {
+      const res = await fetch(`/mentormatch/api/skills?id=${selectedSkill.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: skillName.trim() }),
@@ -208,7 +208,7 @@ export default function AdminSkillsPage() {
     setSaving(true)
 
     try {
-      const res = await fetch(`/api/skills?id=${selectedSkill.id}`, {
+      const res = await fetch(`/mentormatch/api/skills?id=${selectedSkill.id}`, {
         method: "DELETE",
       })
 
