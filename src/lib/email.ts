@@ -84,6 +84,24 @@ export async function sendInvitationEmail(email: string, inviterName: string, te
   })
 }
 
+export async function sendWelcomeEmail(email: string, name: string) {
+  await getResend().emails.send({
+    from: getFromEmail(),
+    to: email,
+    subject: "Bem-vindo ao MentorMatch!",
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Bem-vindo, ${name}!</h2>
+        <p>Sua conta no MentorMatch foi criada com sucesso.</p>
+        <p>Acesse a plataforma para completar seu perfil e comecar sua jornada de mentoria.</p>
+        <a href="https://aurimarnogueira.com.br/mentormatch/login" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">
+          Acessar MentorMatch
+        </a>
+      </div>
+    `,
+  })
+}
+
 export async function sendAccountApprovedEmail(email: string, tenantName: string) {
   await getResend().emails.send({
     from: getFromEmail(),

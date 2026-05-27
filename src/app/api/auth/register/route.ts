@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { db } from "@/lib/db"
+import { sendWelcomeEmail } from "@/lib/email"
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -88,6 +89,8 @@ export async function POST(request: Request) {
         data: { used: true },
       })
     }
+
+    sendWelcomeEmail(user.email, user.name ?? "").catch(() => {})
 
     return NextResponse.json(user, { status: 201 })
   } catch (error) {

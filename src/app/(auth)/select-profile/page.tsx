@@ -133,18 +133,10 @@ export default function SelectProfilePage() {
             </div>
           </div>
 
-          {/* Footer Link */}
-          <div className="mt-8 text-center">
-            <p className="text-[16px] leading-[24px] text-[#434655]">
-              Ja tem uma conta?{" "}
-              <Link
-                href="/login"
-                className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#004ac6] hover:text-[#0053db] transition-colors ml-1"
-              >
-                Faca Login
-              </Link>
-            </p>
-          </div>
+          {/* Footer */}
+          <p className="mt-8 text-center text-[14px] text-[#434655]">
+            Voce podera alterar seu perfil depois nas configuracoes.
+          </p>
         </div>
       </main>
     </div>
