@@ -7,12 +7,12 @@ const profileSchema = z.object({
   role: z.enum(["MENTOR", "MENTEE"]),
   name: z.string().min(2),
   headline: z.string().optional(),
-  bio: z.string().min(10),
+  bio: z.string().optional(),
   education: z.string().optional(),
   experience: z.string().optional(),
-  linkedin: z.string().url().optional().or(z.literal("")),
+  linkedin: z.string().url().optional().or(z.literal("")).or(z.literal(undefined)),
   whatsapp: z.string().min(10),
-  image: z.string().url().optional(),
+  image: z.string().url().optional().nullable(),
   skills: z.array(z.string()).min(1),
 })
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -12,17 +12,12 @@ import {
   ArrowLeft,
   ArrowRight,
   GraduationCap,
-  User,
-  Link2,
-  Phone,
-  Briefcase,
-  BookOpen,
-  Clock,
 } from "lucide-react"
 
 import { mentorProfileSchema, type MentorProfileInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 const steps = [
   { number: 1, label: "Basico" },
@@ -32,6 +27,7 @@ const steps = [
 
 export default function MentorOnboardingPage() {
   const router = useRouter()
+  const { user, isLoading: sessionLoading } = useCurrentUser()
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
@@ -51,6 +47,12 @@ export default function MentorOnboardingPage() {
       teachingSkills: [],
     },
   })
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setValue("name", user.name)
+    }
+  }, [user, setValue])
 
   const teachingSkills = watch("teachingSkills")
 
@@ -76,7 +78,7 @@ export default function MentorOnboardingPage() {
   }
 
   function handleSkillKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault()
       addSkill()
     }
@@ -133,15 +135,22 @@ export default function MentorOnboardingPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...data,
+          name: data.name,
+          headline: data.headline,
+          bio: data.bio,
+          education: data.education,
+          experience: data.experience,
+          linkedin: data.linkedin,
+          whatsapp: data.whatsapp,
+          skills: data.teachingSkills,
           role: "MENTOR",
-          photoUrl,
+          image: photoUrl,
         }),
       })
 
       if (!response.ok) {
         const body = await response.json()
-        setError(body.message || "Erro ao salvar perfil. Tente novamente.")
+        setError(body.error || body.message || "Erro ao salvar perfil. Tente novamente.")
         return
       }
 
@@ -153,9 +162,16 @@ export default function MentorOnboardingPage() {
 
   const progressWidth = `${(currentStep / 3) * 100}%`
 
+  if (sessionLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#004ac6]" />
+      </div>
+    )
+  }
+
   return (
     <div className="bg-[#F8FAFC] text-[#131b2e] min-h-screen flex flex-col font-sans">
-      {/* TopAppBar */}
       <header className="fixed top-0 w-full z-50 bg-white border-b border-[#E2E8F0]">
         <div className="flex justify-between items-center px-6 h-16 w-full max-w-[1280px] mx-auto">
           <div className="flex items-center gap-4">
@@ -172,10 +188,8 @@ export default function MentorOnboardingPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-8 px-4 md:px-10 w-full max-w-[1280px] mx-auto">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-[#E2E8F0] p-6 md:p-10">
-          {/* Progress Header */}
           <div className="mb-8">
             <h2 className="font-heading text-[28px] leading-[34px] font-bold md:text-[36px] md:leading-[44px] md:tracking-[-0.02em] text-[#131b2e] mb-2">
               Torne-se um Mentor
@@ -184,7 +198,6 @@ export default function MentorOnboardingPage() {
               Compartilhe seu conhecimento e ajude outros profissionais a crescerem.
             </p>
 
-            {/* Progress Bar */}
             <div className="flex items-center justify-between relative">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#e2e7ff] rounded-full -z-10" />
               <div
@@ -221,15 +234,13 @@ export default function MentorOnboardingPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Step 1: Basico */}
             {currentStep === 1 && (
               <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
-                  Informacoes Basicas
+                  Valide seus dados e inclua seu WhatsApp
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Name */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="fullName">
                       Nome Completo
@@ -246,7 +257,6 @@ export default function MentorOnboardingPage() {
                     )}
                   </div>
 
-                  {/* LinkedIn */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="linkedin">
                       URL do LinkedIn
@@ -265,21 +275,19 @@ export default function MentorOnboardingPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Email (display-only, from wireframe) */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="email">
-                      Email Profissional
+                      Email
                     </label>
                     <input
-                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-white text-[#131b2e] placeholder:text-[#737686] focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition-all"
+                      className="px-4 py-3 rounded-lg text-[16px] leading-[24px] w-full border border-[#E2E8F0] bg-[#f8f9fa] text-[#434655] cursor-not-allowed"
                       id="email"
-                      placeholder="maria@empresa.com"
                       type="email"
+                      value={user?.email ?? ""}
                       readOnly
                     />
                   </div>
 
-                  {/* WhatsApp */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]" htmlFor="whatsapp">
                       WhatsApp
@@ -304,14 +312,12 @@ export default function MentorOnboardingPage() {
               </div>
             )}
 
-            {/* Step 2: Profissional */}
             {currentStep === 2 && (
               <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
                   Informacoes Profissionais
                 </h3>
 
-                {/* Headline */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
                     Titulo / Cargo
@@ -327,7 +333,6 @@ export default function MentorOnboardingPage() {
                   )}
                 </div>
 
-                {/* Bio */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
                     Bio / Biografia curta
@@ -343,7 +348,6 @@ export default function MentorOnboardingPage() {
                   )}
                 </div>
 
-                {/* Education */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
                     Formacao
@@ -356,7 +360,6 @@ export default function MentorOnboardingPage() {
                   />
                 </div>
 
-                {/* Experience */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#131b2e]">
                     Experiencia
@@ -371,7 +374,6 @@ export default function MentorOnboardingPage() {
               </div>
             )}
 
-            {/* Step 3: Habilidades */}
             {currentStep === 3 && (
               <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
@@ -382,7 +384,7 @@ export default function MentorOnboardingPage() {
                     Habilidades que deseja ensinar
                   </label>
                   <p className="mb-3 text-[14px] leading-[20px] text-[#434655]">
-                    Digite uma habilidade e pressione Enter ou clique em Adicionar.
+                    Digite uma habilidade e pressione Enter ou virgula para adicionar.
                   </p>
                   <div className="flex gap-2">
                     <input
@@ -427,7 +429,6 @@ export default function MentorOnboardingPage() {
               </div>
             )}
 
-            {/* Footer Actions */}
             <div className="pt-6 mt-8 border-t border-[#E2E8F0] flex justify-between">
               {currentStep > 1 ? (
                 <Button
