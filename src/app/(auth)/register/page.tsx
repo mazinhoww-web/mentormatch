@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from "lucide-react"
@@ -122,6 +123,18 @@ function RegisterForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ used: true }),
         })
+      }
+
+      // Auto-login after registration
+      const loginResult = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
+
+      if (loginResult?.error) {
+        router.push("/login")
+        return
       }
 
       router.push("/select-profile")

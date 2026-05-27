@@ -27,7 +27,7 @@ export function middleware(req: NextRequest) {
     req.cookies.get("__Secure-mm.session-token")?.value
 
   if (!sessionToken) {
-    const loginUrl = new URL("/login", req.url)
+    const loginUrl = new URL("/mentormatch/login", req.url)
     loginUrl.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(loginUrl)
   }
