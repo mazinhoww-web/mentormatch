@@ -114,7 +114,7 @@ export default function LibraryPage() {
     try {
       const [libraryRes, sessionRes] = await Promise.all([
         fetch(`/api/library?tenantId=${encodeURIComponent(slug)}`),
-        fetch("/api/auth/session"),
+        fetch("/mentormatch/api/auth/session"),
       ])
 
       const data = await libraryRes.json()
@@ -142,7 +142,7 @@ export default function LibraryPage() {
       const formData = new FormData()
       formData.append("file", uploadFile)
 
-      const uploadRes = await fetch("/api/upload", {
+      const uploadRes = await fetch("/mentormatch/api/upload", {
         method: "POST",
         body: formData,
       })
@@ -154,7 +154,7 @@ export default function LibraryPage() {
 
       const { url } = await uploadRes.json()
 
-      const res = await fetch("/api/library", {
+      const res = await fetch("/mentormatch/api/library", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -104,7 +104,7 @@ function timeAgo(dateStr: string): string {
 }
 
 async function downloadUsersCsv() {
-  const res = await fetch("/api/admin/export?type=users")
+  const res = await fetch("/mentormatch/api/admin/export?type=users")
   const blob = await res.blob()
   const a = document.createElement("a")
   a.href = URL.createObjectURL(blob)
@@ -134,7 +134,7 @@ export default function AdminUsersPage() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/users")
+      const res = await fetch("/mentormatch/api/admin/users")
       if (res.ok) {
         const data = await res.json()
         setUsers(data)
@@ -149,7 +149,7 @@ export default function AdminUsersPage() {
   const fetchInvitations = useCallback(async () => {
     setInvitationsLoading(true)
     try {
-      const res = await fetch("/api/invitations")
+      const res = await fetch("/mentormatch/api/invitations")
       if (res.ok) {
         const data = await res.json()
         setInvitations(data)
@@ -204,7 +204,7 @@ export default function AdminUsersPage() {
   async function handleUpdateStatus(userId: string, status: "APPROVED" | "REJECTED" | "SUSPENDED") {
     setActionLoading(userId)
     try {
-      const res = await fetch("/api/admin/users", {
+      const res = await fetch("/mentormatch/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, status }),
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
     setInviteLoading(true)
 
     try {
-      const res = await fetch("/api/invitations", {
+      const res = await fetch("/mentormatch/api/invitations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

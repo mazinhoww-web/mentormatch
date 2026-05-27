@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
         const formData = new FormData()
         formData.append("file", logoFile)
 
-        const uploadRes = await fetch("/api/upload", {
+        const uploadRes = await fetch("/mentormatch/api/upload", {
           method: "POST",
           body: formData,
         })
@@ -105,7 +105,7 @@ export default function AdminSettingsPage() {
         }
       }
 
-      const res = await fetch("/api/admin/settings", {
+      const res = await fetch("/mentormatch/api/admin/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

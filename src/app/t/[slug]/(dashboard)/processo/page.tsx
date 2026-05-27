@@ -67,8 +67,8 @@ export default function ProcessoPage() {
   const fetchData = useCallback(async () => {
     try {
       const [connectionsRes, sessionRes] = await Promise.all([
-        fetch("/api/connections"),
-        fetch("/api/auth/session"),
+        fetch("/mentormatch/api/connections"),
+        fetch("/mentormatch/api/auth/session"),
       ])
 
       const conns: Connection[] = await connectionsRes.json()
@@ -93,7 +93,7 @@ export default function ProcessoPage() {
   ) {
     setUpdatingId(connectionId)
     try {
-      const res = await fetch("/api/connections", {
+      const res = await fetch("/mentormatch/api/connections", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ connectionId, status }),

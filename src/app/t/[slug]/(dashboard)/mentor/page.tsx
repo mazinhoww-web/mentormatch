@@ -75,8 +75,8 @@ export default function MentorDashboardPage() {
   async function fetchData() {
     try {
       const [connectionsRes, pendingRes] = await Promise.all([
-        fetch("/api/connections?status=ACCEPTED"),
-        fetch("/api/connections?status=PENDING"),
+        fetch("/mentormatch/api/connections?status=ACCEPTED"),
+        fetch("/mentormatch/api/connections?status=PENDING"),
       ])
 
       const active: Connection[] = await connectionsRes.json()
@@ -101,7 +101,7 @@ export default function MentorDashboardPage() {
   async function handleRequest(connectionId: string, status: "ACCEPTED" | "REJECTED") {
     setUpdatingId(connectionId)
     try {
-      const res = await fetch("/api/connections", {
+      const res = await fetch("/mentormatch/api/connections", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ connectionId, status }),

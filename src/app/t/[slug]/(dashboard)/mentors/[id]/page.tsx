@@ -76,7 +76,7 @@ export default function MentorProfilePage() {
       try {
         const [mentorsRes, connectionsRes] = await Promise.all([
           fetch(`/api/mentors?tenantId=${encodeURIComponent(slug)}`),
-          fetch("/api/connections?status=ACCEPTED"),
+          fetch("/mentormatch/api/connections?status=ACCEPTED"),
         ])
         const mentors: MentorProfile[] = await mentorsRes.json()
         const found = mentors.find((m) => m.id === mentorId) || null

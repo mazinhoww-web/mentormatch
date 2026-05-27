@@ -145,7 +145,7 @@ export default function AdminSkillsPage() {
     setError("")
 
     try {
-      const res = await fetch("/api/skills", {
+      const res = await fetch("/mentormatch/api/skills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: skillName.trim() }),

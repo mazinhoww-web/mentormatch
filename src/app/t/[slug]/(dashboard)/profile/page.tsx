@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
   async function fetchProfile() {
     try {
-      const sessionRes = await fetch("/api/auth/session")
+      const sessionRes = await fetch("/mentormatch/api/auth/session")
       const session = await sessionRes.json()
 
       if (!session?.user?.id) return
@@ -145,7 +145,7 @@ export default function ProfilePage() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch("/mentormatch/api/upload", {
         method: "POST",
         body: formData,
       })
@@ -192,7 +192,7 @@ export default function ProfilePage() {
         image: image || undefined,
       }
 
-      const res = await fetch("/api/auth/complete-profile", {
+      const res = await fetch("/mentormatch/api/auth/complete-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

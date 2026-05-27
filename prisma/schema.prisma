@@ -37,6 +37,8 @@ model Tenant {
   invitations   Invitation[]
   notifications Notification[]
   subscription  Subscription?
+
+  @@map("mm_tenant")
 }
 
 // ─── Auth (NextAuth v5 + custom fields) ─────────────────────
@@ -58,6 +60,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("mm_account")
 }
 
 model Session {
@@ -67,6 +70,8 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mm_session")
 }
 
 model VerificationToken {
@@ -75,6 +80,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("mm_verification_token")
 }
 
 // ─── Users ──────────────────────────────────────────────────
@@ -133,6 +139,7 @@ model User {
   @@index([tenantId])
   @@index([role, tenantId])
   @@index([status, tenantId])
+  @@map("mm_user")
 }
 
 // ─── Skills ─────────────────────────────────────────────────
@@ -150,6 +157,7 @@ model Skill {
 
   @@index([usageCount])
   @@index([category])
+  @@map("mm_skill")
 }
 
 model UserSkill {
@@ -162,6 +170,7 @@ model UserSkill {
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@unique([userId, skillId])
+  @@map("mm_user_skill")
 }
 
 // ─── Connections (Mentoring relationships) ──────────────────
@@ -194,6 +203,7 @@ model Connection {
   @@index([mentorId, status])
   @@index([menteeId])
   @@index([tenantId])
+  @@map("mm_connection")
 }
 
 // ─── Waitlist ───────────────────────────────────────────────
@@ -210,6 +220,7 @@ model WaitlistEntry {
 
   @@unique([mentorId, menteeId])
   @@index([mentorId, position])
+  @@map("mm_waitlist_entry")
 }
 
 // ─── Library ────────────────────────────────────────────────
@@ -237,6 +248,7 @@ model LibraryItem {
   uploadedBy User   @relation("UploadedBy", fields: [uploadedById], references: [id])
 
   @@index([tenantId])
+  @@map("mm_library_item")
 }
 
 // ─── Invitations ────────────────────────────────────────────
@@ -260,6 +272,7 @@ model Invitation {
 
   @@index([tenantId])
   @@index([token])
+  @@map("mm_invitation")
 }
 
 // ─── Notifications ──────────────────────────────────────────
@@ -290,6 +303,7 @@ model Notification {
 
   @@index([userId, read])
   @@index([tenantId])
+  @@map("mm_notification")
 }
 
 // ─── Billing ────────────────────────────────────────────────
@@ -311,6 +325,8 @@ model Plan {
 
   tenants       Tenant[]
   subscriptions Subscription[]
+
+  @@map("mm_plan")
 }
 
 model Subscription {
@@ -326,6 +342,8 @@ model Subscription {
   tenant  Tenant  @relation(fields: [tenantId], references: [id])
   plan    Plan    @relation(fields: [planId], references: [id])
   invoices Invoice[]
+
+  @@map("mm_subscription")
 }
 
 model Invoice {
@@ -338,6 +356,8 @@ model Invoice {
   createdAt      DateTime @default(now())
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@map("mm_invoice")
 }
 
 model Usage {
@@ -349,4 +369,5 @@ model Usage {
   createdAt DateTime @default(now())
 
   @@unique([tenantId, metric, period])
+  @@map("mm_usage")
 }

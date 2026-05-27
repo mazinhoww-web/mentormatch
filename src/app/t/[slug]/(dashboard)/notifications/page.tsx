@@ -141,7 +141,7 @@ export default function NotificationsPage() {
 
   async function fetchNotifications() {
     try {
-      const res = await fetch("/api/notifications")
+      const res = await fetch("/mentormatch/api/notifications")
       const data: Notification[] = await res.json()
       setNotifications(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
 
   async function markAsRead(id: string) {
     try {
-      await fetch("/api/notifications", {
+      await fetch("/mentormatch/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
   async function markAllAsRead() {
     setMarkingAll(true)
     try {
-      await fetch("/api/notifications", {
+      await fetch("/mentormatch/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ all: true }),

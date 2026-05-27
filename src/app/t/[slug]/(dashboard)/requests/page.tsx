@@ -98,9 +98,9 @@ export default function RequestsPage() {
   async function fetchData() {
     try {
       const [connectionsRes, sessionRes, waitlistRes] = await Promise.all([
-        fetch("/api/connections"),
-        fetch("/api/auth/session"),
-        fetch("/api/waitlist"),
+        fetch("/mentormatch/api/connections"),
+        fetch("/mentormatch/api/auth/session"),
+        fetch("/mentormatch/api/waitlist"),
       ])
 
       const connections: Connection[] = await connectionsRes.json()
@@ -136,7 +136,7 @@ export default function RequestsPage() {
   async function handleRemoveFromWaitlist(entryId: string) {
     setRemovingWaitlistId(entryId)
     try {
-      const res = await fetch("/api/waitlist", {
+      const res = await fetch("/mentormatch/api/waitlist", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: entryId }),
@@ -158,7 +158,7 @@ export default function RequestsPage() {
   ) {
     setUpdatingId(connectionId)
     try {
-      const res = await fetch("/api/connections", {
+      const res = await fetch("/mentormatch/api/connections", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ connectionId, status }),

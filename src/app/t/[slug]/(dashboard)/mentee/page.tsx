@@ -74,10 +74,10 @@ export default function MenteeDashboardPage() {
     try {
       const [connectionsRes, libraryRes, mentorsRes, sessionRes] =
         await Promise.all([
-          fetch("/api/connections?status=ACCEPTED"),
+          fetch("/mentormatch/api/connections?status=ACCEPTED"),
           fetch(`/api/library?tenantId=${encodeURIComponent(slug)}`),
           fetch(`/api/mentors?tenantId=${encodeURIComponent(slug)}`),
-          fetch("/api/auth/session"),
+          fetch("/mentormatch/api/auth/session"),
         ])
 
       const active: Connection[] = await connectionsRes.json()

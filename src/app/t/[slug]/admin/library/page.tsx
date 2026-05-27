@@ -162,7 +162,7 @@ export default function AdminLibraryPage() {
         const formData = new FormData()
         formData.append("file", uploadFile)
 
-        const uploadRes = await fetch("/api/upload", {
+        const uploadRes = await fetch("/mentormatch/api/upload", {
           method: "POST",
           body: formData,
         })
@@ -177,7 +177,7 @@ export default function AdminLibraryPage() {
         fileSize = uploadFile.size
       }
 
-      const res = await fetch("/api/library", {
+      const res = await fetch("/mentormatch/api/library", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

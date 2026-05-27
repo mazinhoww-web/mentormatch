@@ -117,7 +117,7 @@ export default function AdminReportsPage() {
   const fetchData = useCallback(async () => {
     try {
       const [reportsRes] = await Promise.all([
-        fetch("/api/admin/reports"),
+        fetch("/mentormatch/api/admin/reports"),
       ])
 
       if (reportsRes.ok) {

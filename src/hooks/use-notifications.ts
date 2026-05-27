@@ -18,7 +18,7 @@ export function useNotifications() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await fetch("/api/notifications")
+      const res = await fetch("/mentormatch/api/notifications")
       if (res.ok) {
         const data = await res.json()
         setNotifications(data)
@@ -32,7 +32,7 @@ export function useNotifications() {
   }, [])
 
   const markAsRead = useCallback(async (id: string) => {
-    await fetch("/api/notifications", {
+    await fetch("/mentormatch/api/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
@@ -44,7 +44,7 @@ export function useNotifications() {
   }, [])
 
   const markAllAsRead = useCallback(async () => {
-    await fetch("/api/notifications", {
+    await fetch("/mentormatch/api/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ all: true }),

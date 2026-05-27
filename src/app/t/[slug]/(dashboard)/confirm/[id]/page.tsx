@@ -59,7 +59,7 @@ export default function ConfirmMentorshipPage() {
     setError("")
 
     try {
-      const res = await fetch("/api/connections", {
+      const res = await fetch("/mentormatch/api/connections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

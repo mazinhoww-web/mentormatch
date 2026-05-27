@@ -108,7 +108,7 @@ export default function MenteeOnboardingPage() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/mentormatch/api/upload", {
         method: "POST",
         body: formData,
       })
@@ -145,7 +145,7 @@ export default function MenteeOnboardingPage() {
     setError(null)
 
     try {
-      const response = await fetch("/api/auth/complete-profile", {
+      const response = await fetch("/mentormatch/api/auth/complete-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
