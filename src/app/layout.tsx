@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Hanken_Grotesk, Inter } from "next/font/google"
 import { Providers } from "@/components/providers"
-import { ServiceWorkerRegister } from "@/components/sw-register"
 import "./globals.css"
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
   },
   description:
     "Plataforma white-label de mentoria empresarial. Conecte mentores e mentorados na sua organização.",
-  manifest: "/manifest.json",
+  manifest: "/mentormatch/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -50,7 +49,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
-        <ServiceWorkerRegister />
       </body>
     </html>
   )
