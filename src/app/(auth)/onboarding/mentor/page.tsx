@@ -127,7 +127,26 @@ export default function MentorOnboardingPage() {
     }
   }
 
-  async function onSubmit(data: MentorProfileInput) {
+  async function handleFinalize() {
+    setError(null)
+    const valid = await trigger()
+    if (!valid) {
+      if (errors.name || errors.whatsapp || errors.linkedin) {
+        setCurrentStep(1)
+        setError("Verifique os campos do passo 1.")
+      } else if (errors.headline || errors.bio) {
+        setCurrentStep(2)
+        setError("Verifique os campos do passo 2.")
+      } else if (errors.teachingSkills) {
+        setError("Adicione pelo menos 1 habilidade.")
+      }
+      return
+    }
+    const data = watch() as MentorProfileInput
+    await submitProfile(data)
+  }
+
+  async function submitProfile(data: MentorProfileInput) {
     setError(null)
 
     try {
@@ -233,7 +252,7 @@ export default function MentorOnboardingPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={(e) => e.preventDefault()}>
             {currentStep === 1 && (
               <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
@@ -454,7 +473,8 @@ export default function MentorOnboardingPage() {
                 </Button>
               ) : (
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={handleFinalize}
                   className="bg-[#004ac6] text-white px-8 py-3 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-blue-600 transition-colors active:scale-95 flex items-center gap-2 shadow-sm h-auto"
                   disabled={isSubmitting}
                 >

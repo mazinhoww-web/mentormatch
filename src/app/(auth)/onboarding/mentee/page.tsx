@@ -169,7 +169,23 @@ export default function MenteeOnboardingPage() {
     }
   }
 
-  async function onSubmit(data: MenteeProfileInput) {
+  async function handleFinalize() {
+    setError(null)
+    const valid = await trigger()
+    if (!valid) {
+      if (errors.name || errors.whatsapp) {
+        setCurrentStep(1)
+        setError("Verifique os campos do passo 1.")
+      } else if (errors.learningSkills) {
+        setError("Selecione pelo menos 1 habilidade.")
+      }
+      return
+    }
+    const data = watch() as MenteeProfileInput
+    await submitProfile(data)
+  }
+
+  async function submitProfile(data: MenteeProfileInput) {
     setError(null)
 
     try {
@@ -269,7 +285,7 @@ export default function MenteeOnboardingPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={(e) => e.preventDefault()}>
             {currentStep === 1 && (
               <div className="flex flex-col gap-4">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-2">
@@ -474,7 +490,8 @@ export default function MenteeOnboardingPage() {
                 </Button>
               ) : (
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={handleFinalize}
                   className="flex items-center gap-2 px-6 py-3 rounded-lg bg-[#004ac6] text-white text-[14px] leading-[16px] tracking-[0.05em] font-semibold hover:bg-[#0053db] active:scale-95 transition-all shadow-md h-auto"
                   disabled={isSubmitting}
                 >
