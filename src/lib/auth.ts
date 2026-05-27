@@ -6,10 +6,25 @@ import { db } from "./db"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
+  basePath: "/mentormatch/api/auth",
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
     error: "/login",
+  },
+  cookies: {
+    sessionToken: {
+      name: "mm.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" },
+    },
+    callbackUrl: {
+      name: "mm.callback-url",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" },
+    },
+    csrfToken: {
+      name: "mm.csrf-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" },
+    },
   },
   providers: [
     Credentials({
