@@ -6,14 +6,12 @@ import {
   Users,
   Clock,
   Star,
-  TrendingUp,
   BookOpen,
   Calendar,
   AlertCircle,
   ArrowRight,
   Check,
   X,
-  CalendarDays,
   UserPlus,
 } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
@@ -121,13 +119,6 @@ export default function MentorDashboardPage() {
     return <Loading text="Carregando dashboard..." />
   }
 
-  const menteeStatuses = ["Em dia", "Aguardando", "Ativo"]
-  const statusColors: Record<string, string> = {
-    "Em dia": "bg-emerald-500/10 text-emerald-500",
-    Aguardando: "bg-amber-500/10 text-amber-500",
-    Ativo: "bg-[#004ac6]/10 text-[#004ac6]",
-  }
-
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto">
       {/* Page Header */}
@@ -156,12 +147,6 @@ export default function MentorDashboardPage() {
             <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
               {stats.activeMentees}
             </span>
-            {stats.activeMentees > 0 && (
-              <span className="text-xs font-medium text-emerald-500 flex items-center bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                <TrendingUp className="h-3.5 w-3.5 mr-1" />
-                +{Math.min(stats.activeMentees, 2)}
-              </span>
-            )}
           </div>
         </div>
 
@@ -177,7 +162,7 @@ export default function MentorDashboardPage() {
           </div>
           <div className="mt-4">
             <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
-              {stats.activeMentees * 12}h
+              0h
             </span>
           </div>
         </div>
@@ -194,7 +179,7 @@ export default function MentorDashboardPage() {
           </div>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-[36px] leading-[44px] tracking-[-0.02em] font-bold text-[#131b2e]">
-              4.9
+              {stats.activeMentees > 0 ? "--" : "0"}
             </span>
             <span className="text-xs font-medium text-[#434655]">/ 5.0</span>
           </div>
@@ -222,50 +207,33 @@ export default function MentorDashboardPage() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeConnections.map((conn, index) => {
-                const progress = [85, 40, 60, 30][index % 4]
-                const status = menteeStatuses[index % menteeStatuses.length]
-                const nextMeeting = [
-                  "Proxima reuniao: Amanha as 14:00",
-                  "Proxima reuniao: Sex, 10:00",
-                  "Ultima reuniao: Semana passada",
-                ][index % 3]
-
-                return (
-                  <div
-                    key={conn.id}
-                    className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-3 hover:border-[#004ac6] transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Avatar
-                        src={conn.mentee.image}
-                        name={conn.mentee.name}
-                        size="md"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e] group-hover:text-[#004ac6] transition-colors">
-                          {conn.mentee.name}
-                        </h4>
+              {activeConnections.map((conn) => (
+                <div
+                  key={conn.id}
+                  className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-3 hover:border-[#004ac6] transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      src={conn.mentee.image}
+                      name={conn.mentee.name}
+                      size="md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold tracking-[0.05em] text-[#131b2e] group-hover:text-[#004ac6] transition-colors">
+                        {conn.mentee.name}
+                      </h4>
+                      {conn.mentee.skills.length > 0 && (
                         <p className="text-xs font-medium text-[#434655]">
-                          {conn.mentee.skills.length > 0
-                            ? conn.mentee.skills.map((s) => s.skill.name).join(", ")
-                            : "Mentoria"}
-                          {" "}&bull; {progress}% Concluido
+                          {conn.mentee.skills.map((s) => s.skill.name).join(", ")}
                         </p>
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${statusColors[status]}`}
-                      >
-                        {status}
-                      </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#434655]">
-                      <CalendarDays className="h-4 w-4" />
-                      <span className="text-xs font-medium">{nextMeeting}</span>
-                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-emerald-500/10 text-emerald-600">
+                      Ativo
+                    </span>
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>

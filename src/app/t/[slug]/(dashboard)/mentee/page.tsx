@@ -134,44 +134,54 @@ export default function MenteeDashboardPage() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <h2 className="text-xl font-semibold text-slate-900">Sua Proxima Sessao</h2>
-              <p className="text-sm text-slate-500 mt-1">
-                Trilha de {activeConnection?.mentor.skills?.[0]?.skill.name || "Lideranca Tecnica"}
-              </p>
-            </div>
-            <div className="bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 shrink-0">
-              <Clock className="h-4 w-4" />
-              <span>Hoje, 14:30</span>
+              {activeConnection?.mentor.skills?.[0]?.skill.name && (
+                <p className="text-sm text-slate-500 mt-1">
+                  Trilha de {activeConnection.mentor.skills[0].skill.name}
+                </p>
+              )}
             </div>
           </div>
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-4 hover:border-blue-300 transition-colors">
-            <Avatar
-              src={activeConnection?.mentor.image}
-              name={activeConnection?.mentor.name || "Roberto Almeida"}
-              size="lg"
-              className="w-14 h-14 shrink-0"
-            />
-            <div className="flex-grow min-w-0">
-              <h3 className="text-sm font-semibold tracking-wide text-slate-900">
-                {activeConnection?.mentor.name || "Roberto Almeida"}
-              </h3>
-              <p className="text-sm text-slate-500">
-                {activeConnection?.mentor.headline || "Engineering Manager @ CloudTech"}
-              </p>
+          {activeConnection?.mentor ? (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-4 hover:border-blue-300 transition-colors">
+              <Avatar
+                src={activeConnection.mentor.image}
+                name={activeConnection.mentor.name}
+                size="lg"
+                className="w-14 h-14 shrink-0"
+              />
+              <div className="flex-grow min-w-0">
+                <h3 className="text-sm font-semibold tracking-wide text-slate-900">
+                  {activeConnection.mentor.name}
+                </h3>
+                {activeConnection.mentor.headline && (
+                  <p className="text-sm text-slate-500">
+                    {activeConnection.mentor.headline}
+                  </p>
+                )}
+              </div>
+              <button
+                className="hidden sm:flex bg-blue-700 text-white text-sm font-semibold tracking-wide px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors items-center gap-2 active:scale-95"
+              >
+                <Video className="h-4 w-4" />
+                Entrar na Sala
+              </button>
+              <button
+                className="sm:hidden bg-blue-700 text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors active:scale-95 shrink-0"
+              >
+                <Video className="h-5 w-5" />
+              </button>
             </div>
-            {/* Desktop Button */}
-            <button
-              className="hidden sm:flex bg-blue-700 text-white text-sm font-semibold tracking-wide px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors items-center gap-2 active:scale-95"
-            >
-              <Video className="h-4 w-4" />
-              Entrar na Sala
-            </button>
-            {/* Mobile Button */}
-            <button
-              className="sm:hidden bg-blue-700 text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors active:scale-95 shrink-0"
-            >
-              <Video className="h-5 w-5" />
-            </button>
-          </div>
+          ) : (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
+              <p className="text-sm text-slate-600 mb-3">Voce ainda nao tem sessoes agendadas.</p>
+              <button
+                onClick={() => router.push(`/t/${slug}/mentors`)}
+                className="text-sm font-semibold text-blue-700 hover:underline"
+              >
+                Encontre um mentor &rarr;
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Library Quick Access (Spans 4 cols on desktop) */}
@@ -197,22 +207,7 @@ export default function MenteeDashboardPage() {
                   </button>
                 ))
               ) : (
-                <>
-                  <button
-                    onClick={() => router.push(`/t/${slug}/library`)}
-                    className="bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-lg p-3 flex items-center justify-between hover:bg-white transition-colors group/link cursor-pointer text-left w-full"
-                  >
-                    <span className="text-xs font-medium text-slate-900 truncate pr-4">Frameworks de Feedback 1:1</span>
-                    <ArrowRight className="h-4 w-4 text-slate-500 group-hover/link:text-blue-700 transition-colors shrink-0" />
-                  </button>
-                  <button
-                    onClick={() => router.push(`/t/${slug}/library`)}
-                    className="bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-lg p-3 flex items-center justify-between hover:bg-white transition-colors group/link cursor-pointer text-left w-full"
-                  >
-                    <span className="text-xs font-medium text-slate-900 truncate pr-4">Transicao para Gestao</span>
-                    <ArrowRight className="h-4 w-4 text-slate-500 group-hover/link:text-blue-700 transition-colors shrink-0" />
-                  </button>
-                </>
+                <p className="text-sm text-white/70 italic">Nenhum material disponivel ainda.</p>
               )}
             </div>
           </div>
@@ -230,10 +225,19 @@ export default function MenteeDashboardPage() {
             </button>
           </div>
           {/* Grid of Mentor Cards */}
+          {mentors.length === 0 ? (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
+              <p className="text-sm text-slate-600 mb-3">Voce ainda nao tem mentores conectados.</p>
+              <button
+                onClick={() => router.push(`/t/${slug}/mentors`)}
+                className="text-sm font-semibold text-blue-700 hover:underline"
+              >
+                Explore a plataforma &rarr;
+              </button>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(mentors.length > 0 ? mentors : [
-              { id: "placeholder-1", name: "Mentor Disponivel", image: null, headline: "Mentor na plataforma", skills: [] },
-            ]).map((mentor) => (
+            {mentors.map((mentor) => (
               <div
                 key={mentor.id}
                 className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] hover:border-blue-300 transition-all cursor-pointer group flex flex-col"
@@ -273,6 +277,7 @@ export default function MenteeDashboardPage() {
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>

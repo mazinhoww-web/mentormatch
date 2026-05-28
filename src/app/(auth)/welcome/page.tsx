@@ -15,8 +15,12 @@ export default function WelcomePage() {
     : "/t/default/mentee"
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login")
+    if (!isLoading) {
+      if (!user) {
+        router.push("/login")
+      } else if (!user.role) {
+        router.push("/select-profile")
+      }
     }
   }, [isLoading, user, router])
 
