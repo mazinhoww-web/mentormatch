@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
               Recuperacao de Acesso
             </h1>
             <p className="text-[14px] leading-[20px] text-[#c3c6d7] text-center mb-8 max-w-xs mx-auto">
-              Enviaremos um link para voce redefinir sua senha corporativa.
+              Enviaremos um link para voce redefinir sua sua senha.
             </p>
 
             {error && (
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
                   className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] block uppercase"
                   htmlFor="email"
                 >
-                  E-mail corporativo
+                  E-mail
                 </label>
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8d90a0] group-focus-within:text-[#b4c5ff] transition-colors" />
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
                     className="w-full bg-[#060e20] border border-[#434655] rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] text-[#dae2fd] placeholder:text-[#8d90a0]/50 focus:outline-none focus:border-[#b4c5ff] focus:ring-1 focus:ring-[#b4c5ff] transition-all duration-200"
                     id="email"
                     type="email"
-                    placeholder="seu.nome@empresa.com"
+                    placeholder="seu@email.com"
                     {...register("email")}
                   />
                 </div>

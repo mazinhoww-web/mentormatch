@@ -36,7 +36,9 @@ export default function WelcomePage() {
           Tudo pronto!
         </h1>
         <p className="text-[16px] leading-[24px] text-[#c3c6d7] mb-12 max-w-[85%] mx-auto">
-          Seu perfil foi criado com sucesso. Agora voce pode comecar a explorar mentores.
+          {user?.role === "MENTOR"
+            ? "Seu perfil de mentor foi criado. Comece a receber mentorados e compartilhe sua experiencia!"
+            : "Seu perfil foi criado com sucesso. Explore mentores e agende sua primeira sessao!"}
         </p>
 
         {isLoading ? (

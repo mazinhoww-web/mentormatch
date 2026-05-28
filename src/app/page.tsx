@@ -1,8 +1,17 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { GraduationCap, Users, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useCurrentUser()
+
+  const dashboardHref = user?.role && user?.tenantSlug
+    ? `/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`
+    : "/select-profile"
+
   return (
     <div className="min-h-screen">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -12,12 +21,20 @@ export default function HomePage() {
             <span className="text-xl font-bold">MentorMatch</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost">Entrar</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Começar agora</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href={dashboardHref}>
+                <Button>Ir para o Dashboard <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Entrar</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Comecar agora</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -33,11 +50,19 @@ export default function HomePage() {
             de mentoria para sua empresa com facilidade.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="gap-2">
-                Criar conta gratuita <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href={dashboardHref}>
+                <Button size="lg" className="gap-2">
+                  Ir para o Dashboard <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/register">
+                <Button size="lg" className="gap-2">
+                  Criar conta gratuita <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </div>
         </section>
 
@@ -58,7 +83,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Biblioteca de Materiais</h3>
               <p className="text-sm text-muted-foreground">
-                Compartilhe conhecimento através de materiais e recursos.
+                Compartilhe conhecimento atraves de materiais e recursos.
               </p>
             </div>
             <div className="rounded-lg border bg-card p-8 text-center">
@@ -78,12 +103,12 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold text-center mb-10">Plano Free inclui</h2>
             <div className="mx-auto max-w-md space-y-3">
               {[
-                "Até 50 usuários",
-                "Até 10 mentores",
+                "Ate 50 usuarios",
+                "Ate 10 mentores",
                 "500 MB de biblioteca",
-                "Notificações por e-mail",
+                "Notificacoes por e-mail",
                 "Dashboard completo",
-                "Gestão de habilidades",
+                "Gestao de habilidades",
               ].map((feature) => (
                 <div key={feature} className="flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />

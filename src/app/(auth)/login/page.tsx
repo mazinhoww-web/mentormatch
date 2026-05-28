@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
@@ -11,11 +11,23 @@ import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, GraduationCap } from "lucid
 import { loginSchema, type LoginInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { user, isAuthenticated } = useCurrentUser()
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role && user.tenantSlug) {
+        router.push(`/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`)
+      } else {
+        router.push("/select-profile")
+      }
+    }
+  }, [isAuthenticated, user, router])
 
   const {
     register,
@@ -39,7 +51,15 @@ export default function LoginPage() {
       return
     }
 
-    router.push("/select-profile")
+    const sessionRes = await fetch("/mentormatch/api/auth/session")
+    const session = await sessionRes.json()
+
+    if (session?.user?.role && session?.user?.tenantSlug) {
+      const role = session.user.role === "MENTOR" ? "mentor" : "mentee"
+      router.push(`/t/${session.user.tenantSlug}/${role}`)
+    } else {
+      router.push("/select-profile")
+    }
     router.refresh()
   }
 
@@ -90,7 +110,7 @@ export default function LoginPage() {
                 {/* Email field */}
                 <div className="space-y-2">
                   <label className="block text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#dae2fd]" htmlFor="email">
-                    E-mail corporativo
+                    E-mail
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-[#b4c5ff] text-[#8d90a0]">
@@ -100,7 +120,7 @@ export default function LoginPage() {
                       className="block w-full pl-10 pr-4 py-3 bg-[#060e20]/50 border border-[#434655] rounded-lg text-[#dae2fd] text-[14px] leading-[20px] placeholder:text-[#8d90a0]/60 focus:ring-2 focus:ring-[#b4c5ff]/20 focus:border-[#b4c5ff] transition-all duration-200"
                       id="email"
                       type="email"
-                      placeholder="nome@empresa.com"
+                      placeholder="seu@email.com"
                       {...register("email")}
                     />
                   </div>

@@ -9,6 +9,7 @@ import Link from "next/link"
 import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from "lucide-react"
 
 import { registerSchema, type RegisterInput } from "@/lib/validations"
+import { useCurrentUser } from "@/hooks/use-current-user"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
 
@@ -32,6 +33,17 @@ function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
+  const { user, isAuthenticated } = useCurrentUser()
+
+  useEffect(() => {
+    if (isAuthenticated && user && !token) {
+      if (user.role && user.tenantSlug) {
+        router.push(`/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`)
+      } else {
+        router.push("/select-profile")
+      }
+    }
+  }, [isAuthenticated, user, token, router])
 
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -179,6 +191,9 @@ function RegisterForm() {
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {error}
+            {error.includes("email") && (
+              <> <Link href="/login" className="font-semibold text-[#2563eb] hover:underline">Fazer login</Link></>
+            )}
           </div>
         )}
 
@@ -208,14 +223,14 @@ function RegisterForm() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
-                E-mail corporativo
+                E-mail
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   id="email"
                   type="email"
-                  placeholder="seu@empresa.com"
+                  placeholder="seu@email.com"
                   className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   readOnly={!!invitation?.valid}
                   {...registerField("email")}
