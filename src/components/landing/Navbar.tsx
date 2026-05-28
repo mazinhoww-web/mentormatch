@@ -4,11 +4,10 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowRight, BookOpen } from "lucide-react"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { getDashboardHref } from "@/lib/dashboard-href"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const { user, isAuthenticated } = useCurrentUser()
+  const { isAuthenticated } = useCurrentUser()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -17,11 +16,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
-  const ctaHref = isAuthenticated
-    ? user?.role && user?.tenantSlug
-      ? getDashboardHref(user.role, user.tenantSlug)
-      : "/select-profile"
-    : "/register"
+  const ctaHref = isAuthenticated ? "/dashboard" : "/register"
 
   const ctaLabel = isAuthenticated ? "Ir para o Dashboard" : "Comecar Gratis"
 

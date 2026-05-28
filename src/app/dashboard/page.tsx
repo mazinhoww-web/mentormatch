@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
-import { getDashboardHref } from "@/lib/dashboard-href"
+import { resolvePostLoginHref } from "@/lib/post-login-href"
+
+export const dynamic = "force-dynamic"
 
 export default async function DashboardAliasPage() {
   const session = await auth()
-  if (!session?.user) redirect("/login")
-  redirect(getDashboardHref(session.user.role, session.user.tenantSlug))
+  if (!session?.user?.id) redirect("/login")
+  redirect(await resolvePostLoginHref(session.user.id))
 }

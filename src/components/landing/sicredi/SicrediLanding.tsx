@@ -13,7 +13,6 @@ import {
 import { SicrediMatchPreview } from "./SicrediMatchPreview"
 import { useCounter } from "@/hooks/use-counter"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { getDashboardHref } from "@/lib/dashboard-href"
 
 const features = [
   {
@@ -76,7 +75,7 @@ export function SicrediLanding() {
   const [scrolled, setScrolled] = useState(false)
   const [countersOn, setCountersOn] = useState(false)
   const trustRef = useRef<HTMLDivElement>(null)
-  const { user, isAuthenticated } = useCurrentUser()
+  const { isAuthenticated } = useCurrentUser()
 
   const mentorias = useCounter(2400, 1800, countersOn)
   const satisfacao = useCounter(98, 1400, countersOn)
@@ -102,9 +101,7 @@ export function SicrediLanding() {
   }, [])
 
   // Use Sicredi-prefixed URLs to preserve tenant context (set via cookie)
-  const internalCtaPath = isAuthenticated
-    ? getDashboardHref(user?.role, user?.tenantSlug)
-    : "/register"
+  const internalCtaPath = isAuthenticated ? "/dashboard" : "/register"
   const ctaHref = `https://aurimarnogueira.com.br/sicredi/mentormatch${internalCtaPath}`
 
   const ctaLabel = isAuthenticated
