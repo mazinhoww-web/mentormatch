@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next"
+import { cookies } from "next/headers"
 import { Hanken_Grotesk, Inter } from "next/font/google"
 import { Providers } from "@/components/providers"
+import { TenantProvider, type TenantContextValue } from "@/components/providers/TenantContext"
 import { ToastProvider } from "@/components/ui/toast"
+import { db } from "@/lib/db"
 import "./globals.css"
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -38,19 +41,60 @@ export const viewport: Viewport = {
   maximumScale: 1,
 }
 
-export default function RootLayout({
+const DEFAULT_TENANT: TenantContextValue = {
+  slug: null,
+  name: "MentorMatch",
+  brandColor: "#4F46E5",
+  themeKey: "dark",
+  logoUrl: null,
+}
+
+async function resolveTenant(): Promise<TenantContextValue> {
+  try {
+    const store = await cookies()
+    const slug = store.get("mm-tenant")?.value
+    if (!slug) return DEFAULT_TENANT
+    const tenant = await db.tenant.findUnique({
+      where: { slug },
+      select: {
+        slug: true,
+        name: true,
+        brandColor: true,
+        themeKey: true,
+        logoUrl: true,
+      },
+    })
+    if (!tenant) return DEFAULT_TENANT
+    return {
+      slug: tenant.slug,
+      name: tenant.name,
+      brandColor: tenant.brandColor,
+      themeKey: tenant.themeKey ?? "dark",
+      logoUrl: tenant.logoUrl,
+    }
+  } catch {
+    return DEFAULT_TENANT
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const tenant = await resolveTenant()
+  const bodyClass = `min-h-full flex flex-col theme-${tenant.themeKey}`
+
   return (
     <html
       lang="pt-BR"
       className={`${hankenGrotesk.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className={bodyClass}>
         <Providers>
-          <ToastProvider>{children}</ToastProvider>
+          <TenantProvider value={tenant}>
+            <ToastProvider>{children}</ToastProvider>
+          </TenantProvider>
         </Providers>
       </body>
     </html>

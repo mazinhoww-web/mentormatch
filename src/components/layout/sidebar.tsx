@@ -185,7 +185,12 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
           </button>
         )}
         <button
-          onClick={() => signOut({ callbackUrl: "/mentormatch/login" })}
+          onClick={async () => {
+            try {
+              await fetch("/mentormatch/api/tenant/clear", { method: "POST" })
+            } catch {}
+            signOut({ callbackUrl: "/mentormatch/login" })
+          }}
           className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
           <LogOut className="h-5 w-5 shrink-0" />

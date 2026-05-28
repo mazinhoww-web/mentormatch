@@ -101,9 +101,11 @@ export function SicrediLanding() {
     return () => io.disconnect()
   }, [])
 
-  const ctaHref = isAuthenticated
+  // Use Sicredi-prefixed URLs to preserve tenant context (set via cookie)
+  const internalCtaPath = isAuthenticated
     ? getDashboardHref(user?.role, user?.tenantSlug)
     : "/register"
+  const ctaHref = `https://aurimarnogueira.com.br/sicredi/mentormatch${internalCtaPath}`
 
   const ctaLabel = isAuthenticated
     ? "Ir para a plataforma"
@@ -123,7 +125,10 @@ export function SicrediLanding() {
           boxShadow: scrolled ? "0 2px 4px 0 #CDD3CD" : "none",
         }}
       >
-        <Link href="/sicredi" className="flex items-center gap-3.5">
+        <a
+          href="https://aurimarnogueira.com.br/sicredi/mentormatch"
+          className="flex items-center gap-3.5"
+        >
           <Image
             src="/mentormatch/sicredi-logo.png"
             alt="Sicredi"
@@ -143,7 +148,7 @@ export function SicrediLanding() {
           >
             MentorMatch
           </span>
-        </Link>
+        </a>
         <div className="hidden items-center gap-1 md:flex">
           {[
             { label: "Como funciona", href: "#how-it-works" },

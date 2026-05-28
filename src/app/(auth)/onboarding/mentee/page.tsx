@@ -289,7 +289,7 @@ export default function MenteeOnboardingPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form key={user?.id ?? "anon"} onSubmit={(e) => e.preventDefault()}>
             {currentStep === 1 && (
               <div className="flex flex-col gap-4">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-2">

@@ -256,7 +256,7 @@ export default function MentorOnboardingPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form key={user?.id ?? "anon"} onSubmit={(e) => e.preventDefault()}>
             {currentStep === 1 && (
               <div className="space-y-4 animate-[fadeIn_0.3s_ease-out_forwards]">
                 <h3 className="font-heading text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-4">
