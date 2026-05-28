@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import {
   Loader2,
@@ -27,6 +28,7 @@ const steps = [
 
 export default function MentorOnboardingPage() {
   const router = useRouter()
+  const { update } = useSession()
   const { user, isLoading: sessionLoading } = useCurrentUser()
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
@@ -173,7 +175,9 @@ export default function MentorOnboardingPage() {
         return
       }
 
+      await update()
       router.push("/welcome")
+      router.refresh()
     } catch {
       setError("Erro de conexao. Tente novamente.")
     }

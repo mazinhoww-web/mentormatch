@@ -59,10 +59,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, trigger }) {
+      const userId = user?.id ?? token.sub
+      if ((user || trigger === "update") && userId) {
         const dbUser = await db.user.findUnique({
-          where: { id: user.id },
+          where: { id: userId },
           select: {
             id: true,
             role: true,

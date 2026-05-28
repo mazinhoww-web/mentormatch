@@ -17,7 +17,11 @@ import {
   LogOut,
   X,
   GraduationCap,
+  Repeat,
+  Loader2,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/ui/avatar"
@@ -74,8 +78,36 @@ function getNavItems(tenantSlug: string, role: Role): NavItem[] {
 
 export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { update } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [switchingRole, setSwitchingRole] = useState(false)
   const navItems = getNavItems(tenantSlug, role)
+
+  const canSwitchRole = role === "MENTOR" || role === "MENTEE"
+  const otherRole: "MENTOR" | "MENTEE" = role === "MENTOR" ? "MENTEE" : "MENTOR"
+  const otherRoleLabel = otherRole === "MENTOR" ? "Mentor" : "Mentorado"
+
+  async function handleSwitchRole() {
+    if (switchingRole) return
+    setSwitchingRole(true)
+    try {
+      const res = await fetch("/mentormatch/api/users/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: otherRole }),
+      })
+      if (!res.ok) {
+        setSwitchingRole(false)
+        return
+      }
+      await update()
+      router.push(`/t/${tenantSlug}/${otherRole === "MENTOR" ? "mentor" : "mentee"}`)
+      router.refresh()
+    } catch {
+      setSwitchingRole(false)
+    }
+  }
 
   function isActive(href: string): boolean {
     if (href === `/t/${tenantSlug}/admin`) {
@@ -138,6 +170,20 @@ export function Sidebar({ tenantSlug, role, userName }: SidebarProps) {
             </p>
           </div>
         </div>
+        {canSwitchRole && (
+          <button
+            onClick={handleSwitchRole}
+            disabled={switchingRole}
+            className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-60"
+          >
+            {switchingRole ? (
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+            ) : (
+              <Repeat className="h-5 w-5 shrink-0" />
+            )}
+            Mudar para {otherRoleLabel}
+          </button>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: "/mentormatch/login" })}
           className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"

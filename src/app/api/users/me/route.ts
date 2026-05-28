@@ -52,6 +52,7 @@ const updateSchema = z.object({
   whatsapp: z.string().optional(),
   image: z.string().optional().nullable(),
   maxMentees: z.number().int().min(1).max(20).optional(),
+  role: z.enum(["MENTOR", "MENTEE"]).optional(),
 })
 
 export async function PATCH(request: Request) {
