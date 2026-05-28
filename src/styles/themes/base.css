@@ -1,0 +1,27 @@
+.theme-dark {
+  --bg-deep: #08080d;
+  --bg-base: #0d0d14;
+  --bg-elevated: #13131e;
+  --surface: rgba(255, 255, 255, 0.04);
+  --glass: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-accent: rgba(99, 102, 241, 0.35);
+  --accent: #4f46e5;
+  --accent-alt: #6366f1;
+  --accent-glow: rgba(79, 70, 229, 0.28);
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text: #ededef;
+  --text-muted: #6b7280;
+  --text-sub: #9ca3af;
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --radius-card: 14px;
+  --radius-btn: 10px;
+  --radius-chip: 100px;
+  --shadow-card: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --sidebar-bg: #0b0b11;
+  --navbar-bg: rgba(8, 8, 13, 0.85);
+}

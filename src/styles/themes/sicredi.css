@@ -1,0 +1,27 @@
+.theme-sicredi {
+  --bg-deep: #fafafa;
+  --bg-base: #ffffff;
+  --bg-elevated: #ffffff;
+  --surface: #fafafa;
+  --glass: #ffffff;
+  --border: #cdd3cd;
+  --border-accent: #33820d;
+  --accent: #33820d;
+  --accent-alt: #26610a;
+  --accent-glow: rgba(51, 130, 13, 0.2);
+  --green: #33820d;
+  --amber: #e6a500;
+  --red: #aa003c;
+  --text: #323c32;
+  --text-muted: #5a645a;
+  --text-sub: #828a82;
+  --font-display: "Exo 2", sans-serif;
+  --font-body: "Nunito", sans-serif;
+  --radius-card: 4px;
+  --radius-btn: 8px;
+  --radius-chip: 100px;
+  --shadow-card: 0 2px 4px 0 #cdd3cd;
+  --shadow-md: 0 3px 10px 0 rgba(50, 60, 50, 0.1);
+  --sidebar-bg: #fafafa;
+  --navbar-bg: rgba(255, 255, 255, 0.95);
+}

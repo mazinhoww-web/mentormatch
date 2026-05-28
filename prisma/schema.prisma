@@ -20,6 +20,11 @@ model Tenant {
   domain         String?  @unique
   active         Boolean  @default(true)
 
+  // Theme system
+  themeKey       String   @default("dark")
+  themeCssUrl    String?
+  tokens         String?  @db.Text
+
   // Limits
   maxUsers       Int      @default(50)
   maxConnections Int      @default(100)
