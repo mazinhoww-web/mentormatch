@@ -112,7 +112,7 @@ function RegisterForm() {
 
       if (!response.ok) {
         const body = await response.json()
-        setError(body.message || "Erro ao criar conta. Tente novamente.")
+        setError(body.error || body.message || "Erro ao criar conta. Tente novamente.")
         return
       }
 
