@@ -30,7 +30,16 @@ export function middleware(req: NextRequest) {
 
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
   if (isPublicPath) {
-    return NextResponse.next()
+    const res = NextResponse.next()
+    if (pathname.startsWith("/sicredi")) {
+      res.cookies.set("mm-tenant", "sicredi", {
+        path: "/",
+        maxAge: 60 * 60 * 24,
+        sameSite: "lax",
+        httpOnly: false,
+      })
+    }
+    return res
   }
 
   const sessionToken =

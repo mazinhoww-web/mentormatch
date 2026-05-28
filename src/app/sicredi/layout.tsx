@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { setTenantCookie } from "@/app/actions/tenant"
 
 export const metadata: Metadata = {
   title: "MentorMatch Sicredi - Mentoria empresarial para cooperativas",
@@ -10,12 +9,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function SicrediLayout({
+export default function SicrediLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await setTenantCookie("sicredi")
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
