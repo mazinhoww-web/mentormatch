@@ -357,7 +357,7 @@ export default function RequestsPage() {
 
               {/* Empty Slot */}
               {isMentor && activeCount < 4 && (
-                <div className="bg-[#faf8ff] border border-dashed border-[#c3c6d7] rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center h-full min-h-[120px]">
+                <div className="bg-[#faf8ff] border border-dashed border-[#E2E8F0] rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center h-full min-h-[120px]">
                   <UserPlus className="h-6 w-6 text-[#737686]" />
                   <span className="text-xs font-medium text-[#434655]">
                     {4 - activeCount} Vaga{4 - activeCount > 1 ? "s" : ""} Disponive{4 - activeCount > 1 ? "is" : "l"}
@@ -480,7 +480,7 @@ export default function RequestsPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs font-medium text-[#c3c6d7] flex items-center gap-1">
+                        <span className="text-xs font-medium text-[#434655] flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5" />
                           Aguardando ha{" "}
                           {Math.max(

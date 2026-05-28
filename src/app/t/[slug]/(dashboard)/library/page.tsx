@@ -287,7 +287,7 @@ export default function LibraryPage() {
             return (
               <div
                 key={item.id}
-                className="group bg-white border border-[#E2E8F0] rounded-xl p-5 flex flex-col hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] hover:border-[#c3c6d7] transition-all cursor-pointer"
+                className="group bg-white border border-[#E2E8F0] rounded-xl p-5 flex flex-col hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] hover:border-[#E2E8F0] transition-all cursor-pointer"
                 onClick={() => router.push(`/t/${slug}/library/${item.id}`)}
               >
                 <div className="flex items-start justify-between mb-2">

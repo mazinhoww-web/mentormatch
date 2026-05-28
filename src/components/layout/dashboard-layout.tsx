@@ -30,7 +30,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div
-      className="dark min-h-screen bg-background"
+      className="min-h-screen bg-background"
       data-tenant={tenantSlug}
       style={{
         '--tenant-primary': brandColor || undefined,

@@ -252,7 +252,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div
-                className="absolute inset-0 bg-[#131b2e]/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute inset-0 bg-white/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Camera className="h-8 w-8 text-white" />

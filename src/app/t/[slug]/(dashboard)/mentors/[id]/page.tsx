@@ -194,7 +194,7 @@ export default function MentorProfilePage() {
             <button
               disabled
               title="Disponivel apos conexao ativa"
-              className="bg-transparent border-2 border-[#c3c6d7] text-[#c3c6d7] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 opacity-60"
+              className="bg-transparent border-2 border-[#E2E8F0] text-[#434655] text-sm font-semibold tracking-[0.05em] px-8 py-3 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 opacity-60"
             >
               <MessageCircle className="h-5 w-5" />
               WhatsApp

@@ -56,9 +56,9 @@ function getNotificationIcon(type: string) {
 function getNotificationStyle(type: string) {
   switch (type) {
     case "CONNECTION_REQUEST":
-      return { iconBg: "bg-blue-600/20", iconText: "text-[#b4c5ff]" }
+      return { iconBg: "bg-blue-600/20", iconText: "text-[#004ac6]" }
     case "CONNECTION_ACCEPTED":
-      return { iconBg: "bg-blue-600/20", iconText: "text-[#b4c5ff]" }
+      return { iconBg: "bg-blue-600/20", iconText: "text-[#004ac6]" }
     case "CONNECTION_REJECTED":
       return { iconBg: "bg-red-500/20", iconText: "text-red-400" }
     case "WAITLIST_PROMOTED":
@@ -67,7 +67,7 @@ function getNotificationStyle(type: string) {
     case "NEW_MATERIAL":
       return { iconBg: "bg-[#bc4800]/20", iconText: "text-[#ffb596]" }
     default:
-      return { iconBg: "bg-[#222a3d]", iconText: "text-[#c3c6d7]" }
+      return { iconBg: "bg-[#dae2fd]", iconText: "text-[#434655]" }
   }
 }
 
@@ -203,10 +203,10 @@ export default function NotificationsPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[28px] md:text-[32px] leading-[36px] md:leading-[40px] font-semibold tracking-[-0.01em] text-[#dae2fd]">
+          <h2 className="text-[28px] md:text-[32px] leading-[36px] md:leading-[40px] font-semibold tracking-[-0.01em] text-[#131b2e]">
             Notificacoes
           </h2>
-          <p className="text-sm text-[#c3c6d7] mt-1">
+          <p className="text-sm text-[#434655] mt-1">
             {unreadCount > 0
               ? `Voce tem ${unreadCount} mensage${unreadCount > 1 ? "ns" : "m"} nao lida${unreadCount > 1 ? "s" : ""}.`
               : "Todas as notificacoes foram lidas."}
@@ -216,7 +216,7 @@ export default function NotificationsPage() {
           <button
             onClick={markAllAsRead}
             disabled={markingAll}
-            className="self-start md:self-auto px-4 py-2 rounded-lg text-xs font-medium tracking-[0.05em] text-[#b7c8e1] border border-[#3a4a5f] hover:bg-[#2d3449]/50 transition-colors flex items-center gap-2"
+            className="self-start md:self-auto px-4 py-2 rounded-lg text-xs font-medium tracking-[0.05em] text-[#b7c8e1] border border-[#3a4a5f] hover:bg-[#E2E8F0]/50 transition-colors flex items-center gap-2"
           >
             <CheckCheck className="h-4 w-4" />
             {markingAll ? "Marcando..." : "Marcar todas como lidas"}
@@ -235,7 +235,7 @@ export default function NotificationsPage() {
         <div className="flex flex-col gap-6">
           {grouped.map((group) => (
             <section key={group.label} className="flex flex-col gap-3">
-              <h3 className="text-xs font-medium tracking-[0.05em] text-[#c3c6d7] uppercase tracking-wider pl-1">
+              <h3 className="text-xs font-medium tracking-[0.05em] text-[#434655] uppercase tracking-wider pl-1">
                 {group.label}
               </h3>
 
@@ -249,11 +249,11 @@ export default function NotificationsPage() {
                   return (
                     <div
                       key={notif.id}
-                      className="bg-[#171f33]/60 backdrop-blur-xl border border-[#434655] rounded-xl p-4 flex gap-4 items-start relative group cursor-pointer hover:bg-[#171f33] transition-colors"
+                      className="bg-white/60 backdrop-blur-xl border border-[#E2E8F0] rounded-xl p-4 flex gap-4 items-start relative group cursor-pointer hover:bg-white transition-colors"
                       onClick={() => markAsRead(notif.id)}
                     >
                       {/* Unread indicator bar */}
-                      <div className="absolute top-4 left-0 w-1 h-12 bg-[#b4c5ff] rounded-r-full" />
+                      <div className="absolute top-4 left-0 w-1 h-12 bg-[#dae2fd] rounded-r-full" />
 
                       <div className={`flex-shrink-0 w-10 h-10 rounded-full ${style.iconBg} ${style.iconText} flex items-center justify-center mt-1`}>
                         <Icon className="h-5 w-5" />
@@ -261,14 +261,14 @@ export default function NotificationsPage() {
 
                       <div className="flex-1 flex flex-col gap-1">
                         <div className="flex justify-between items-start gap-4">
-                          <h4 className="text-lg leading-6 font-semibold text-[#dae2fd]">
+                          <h4 className="text-lg leading-6 font-semibold text-[#131b2e]">
                             {notif.title}
                           </h4>
-                          <span className="text-xs font-medium tracking-[0.05em] text-[#c3c6d7] whitespace-nowrap mt-1">
+                          <span className="text-xs font-medium tracking-[0.05em] text-[#434655] whitespace-nowrap mt-1">
                             {formatRelativeTime(notif.createdAt)}
                           </span>
                         </div>
-                        <p className="text-sm text-[#c3c6d7]">{notif.message}</p>
+                        <p className="text-sm text-[#434655]">{notif.message}</p>
 
                         {actionBtn && (
                           <div className="mt-2 flex gap-2">
@@ -288,7 +288,7 @@ export default function NotificationsPage() {
                       </div>
 
                       {/* Unread dot */}
-                      <div className="w-2 h-2 rounded-full bg-[#b4c5ff] mt-2 flex-shrink-0" />
+                      <div className="w-2 h-2 rounded-full bg-[#dae2fd] mt-2 flex-shrink-0" />
                     </div>
                   )
                 }
@@ -297,7 +297,7 @@ export default function NotificationsPage() {
                 return (
                   <div
                     key={notif.id}
-                    className="bg-[#060e20] border border-[#434655]/50 rounded-xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-[#131b2e] transition-colors"
+                    className="bg-[#F8FAFC] border border-[#E2E8F0]/50 rounded-xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-white transition-colors"
                   >
                     <div className={`flex-shrink-0 w-10 h-10 rounded-full ${style.iconBg} ${style.iconText} flex items-center justify-center mt-1`}>
                       <Icon className="h-5 w-5" />
@@ -305,14 +305,14 @@ export default function NotificationsPage() {
 
                     <div className="flex-1 flex flex-col gap-1 opacity-75 group-hover:opacity-100 transition-opacity">
                       <div className="flex justify-between items-start gap-4">
-                        <h4 className="text-lg leading-6 font-semibold text-[#dae2fd]">
+                        <h4 className="text-lg leading-6 font-semibold text-[#131b2e]">
                           {notif.title}
                         </h4>
-                        <span className="text-xs font-medium tracking-[0.05em] text-[#c3c6d7] whitespace-nowrap mt-1">
+                        <span className="text-xs font-medium tracking-[0.05em] text-[#434655] whitespace-nowrap mt-1">
                           {formatRelativeTime(notif.createdAt)}
                         </span>
                       </div>
-                      <p className="text-sm text-[#c3c6d7]">{notif.message}</p>
+                      <p className="text-sm text-[#434655]">{notif.message}</p>
                     </div>
                   </div>
                 )
