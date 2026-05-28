@@ -45,7 +45,7 @@ export const mentorProfileSchema = z.object({
 export const menteeProfileSchema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
   headline: z.string().optional(),
-  bio: z.string().min(10, "Conte um pouco sobre você"),
+  bio: z.string().optional(),
   education: z.string().optional(),
   linkedin: z.string().url("URL inválida").optional().or(z.literal("")),
   whatsapp: z.string().min(10, "WhatsApp obrigatório"),
