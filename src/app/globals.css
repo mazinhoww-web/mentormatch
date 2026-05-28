@@ -152,3 +152,63 @@ body {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Landing page tokens (Modern Dark Cinema + Glass) */
+:root {
+  --landing-bg-deep: #08080d;
+  --landing-bg-base: #0d0d14;
+  --landing-bg-elevated: #13131e;
+  --landing-surface: rgba(255, 255, 255, 0.04);
+  --landing-glass: rgba(255, 255, 255, 0.07);
+  --landing-border: rgba(255, 255, 255, 0.07);
+  --landing-border-accent: rgba(99, 102, 241, 0.35);
+  --landing-accent: #4f46e5;
+  --landing-accent-alt: #6366f1;
+  --landing-accent-glow: rgba(79, 70, 229, 0.28);
+  --landing-green: #10b981;
+  --landing-green-glow: rgba(16, 185, 129, 0.2);
+  --landing-text: #ededef;
+  --landing-text-muted: #6b7280;
+  --landing-text-sub: #9ca3af;
+}
+
+/* Landing animations */
+@keyframes auroraA {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50% { transform: translate(30px, -20px) scale(1.08); opacity: 0.8; }
+}
+@keyframes auroraB {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(-20px, 30px) scale(1.06); opacity: 0.7; }
+}
+@keyframes auroraC {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  50% { transform: translate(20px, 15px) scale(1.1); opacity: 0.6; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aurora-a { animation: auroraA 14s ease-in-out infinite; }
+.aurora-b { animation: auroraB 18s ease-in-out infinite; }
+.aurora-c { animation: auroraC 22s ease-in-out infinite; }
+
+.fade-up { animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fade-up-2 { animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.fade-up-3 { animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-a,
+  .aurora-b,
+  .aurora-c {
+    animation: none;
+  }
+  .fade-up,
+  .fade-up-2,
+  .fade-up-3 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
