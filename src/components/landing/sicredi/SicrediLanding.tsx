@@ -116,28 +116,29 @@ export function SicrediLanding() {
     >
       {/* Navbar */}
       <nav
-        className="sticky top-0 z-50 flex h-16 items-center justify-between px-6 transition-all duration-200 md:px-10"
+        className="sticky top-0 z-50 flex h-20 items-center justify-between px-6 transition-all duration-200 md:px-10"
         style={{
           background: "#FFFFFF",
           borderBottom: `1px solid ${scrolled ? "#CDD3CD" : "transparent"}`,
           boxShadow: scrolled ? "0 2px 4px 0 #CDD3CD" : "none",
         }}
       >
-        <Link href="/sicredi" className="flex items-center gap-3">
+        <Link href="/sicredi" className="flex items-center gap-3.5">
           <Image
             src="/mentormatch/sicredi-logo.png"
             alt="Sicredi"
-            width={120}
-            height={40}
-            className="h-9 w-auto object-contain"
+            width={180}
+            height={56}
+            priority
+            className="h-12 w-auto object-contain md:h-14"
           />
           <div
-            className="h-7 w-px"
+            className="h-9 w-px md:h-10"
             style={{ background: "#CDD3CD" }}
             aria-hidden="true"
           />
           <span
-            className="text-[18px] font-light tracking-tight text-[#323C32]"
+            className="text-[22px] font-light tracking-tight text-[#323C32] md:text-[24px]"
             style={{ fontFamily: "'Exo 2', sans-serif" }}
           >
             MentorMatch
@@ -526,17 +527,17 @@ export function SicrediLanding() {
             <Image
               src="/mentormatch/sicredi-logo.png"
               alt="Sicredi"
-              width={100}
-              height={32}
-              className="h-7 w-auto object-contain"
+              width={140}
+              height={42}
+              className="h-10 w-auto object-contain"
             />
             <div
-              className="h-5 w-px"
+              className="h-7 w-px"
               style={{ background: "#CDD3CD" }}
               aria-hidden="true"
             />
             <span
-              className="text-[15px] font-light text-[#323C32]"
+              className="text-[17px] font-light text-[#323C32]"
               style={{ fontFamily: "'Exo 2', sans-serif" }}
             >
               MentorMatch
