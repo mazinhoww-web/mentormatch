@@ -123,28 +123,25 @@ export function SicrediLanding() {
           boxShadow: scrolled ? "0 2px 4px 0 #CDD3CD" : "none",
         }}
       >
-        <Link href="/sicredi" className="flex items-center gap-2.5">
+        <Link href="/sicredi" className="flex items-center gap-3">
           <Image
             src="/mentormatch/sicredi-logo.png"
             alt="Sicredi"
-            width={40}
+            width={120}
             height={40}
-            className="h-10 w-auto object-contain"
+            className="h-9 w-auto object-contain"
           />
-          <div className="flex items-center gap-2">
-            <span
-              className="text-[18px] font-light tracking-tight text-[#323C32]"
-              style={{ fontFamily: "'Exo 2', sans-serif" }}
-            >
-              MentorMatch
-            </span>
-            <span
-              className="rounded-full px-2 py-0.5 font-nunito text-[10px] font-bold tracking-wider text-[#33820D]"
-              style={{ background: "#D7E6C8" }}
-            >
-              SICREDI
-            </span>
-          </div>
+          <div
+            className="h-7 w-px"
+            style={{ background: "#CDD3CD" }}
+            aria-hidden="true"
+          />
+          <span
+            className="text-[18px] font-light tracking-tight text-[#323C32]"
+            style={{ fontFamily: "'Exo 2', sans-serif" }}
+          >
+            MentorMatch
+          </span>
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           {[
@@ -525,20 +522,24 @@ export function SicrediLanding() {
         style={{ background: "#FFFFFF", borderTop: "1px solid #CDD3CD" }}
       >
         <div className="mx-auto flex max-w-[1160px] flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Image
               src="/mentormatch/sicredi-logo.png"
               alt="Sicredi"
-              width={32}
+              width={100}
               height={32}
-              className="h-8 w-auto object-contain"
+              className="h-7 w-auto object-contain"
+            />
+            <div
+              className="h-5 w-px"
+              style={{ background: "#CDD3CD" }}
+              aria-hidden="true"
             />
             <span
               className="text-[15px] font-light text-[#323C32]"
               style={{ fontFamily: "'Exo 2', sans-serif" }}
             >
-              MentorMatch{" "}
-              <span className="font-semibold text-[#33820D]">Sicredi</span>
+              MentorMatch
             </span>
           </div>
           <div className="flex gap-6">
