@@ -33,28 +33,25 @@ export function TrustBar() {
   return (
     <div
       ref={ref}
-      className="relative z-10 border-y border-white/[0.06] px-6 py-9 md:px-10"
-      style={{ background: "rgba(255,255,255,0.018)" }}
+      className="relative z-10 border-y border-slate-200 bg-slate-50 px-6 py-9 md:px-10"
     >
       <div className="mx-auto flex max-w-[1160px] flex-wrap items-center justify-around gap-7">
         {items.map(({ val, suf, lbl }) => (
           <div key={lbl} className="text-center">
             <div
-              className="text-[40px] font-black leading-none tracking-[-0.03em] bg-clip-text text-transparent"
+              className="bg-clip-text text-[40px] font-black leading-none tracking-[-0.03em] text-transparent"
               style={{
-                backgroundImage: "linear-gradient(135deg, #6366F1, #A78BFA)",
+                backgroundImage: "linear-gradient(135deg, #004ac6, #2563eb)",
               }}
             >
               {val}
               {suf}
             </div>
-            <div className="mt-1.5 text-xs text-[#6B7280]">{lbl}</div>
+            <div className="mt-1.5 text-xs text-slate-500">{lbl}</div>
           </div>
         ))}
         <div className="text-center">
-          <div className="mb-1.5 text-[11px] text-[#6B7280]">
-            Avaliacao media
-          </div>
+          <div className="mb-1.5 text-[11px] text-slate-500">Avaliacao media</div>
           <div className="flex justify-center gap-1">
             {[1, 2, 3, 4, 5].map((i) => (
               <Star
@@ -66,9 +63,7 @@ export function TrustBar() {
               />
             ))}
           </div>
-          <div className="mt-1 text-[13px] font-bold text-gray-300">
-            4.9 / 5.0
-          </div>
+          <div className="mt-1 text-[13px] font-bold text-slate-700">4.9 / 5.0</div>
         </div>
       </div>
     </div>

@@ -44,8 +44,8 @@ export const viewport: Viewport = {
 const DEFAULT_TENANT: TenantContextValue = {
   slug: null,
   name: "MentorMatch",
-  brandColor: "#4F46E5",
-  themeKey: "dark",
+  brandColor: "#004ac6",
+  themeKey: "light",
   logoUrl: null,
 }
 
@@ -69,7 +69,7 @@ async function resolveTenant(): Promise<TenantContextValue> {
       slug: tenant.slug,
       name: tenant.name,
       brandColor: tenant.brandColor,
-      themeKey: tenant.themeKey ?? "dark",
+      themeKey: tenant.themeKey ?? "light",
       logoUrl: tenant.logoUrl,
     }
   } catch {

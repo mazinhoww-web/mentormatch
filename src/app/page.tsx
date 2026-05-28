@@ -10,9 +10,9 @@ import { Footer } from "@/components/landing/Footer"
 export default function HomePage() {
   return (
     <div
-      className="min-h-screen overflow-x-hidden text-[#EDEDEF] antialiased"
+      className="min-h-screen overflow-x-hidden text-slate-900 antialiased"
       style={{
-        background: "#08080d",
+        background: "#FFFFFF",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
       }}
     >

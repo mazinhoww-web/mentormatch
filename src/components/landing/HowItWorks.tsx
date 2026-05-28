@@ -28,13 +28,13 @@ export function HowItWorks() {
       className="relative z-10 mx-auto max-w-[1160px] px-6 py-16 md:px-10 md:py-[88px]"
     >
       <div className="fade-up mb-12 text-center md:mb-[60px]">
-        <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.1em] text-indigo-400">
+        <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.1em] text-blue-700">
           Como funciona
         </div>
-        <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.025em] text-white md:text-[34px]">
+        <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.025em] text-slate-900 md:text-[34px]">
           Pronto em 3 passos
         </h2>
-        <p className="mt-3 text-base text-[#6B7280]">
+        <p className="mt-3 text-base text-slate-500">
           Do cadastro ao primeiro match em minutos
         </p>
       </div>
@@ -43,23 +43,21 @@ export function HowItWorks() {
         {steps.map(({ n, title, desc, icon: Icon }) => (
           <div
             key={n}
-            className="relative overflow-hidden rounded-2xl border border-white/[0.07] p-7 transition-all duration-200 hover:-translate-y-[3px] hover:border-indigo-500/35"
-            style={{ background: "rgba(255,255,255,0.04)" }}
+            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 shadow-[0_4px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[3px] hover:border-blue-200 hover:shadow-[0_16px_40px_rgba(0,74,198,0.12)]"
           >
             <div
               className="pointer-events-none absolute right-5 top-4 select-none text-[52px] font-black leading-none"
-              style={{ color: "rgba(255,255,255,0.025)" }}
+              style={{ color: "rgba(0,74,198,0.06)" }}
             >
               {n}
             </div>
             <div
-              className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-500/25 text-indigo-300"
-              style={{ background: "rgba(99,102,241,0.14)" }}
+              className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700"
             >
               <Icon size={18} />
             </div>
-            <div className="mb-2 text-base font-bold text-white">{title}</div>
-            <div className="text-sm leading-[1.65] text-[#6B7280]">{desc}</div>
+            <div className="mb-2 text-base font-bold text-slate-900">{title}</div>
+            <div className="text-sm leading-[1.65] text-slate-500">{desc}</div>
           </div>
         ))}
       </div>
