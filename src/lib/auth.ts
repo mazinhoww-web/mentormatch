@@ -69,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: true,
             status: true,
             tenantId: true,
+            onboardingDone: true,
             tenant: { select: { slug: true } },
           },
         })
@@ -77,6 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.status = dbUser.status
           token.tenantId = dbUser.tenantId ?? undefined
           token.tenantSlug = dbUser.tenant?.slug
+          token.onboardingDone = dbUser.onboardingDone
         }
       }
       return token
@@ -88,6 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.status = token.status as string
         session.user.tenantId = token.tenantId as string
         session.user.tenantSlug = token.tenantSlug as string
+        session.user.onboardingDone = Boolean(token.onboardingDone)
       }
       return session
     },

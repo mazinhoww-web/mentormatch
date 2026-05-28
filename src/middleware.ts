@@ -8,7 +8,10 @@ const publicPaths = [
   "/reset-password",
   "/api/auth",
   "/api/invitations",
+  "/api/users",
   "/sicredi",
+  "/onboarding",
+  "/select-profile",
 ]
 
 export function middleware(req: NextRequest) {

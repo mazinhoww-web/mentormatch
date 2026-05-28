@@ -125,6 +125,7 @@ model User {
   linkedin      String?
   whatsapp      String?
   maxMentees    Int        @default(4)
+  onboardingDone Boolean   @default(false)
   tenantId      String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

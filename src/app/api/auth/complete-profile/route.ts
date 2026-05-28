@@ -46,6 +46,7 @@ export async function POST(request: Request) {
           linkedin: data.linkedin || null,
           whatsapp: data.whatsapp,
           image: data.image || undefined,
+          onboardingDone: true,
         },
       })
 

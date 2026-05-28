@@ -116,7 +116,7 @@ export function SicrediLanding() {
     >
       {/* Navbar */}
       <nav
-        className="sticky top-0 z-50 flex h-20 items-center justify-between px-6 transition-all duration-200 md:px-10"
+        className="sticky top-0 z-50 flex h-24 items-center justify-between px-6 transition-all duration-200 md:px-10"
         style={{
           background: "#FFFFFF",
           borderBottom: `1px solid ${scrolled ? "#CDD3CD" : "transparent"}`,
@@ -127,18 +127,18 @@ export function SicrediLanding() {
           <Image
             src="/mentormatch/sicredi-logo.png"
             alt="Sicredi"
-            width={180}
-            height={56}
+            width={234}
+            height={73}
             priority
-            className="h-12 w-auto object-contain md:h-14"
+            className="h-16 w-auto object-contain md:h-[72px]"
           />
           <div
-            className="h-9 w-px md:h-10"
+            className="h-12 w-px md:h-14"
             style={{ background: "#CDD3CD" }}
             aria-hidden="true"
           />
           <span
-            className="text-[22px] font-light tracking-tight text-[#323C32] md:text-[24px]"
+            className="text-[28px] font-light tracking-tight text-[#323C32] md:text-[32px]"
             style={{ fontFamily: "'Exo 2', sans-serif" }}
           >
             MentorMatch
@@ -527,17 +527,17 @@ export function SicrediLanding() {
             <Image
               src="/mentormatch/sicredi-logo.png"
               alt="Sicredi"
-              width={140}
-              height={42}
-              className="h-10 w-auto object-contain"
+              width={182}
+              height={56}
+              className="h-[52px] w-auto object-contain"
             />
             <div
-              className="h-7 w-px"
+              className="h-9 w-px"
               style={{ background: "#CDD3CD" }}
               aria-hidden="true"
             />
             <span
-              className="text-[17px] font-light text-[#323C32]"
+              className="text-[22px] font-light text-[#323C32]"
               style={{ fontFamily: "'Exo 2', sans-serif" }}
             >
               MentorMatch

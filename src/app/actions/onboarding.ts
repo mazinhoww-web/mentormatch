@@ -26,6 +26,7 @@ export async function completeOnboarding(data: {
         ...(data.bio !== undefined ? { bio: data.bio } : {}),
         ...(data.linkedin !== undefined ? { linkedin: data.linkedin } : {}),
         ...(typeof data.maxMentees === "number" ? { maxMentees: data.maxMentees } : {}),
+        onboardingDone: true,
       },
     })
 

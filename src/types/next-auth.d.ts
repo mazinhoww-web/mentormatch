@@ -11,6 +11,7 @@ declare module "next-auth" {
       status: string
       tenantId: string
       tenantSlug: string
+      onboardingDone: boolean
     }
   }
 }
@@ -21,5 +22,6 @@ declare module "next-auth/jwt" {
     status?: string
     tenantId?: string
     tenantSlug?: string
+    onboardingDone?: boolean
   }
 }
