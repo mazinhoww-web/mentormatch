@@ -18,7 +18,6 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   if (
-    pathname === "/" ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
     pathname === "/favicon.ico" ||
@@ -26,6 +25,12 @@ export function middleware(req: NextRequest) {
     pathname === "/sw.js"
   ) {
     return NextResponse.next()
+  }
+
+  if (pathname === "/") {
+    const res = NextResponse.next()
+    res.cookies.delete("mm-tenant")
+    return res
   }
 
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))

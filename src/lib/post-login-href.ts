@@ -25,7 +25,7 @@ export async function resolvePostLoginHref(userId: string): Promise<string> {
     },
   })
   if (!user) return wrap("/login")
-  if (user.role === "SUPER_ADMIN") return wrap("/admin")
+  if (user.role === "SUPER_ADMIN") return "/admin"
   if (!user.role) return wrap("/select-profile")
   if (!user.tenant?.slug) return wrap("/select-profile")
   if (!user.onboardingDone) {

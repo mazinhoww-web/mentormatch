@@ -5,11 +5,11 @@ export function getTenantLandingUrl(slug: string | null | undefined): string {
   return `${CANONICAL_HOST}/${slug}/mentormatch`
 }
 
+// In-app path for use with `redirect()` and `<Link>`. Next.js auto-prepends
+// basePath; the active tenant is carried via the `mm-tenant` cookie, not the URL.
 export function getTenantRoutePath(
-  slug: string | null | undefined,
+  _slug: string | null | undefined,
   path: string
 ): string {
-  const normalized = path.startsWith("/") ? path : `/${path}`
-  if (!slug) return `/mentormatch${normalized}`
-  return `/${slug}/mentormatch${normalized}`
+  return path.startsWith("/") ? path : `/${path}`
 }
