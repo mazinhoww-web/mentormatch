@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { cookies } from "next/headers"
-import { Hanken_Grotesk, Inter } from "next/font/google"
+import { Exo_2, Hanken_Grotesk, Inter, Nunito } from "next/font/google"
 import { Providers } from "@/components/providers"
 import { TenantProvider, type TenantContextValue } from "@/components/providers/TenantContext"
 import { ToastProvider } from "@/components/ui/toast"
@@ -16,6 +16,20 @@ const hankenGrotesk = Hanken_Grotesk({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+})
+
+const exo2 = Exo_2({
+  variable: "--font-exo2",
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  display: "swap",
+})
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 })
 
@@ -88,7 +102,7 @@ export default async function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${hankenGrotesk.variable} ${inter.variable} h-full antialiased`}
+      className={`${hankenGrotesk.variable} ${inter.variable} ${exo2.variable} ${nunito.variable} h-full antialiased`}
     >
       <body className={bodyClass}>
         <Providers>

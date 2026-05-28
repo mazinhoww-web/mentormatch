@@ -1,10 +1,10 @@
 .theme-sicredi {
+  /* Legacy MentorMatch tokens */
   --bg-deep: #fafafa;
   --bg-base: #ffffff;
   --bg-elevated: #ffffff;
   --surface: #fafafa;
   --glass: #ffffff;
-  --border: #cdd3cd;
   --border-accent: #33820d;
   --accent: #33820d;
   --accent-alt: #26610a;
@@ -15,8 +15,8 @@
   --text: #323c32;
   --text-muted: #5a645a;
   --text-sub: #828a82;
-  --font-display: "Exo 2", sans-serif;
-  --font-body: "Nunito", sans-serif;
+  --font-display: var(--font-exo2), "Exo 2", sans-serif;
+  --font-body: var(--font-nunito), "Nunito", sans-serif;
   --radius-card: 4px;
   --radius-btn: 8px;
   --radius-chip: 100px;
@@ -24,4 +24,58 @@
   --shadow-md: 0 3px 10px 0 rgba(50, 60, 50, 0.1);
   --sidebar-bg: #fafafa;
   --navbar-bg: rgba(255, 255, 255, 0.95);
+
+  /* shadcn-compatible tokens (override defaults from :root in globals.css) */
+  --background: #fafafa;
+  --foreground: #323c32;
+  --card: #ffffff;
+  --card-foreground: #323c32;
+  --popover: #ffffff;
+  --popover-foreground: #323c32;
+  --primary: #33820d;
+  --primary-foreground: #ffffff;
+  --secondary: #d7e6c8;
+  --secondary-foreground: #26610a;
+  --muted: #fafafa;
+  --muted-foreground: #5a645a;
+  --accent-foreground: #ffffff;
+  --destructive: #aa003c;
+  --destructive-foreground: #ffffff;
+  --border: #cdd3cd;
+  --input: #cdd3cd;
+  --ring: #33820d;
+  --success: #33820d;
+  --warning: #e6a500;
+  --radius: 0.5rem;
+
+  /* Sidebar */
+  --sidebar: #fafafa;
+  --sidebar-foreground: #323c32;
+  --sidebar-primary: #33820d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d7e6c8;
+  --sidebar-accent-foreground: #26610a;
+  --sidebar-border: #cdd3cd;
+  --sidebar-ring: #33820d;
+}
+
+.theme-sicredi body,
+body.theme-sicredi {
+  font-family: var(--font-body);
+}
+
+.theme-sicredi h1,
+.theme-sicredi h2,
+.theme-sicredi h3,
+.theme-sicredi h4,
+.theme-sicredi h5,
+.theme-sicredi h6,
+body.theme-sicredi h1,
+body.theme-sicredi h2,
+body.theme-sicredi h3,
+body.theme-sicredi h4,
+body.theme-sicredi h5,
+body.theme-sicredi h6 {
+  font-family: var(--font-display);
+  font-weight: 300;
 }

@@ -4,12 +4,15 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { ArrowLeft, Loader2, Mail, Lock, GraduationCap, Send } from "lucide-react"
+import { ArrowLeft, Loader2, Mail, Lock, Send } from "lucide-react"
 
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
+import { useTenantRouter } from "@/hooks/use-tenant-router"
+import { TenantBrandMark } from "@/components/brand/TenantBrandMark"
 
 export default function ForgotPasswordPage() {
+  const { hrefTenant } = useTenantRouter()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -23,7 +26,6 @@ export default function ForgotPasswordPage() {
 
   async function onSubmit(data: ForgotPasswordInput) {
     setError(null)
-
     try {
       const response = await fetch("/mentormatch/api/auth/forgot-password", {
         method: "POST",
@@ -43,41 +45,67 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  const pageStyle: React.CSSProperties = {
+    background: "var(--background)",
+    color: "var(--foreground)",
+    fontFamily: "var(--font-body, var(--font-sans))",
+  }
+
+  const cardStyle: React.CSSProperties = {
+    background: "var(--card)",
+    border: "1px solid var(--border)",
+    boxShadow: "var(--shadow-card, 0 2px 4px 0 rgba(0,0,0,0.05))",
+    color: "var(--card-foreground)",
+  }
+
   if (success) {
     return (
-      <div className="bg-[#F8FAFC] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+      <div
+        className="min-h-screen flex flex-col items-center justify-center p-4 md:p-10"
+        style={pageStyle}
+      >
         <main className="w-full max-w-[420px] relative z-10">
-          {/* Brand Anchor */}
-          <div className="flex justify-center items-center gap-2 mb-8">
-            <GraduationCap className="h-5 w-5 text-[#004ac6]" />
-            <span className="text-[18px] leading-[24px] font-semibold text-[#004ac6] tracking-wide">MentorMatch</span>
+          <div className="flex justify-center mb-8">
+            <TenantBrandMark size="md" />
           </div>
 
-          {/* Success Card */}
-          <div className="bg-[#171f33] border border-[#E2E8F0] rounded-xl p-8 relative overflow-hidden">
-            {/* Glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-[#dae2fd] border border-[#E2E8F0] flex items-center justify-center mb-6">
-                <Mail className="h-5 w-5 text-[#004ac6]" />
+          <div className="rounded-xl p-8" style={cardStyle}>
+            <div className="flex flex-col items-center">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center mb-6"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--primary) 12%, transparent)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <Mail className="h-5 w-5" style={{ color: "var(--primary)" }} />
               </div>
 
-              <h1 className="text-[28px] leading-[36px] font-semibold text-[#131b2e] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
-                E-mail enviado!
+              <h1
+                className="text-[28px] leading-[36px] mb-3 text-center md:text-[32px] md:leading-[40px]"
+                style={{
+                  fontFamily: "var(--font-display, var(--font-heading))",
+                  fontWeight: 300,
+                }}
+              >
+                E-mail enviado
               </h1>
-              <p className="text-[14px] leading-[20px] text-[#434655] text-center mb-8 max-w-xs mx-auto">
+              <p
+                className="text-[14px] leading-[20px] text-center mb-2 max-w-xs mx-auto"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Se uma conta com esse e-mail existir, voce recebera um link para
-                redefinir sua senha. Verifique sua caixa de entrada e spam.
+                redefinir sua senha. Verifique caixa de entrada e spam.
               </p>
             </div>
           </div>
 
-          {/* Back to Login */}
           <div className="mt-8 flex justify-center">
             <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] hover:text-[#004ac6] transition-colors group"
+              href={hrefTenant("/login")}
+              className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium transition-colors group"
+              style={{ color: "var(--muted-foreground)" }}
             >
               <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               <span>Voltar ao login</span>
@@ -89,72 +117,109 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4 md:p-10"
+      style={pageStyle}
+    >
       <main className="w-full max-w-[420px] relative z-10">
-        {/* Brand Anchor */}
-        <div className="flex justify-center items-center gap-2 mb-8">
-          <GraduationCap className="h-5 w-5 text-[#004ac6]" />
-          <span className="text-[18px] leading-[24px] font-semibold text-[#004ac6] tracking-wide">MentorMatch</span>
+        <div className="flex justify-center mb-8">
+          <TenantBrandMark size="md" />
         </div>
 
-        {/* Recovery Card */}
-        <div className="bg-[#171f33] border border-[#E2E8F0] rounded-xl p-8 relative overflow-hidden">
-          {/* Glow */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Icon */}
-            <div className="w-12 h-12 rounded-full bg-[#dae2fd] border border-[#E2E8F0] flex items-center justify-center mb-6">
-              <Lock className="h-5 w-5 text-[#131b2e]" />
+        <div className="rounded-xl p-8" style={cardStyle}>
+          <div className="flex flex-col items-center">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mb-6"
+              style={{
+                background:
+                  "color-mix(in srgb, var(--primary) 12%, transparent)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Lock className="h-5 w-5" style={{ color: "var(--primary)" }} />
             </div>
 
-            <h1 className="text-[28px] leading-[36px] font-semibold text-[#131b2e] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
-              Recuperacao de Acesso
+            <h1
+              className="text-[28px] leading-[36px] mb-3 text-center md:text-[32px] md:leading-[40px]"
+              style={{
+                fontFamily: "var(--font-display, var(--font-heading))",
+                fontWeight: 300,
+              }}
+            >
+              Recuperar acesso
             </h1>
-            <p className="text-[14px] leading-[20px] text-[#434655] text-center mb-8 max-w-xs mx-auto">
-              Enviaremos um link para voce redefinir sua sua senha.
+            <p
+              className="text-[14px] leading-[20px] text-center mb-8 max-w-xs mx-auto"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Enviaremos um link para voce redefinir sua senha.
             </p>
 
             {error && (
-              <div className="w-full mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
+              <div
+                className="w-full mb-4 rounded-lg p-3 text-sm"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--destructive) 10%, transparent)",
+                  border:
+                    "1px solid color-mix(in srgb, var(--destructive) 30%, transparent)",
+                  color: "var(--destructive)",
+                }}
+              >
                 {error}
               </div>
             )}
 
-            {/* Form */}
             <form className="w-full space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-2">
                 <label
-                  className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] block uppercase"
+                  className="text-[12px] leading-[16px] tracking-[0.05em] font-medium block uppercase"
                   htmlFor="email"
+                  style={{ color: "var(--muted-foreground)" }}
                 >
                   E-mail
                 </label>
-                <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#737686] group-focus-within:text-[#004ac6] transition-colors" />
+                <div className="relative">
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5"
+                    style={{ color: "var(--muted-foreground)" }}
+                  />
                   <input
-                    className="w-full bg-[#060e20] border border-[#E2E8F0] rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] text-[#131b2e] placeholder:text-[#737686]/50 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#b4c5ff] transition-all duration-200"
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
                     {...register("email")}
+                    className="w-full rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] outline-none transition-all duration-200 focus:ring-2 focus:ring-[color:var(--ring)] focus:border-[color:var(--ring)]"
+                    style={{
+                      background: "var(--background)",
+                      border: "1px solid var(--input)",
+                      color: "var(--foreground)",
+                    }}
+                    
                   />
                 </div>
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+                  <p className="mt-1 text-sm" style={{ color: "var(--destructive)" }}>
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 text-[#eeefff] text-[12px] leading-[16px] tracking-[0.05em] font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#dbe1ff] hover:text-[#002a78] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#b4c5ff] focus:ring-offset-2 focus:ring-offset-[#171f33] h-auto"
                 disabled={isSubmitting}
+                className="w-full text-[14px] leading-[16px] tracking-[0.05em] font-semibold py-3 px-4 flex items-center justify-center gap-2 h-auto"
+                style={{
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                  borderRadius: "var(--radius-btn, 0.5rem)",
+                }}
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <span>Enviar Instrucoes</span>
+                    <span>Enviar instrucoes</span>
                     <Send className="h-[18px] w-[18px]" />
                   </>
                 )}
@@ -163,11 +228,11 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        {/* Back to Login */}
         <div className="mt-8 flex justify-center">
           <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] hover:text-[#004ac6] transition-colors group"
+            href={hrefTenant("/login")}
+            className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium transition-colors group"
+            style={{ color: "var(--muted-foreground)" }}
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span>Voltar ao login</span>

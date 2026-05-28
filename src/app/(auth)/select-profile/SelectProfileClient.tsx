@@ -1,11 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
-import { Rocket, Award, CheckCircle, GraduationCap } from "lucide-react"
+import { Rocket, Award, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTenant } from "@/components/providers/TenantContext"
 import { useTenantRouter } from "@/hooks/use-tenant-router"
+import { TenantBrandMark } from "@/components/brand/TenantBrandMark"
 
 type ProfileRole = "mentee" | "mentor"
 
@@ -31,23 +30,8 @@ const profiles = [
 ]
 
 export default function SelectProfileClient() {
-  const tenant = useTenant()
   const { pushTenant } = useTenantRouter()
   const [selected, setSelected] = useState<ProfileRole | null>(null)
-
-  const isSicredi = tenant.slug === "sicredi"
-  const accent = isSicredi ? "#33820D" : "#004ac6"
-  const accentSoft = isSicredi ? "#e8f3e1" : "#eaedff"
-  const accentTint = isSicredi ? "#f2f9ec" : "#f2f3ff"
-  const accentDeep = isSicredi ? "#296A0A" : "#0053db"
-  const fontFamily = isSicredi
-    ? '"Nunito", sans-serif'
-    : 'var(--font-inter), sans-serif'
-  const headingFamily = isSicredi
-    ? '"Exo 2", sans-serif'
-    : 'var(--font-hanken-grotesk), sans-serif'
-  const brandName = tenant.name || "MentorMatch"
-  const brandLogo = tenant.logoUrl
 
   function handleContinue() {
     if (!selected) return
@@ -59,42 +43,32 @@ export default function SelectProfileClient() {
 
   return (
     <div
-      className="text-[#131b2e] antialiased min-h-screen flex flex-col"
-      style={{ background: "#F8FAFC", fontFamily }}
+      className="antialiased min-h-screen flex flex-col"
+      style={{
+        background: "var(--background)",
+        color: "var(--foreground)",
+        fontFamily: "var(--font-body, var(--font-sans))",
+      }}
     >
       <main className="flex-grow flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-[800px] flex flex-col items-center">
           <header className="text-center mb-10 w-full">
-            <div className="mb-8 inline-flex items-center justify-center gap-2">
-              {brandLogo ? (
-                <Image
-                  src={brandLogo}
-                  alt={brandName}
-                  width={160}
-                  height={48}
-                  className="h-12 w-auto object-contain"
-                  unoptimized
-                  priority
-                />
-              ) : (
-                <>
-                  <GraduationCap className="h-9 w-9" style={{ color: accent }} />
-                  <h1
-                    className="text-[28px] leading-[34px] font-bold md:text-[36px] md:leading-[44px] md:tracking-[-0.02em]"
-                    style={{ color: accent, fontFamily: headingFamily }}
-                  >
-                    {brandName}
-                  </h1>
-                </>
-              )}
+            <div className="mb-8 flex justify-center">
+              <TenantBrandMark size="lg" />
             </div>
             <h2
-              className="text-[28px] leading-[36px] tracking-[-0.01em] font-semibold text-[#131b2e] mb-2"
-              style={{ fontFamily: headingFamily }}
+              className="text-[28px] leading-[36px] tracking-[-0.01em] mb-2"
+              style={{
+                fontFamily: "var(--font-display, var(--font-heading))",
+                fontWeight: 300,
+              }}
             >
               Qual e o seu objetivo?
             </h2>
-            <p className="text-[18px] leading-[28px] text-[#434655] max-w-lg mx-auto">
+            <p
+              className="text-[18px] leading-[28px] max-w-lg mx-auto"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Selecione como voce deseja participar da nossa comunidade para personalizarmos sua experiencia.
             </p>
           </header>
@@ -114,32 +88,38 @@ export default function SelectProfileClient() {
                       onChange={() => setSelected(profile.role)}
                     />
                     <div
-                      className="h-full flex flex-col p-6 rounded-xl border transition-all duration-200 hover:border-[#c3c6d7]"
+                      className="h-full flex flex-col p-6 rounded-xl border transition-all duration-200"
                       style={{
-                        borderColor: isSelected ? accent : "#E2E8F0",
-                        background: isSelected ? accentTint : "#fff",
+                        borderColor: isSelected ? "var(--primary)" : "var(--border)",
+                        background: isSelected
+                          ? "color-mix(in srgb, var(--primary) 8%, transparent)"
+                          : "var(--card)",
                         boxShadow: isSelected
-                          ? "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)"
+                          ? "var(--shadow-card, 0 4px 6px -1px rgba(0,0,0,0.05))"
                           : "none",
                       }}
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div
                           className="w-12 h-12 rounded-lg flex items-center justify-center"
-                          style={{ background: accentSoft, color: accent }}
+                          style={{
+                            background:
+                              "color-mix(in srgb, var(--primary) 12%, transparent)",
+                            color: "var(--primary)",
+                          }}
                         >
                           <profile.icon className="h-7 w-7" />
                         </div>
                         <div
                           className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors relative mt-1"
                           style={{
-                            borderColor: isSelected ? accent : "#c3c6d7",
+                            borderColor: isSelected ? "var(--primary)" : "var(--border)",
                           }}
                         >
                           <div
                             className="w-2.5 h-2.5 rounded-full transition-all absolute"
                             style={{
-                              background: accent,
+                              background: "var(--primary)",
                               opacity: isSelected ? 1 : 0,
                               transform: isSelected ? "scale(1)" : "scale(0.5)",
                             }}
@@ -147,20 +127,31 @@ export default function SelectProfileClient() {
                         </div>
                       </div>
                       <h3
-                        className="text-[20px] leading-[28px] font-semibold text-[#131b2e] mb-2"
-                        style={{ fontFamily: headingFamily }}
+                        className="text-[20px] leading-[28px] font-semibold mb-2"
+                        style={{
+                          color: "var(--foreground)",
+                          fontFamily: "var(--font-display, var(--font-heading))",
+                          fontWeight: 600,
+                        }}
                       >
                         {profile.title}
                       </h3>
-                      <p className="text-[16px] leading-[24px] text-[#434655] flex-grow">
+                      <p
+                        className="text-[16px] leading-[24px] flex-grow"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
                         {profile.description}
                       </p>
                       <ul className="mt-4 space-y-2">
                         {profile.checks.map((check) => (
-                          <li key={check} className="flex items-center text-[#434655] text-[14px] leading-[20px]">
+                          <li
+                            key={check}
+                            className="flex items-center text-[14px] leading-[20px]"
+                            style={{ color: "var(--muted-foreground)" }}
+                          >
                             <CheckCircle
                               className="h-[18px] w-[18px] mr-2 flex-shrink-0"
-                              style={{ color: isSicredi ? accent : "#10B981" }}
+                              style={{ color: "var(--primary)" }}
                             />
                             {check}
                           </li>
@@ -176,20 +167,22 @@ export default function SelectProfileClient() {
               <Button
                 onClick={handleContinue}
                 disabled={!selected}
-                className="w-full md:w-auto min-w-[200px] text-white py-3 px-8 rounded-lg text-[14px] leading-[16px] tracking-[0.05em] font-semibold transition-all focus:ring-2 focus:ring-offset-2 focus:outline-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed h-auto"
-                style={{ background: accent }}
-                onMouseEnter={(e) => {
-                  if (!selected) return
-                  e.currentTarget.style.background = accentDeep
+                className="w-full md:w-auto min-w-[200px] py-3 px-8 text-[14px] leading-[16px] tracking-[0.05em] font-semibold transition-all focus:ring-2 focus:ring-offset-2 focus:outline-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed h-auto"
+                style={{
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                  borderRadius: "var(--radius-btn, 0.5rem)",
                 }}
-                onMouseLeave={(e) => (e.currentTarget.style.background = accent)}
               >
                 Continuar
               </Button>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-[14px] text-[#434655]">
+          <p
+            className="mt-8 text-center text-[14px]"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Voce podera alterar seu perfil depois nas configuracoes.
           </p>
         </div>
