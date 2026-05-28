@@ -45,28 +45,28 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="bg-[#0b1326] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+      <div className="bg-[#F8FAFC] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
         <main className="w-full max-w-[420px] relative z-10">
           {/* Brand Anchor */}
           <div className="flex justify-center items-center gap-2 mb-8">
-            <GraduationCap className="h-5 w-5 text-[#b4c5ff]" />
-            <span className="text-[18px] leading-[24px] font-semibold text-[#b4c5ff] tracking-wide">MentorMatch</span>
+            <GraduationCap className="h-5 w-5 text-[#004ac6]" />
+            <span className="text-[18px] leading-[24px] font-semibold text-[#004ac6] tracking-wide">MentorMatch</span>
           </div>
 
           {/* Success Card */}
-          <div className="bg-[#171f33] border border-[#434655] rounded-xl p-8 relative overflow-hidden">
+          <div className="bg-[#171f33] border border-[#E2E8F0] rounded-xl p-8 relative overflow-hidden">
             {/* Glow */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-[#222a3d] border border-[#434655] flex items-center justify-center mb-6">
-                <Mail className="h-5 w-5 text-[#b4c5ff]" />
+              <div className="w-12 h-12 rounded-full bg-[#dae2fd] border border-[#E2E8F0] flex items-center justify-center mb-6">
+                <Mail className="h-5 w-5 text-[#004ac6]" />
               </div>
 
-              <h1 className="text-[28px] leading-[36px] font-semibold text-[#dae2fd] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
+              <h1 className="text-[28px] leading-[36px] font-semibold text-[#131b2e] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
                 E-mail enviado!
               </h1>
-              <p className="text-[14px] leading-[20px] text-[#c3c6d7] text-center mb-8 max-w-xs mx-auto">
+              <p className="text-[14px] leading-[20px] text-[#434655] text-center mb-8 max-w-xs mx-auto">
                 Se uma conta com esse e-mail existir, voce recebera um link para
                 redefinir sua senha. Verifique sua caixa de entrada e spam.
               </p>
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-8 flex justify-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] hover:text-[#b4c5ff] transition-colors group"
+              className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] hover:text-[#004ac6] transition-colors group"
             >
               <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               <span>Voltar ao login</span>
@@ -89,29 +89,29 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="bg-[#0b1326] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
+    <div className="bg-[#F8FAFC] min-h-screen flex flex-col items-center justify-center p-4 md:p-10 antialiased selection:bg-blue-600 selection:text-[#eeefff]">
       <main className="w-full max-w-[420px] relative z-10">
         {/* Brand Anchor */}
         <div className="flex justify-center items-center gap-2 mb-8">
-          <GraduationCap className="h-5 w-5 text-[#b4c5ff]" />
-          <span className="text-[18px] leading-[24px] font-semibold text-[#b4c5ff] tracking-wide">MentorMatch</span>
+          <GraduationCap className="h-5 w-5 text-[#004ac6]" />
+          <span className="text-[18px] leading-[24px] font-semibold text-[#004ac6] tracking-wide">MentorMatch</span>
         </div>
 
         {/* Recovery Card */}
-        <div className="bg-[#171f33] border border-[#434655] rounded-xl p-8 relative overflow-hidden">
+        <div className="bg-[#171f33] border border-[#E2E8F0] rounded-xl p-8 relative overflow-hidden">
           {/* Glow */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600 opacity-20 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center">
             {/* Icon */}
-            <div className="w-12 h-12 rounded-full bg-[#222a3d] border border-[#434655] flex items-center justify-center mb-6">
-              <Lock className="h-5 w-5 text-[#dae2fd]" />
+            <div className="w-12 h-12 rounded-full bg-[#dae2fd] border border-[#E2E8F0] flex items-center justify-center mb-6">
+              <Lock className="h-5 w-5 text-[#131b2e]" />
             </div>
 
-            <h1 className="text-[28px] leading-[36px] font-semibold text-[#dae2fd] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
+            <h1 className="text-[28px] leading-[36px] font-semibold text-[#131b2e] mb-3 text-center font-heading md:text-[32px] md:leading-[40px]">
               Recuperacao de Acesso
             </h1>
-            <p className="text-[14px] leading-[20px] text-[#c3c6d7] text-center mb-8 max-w-xs mx-auto">
+            <p className="text-[14px] leading-[20px] text-[#434655] text-center mb-8 max-w-xs mx-auto">
               Enviaremos um link para voce redefinir sua sua senha.
             </p>
 
@@ -125,15 +125,15 @@ export default function ForgotPasswordPage() {
             <form className="w-full space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-2">
                 <label
-                  className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] block uppercase"
+                  className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] block uppercase"
                   htmlFor="email"
                 >
                   E-mail
                 </label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8d90a0] group-focus-within:text-[#b4c5ff] transition-colors" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#737686] group-focus-within:text-[#004ac6] transition-colors" />
                   <input
-                    className="w-full bg-[#060e20] border border-[#434655] rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] text-[#dae2fd] placeholder:text-[#8d90a0]/50 focus:outline-none focus:border-[#b4c5ff] focus:ring-1 focus:ring-[#b4c5ff] transition-all duration-200"
+                    className="w-full bg-[#060e20] border border-[#E2E8F0] rounded-lg py-3 pl-10 pr-4 text-[14px] leading-[20px] text-[#131b2e] placeholder:text-[#737686]/50 focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#b4c5ff] transition-all duration-200"
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
         <div className="mt-8 flex justify-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#c3c6d7] hover:text-[#b4c5ff] transition-colors group"
+            className="inline-flex items-center gap-2 text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#434655] hover:text-[#004ac6] transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span>Voltar ao login</span>
