@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation"
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { getDashboardHref } from "@/lib/dashboard-href"
 
 export default function WelcomePage() {
   const router = useRouter()
   const { user, isLoading } = useCurrentUser()
 
-  const dashboardHref = user?.tenantSlug && user?.role
-    ? `/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`
-    : "/t/default/mentee"
+  const dashboardHref = getDashboardHref(user?.role, user?.tenantSlug)
 
   useEffect(() => {
     if (!isLoading) {

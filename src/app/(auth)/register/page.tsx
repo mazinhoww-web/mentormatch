@@ -10,6 +10,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from "lucide-re
 
 import { registerSchema, type RegisterInput } from "@/lib/validations"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { getDashboardHref } from "@/lib/dashboard-href"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
 
@@ -37,11 +38,7 @@ function RegisterForm() {
 
   useEffect(() => {
     if (isAuthenticated && user && !token) {
-      if (user.role && user.tenantSlug) {
-        router.push(`/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`)
-      } else {
-        router.push("/select-profile")
-      }
+      router.push(getDashboardHref(user.role, user.tenantSlug))
     }
   }, [isAuthenticated, user, token, router])
 

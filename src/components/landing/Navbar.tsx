@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowRight, BookOpen } from "lucide-react"
 import { ThemeToggle } from "./ThemeToggle"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { getDashboardHref } from "@/lib/dashboard-href"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -18,9 +19,7 @@ export function Navbar() {
   }, [])
 
   const ctaHref = isAuthenticated
-    ? user?.role && user?.tenantSlug
-      ? `/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`
-      : "/select-profile"
+    ? getDashboardHref(user?.role, user?.tenantSlug)
     : "/register"
 
   const ctaLabel = isAuthenticated ? "Ir para o Dashboard" : "Comecar Gratis"

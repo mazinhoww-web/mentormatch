@@ -12,6 +12,7 @@ import { loginSchema, type LoginInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { getDashboardHref } from "@/lib/dashboard-href"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,11 +22,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role && user.tenantSlug) {
-        router.push(`/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`)
-      } else {
-        router.push("/select-profile")
-      }
+      router.push(getDashboardHref(user.role, user.tenantSlug))
     }
   }, [isAuthenticated, user, router])
 
@@ -54,12 +51,7 @@ export default function LoginPage() {
     const sessionRes = await fetch("/mentormatch/api/auth/session")
     const session = await sessionRes.json()
 
-    if (session?.user?.role && session?.user?.tenantSlug) {
-      const role = session.user.role === "MENTOR" ? "mentor" : "mentee"
-      router.push(`/t/${session.user.tenantSlug}/${role}`)
-    } else {
-      router.push("/select-profile")
-    }
+    router.push(getDashboardHref(session?.user?.role, session?.user?.tenantSlug))
     router.refresh()
   }
 

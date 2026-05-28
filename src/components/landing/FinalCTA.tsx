@@ -3,14 +3,13 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { getDashboardHref } from "@/lib/dashboard-href"
 
 export function FinalCTA() {
   const { user, isAuthenticated } = useCurrentUser()
 
   const primaryHref = isAuthenticated
-    ? user?.role && user?.tenantSlug
-      ? `/t/${user.tenantSlug}/${user.role === "MENTOR" ? "mentor" : "mentee"}`
-      : "/select-profile"
+    ? getDashboardHref(user?.role, user?.tenantSlug)
     : "/register"
 
   const primaryLabel = isAuthenticated
