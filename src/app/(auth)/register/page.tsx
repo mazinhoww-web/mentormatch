@@ -4,13 +4,13 @@ import { useState, useEffect, Suspense } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from "lucide-react"
 
 import { registerSchema, type RegisterInput } from "@/lib/validations"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { getDashboardHref } from "@/lib/dashboard-href"
+import { useTenantRouter } from "@/hooks/use-tenant-router"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
 
@@ -31,16 +31,16 @@ export default function RegisterPage() {
 }
 
 function RegisterForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
-  const { user, isAuthenticated } = useCurrentUser()
+  const { isAuthenticated } = useCurrentUser()
+  const { pushTenant, hrefTenant } = useTenantRouter()
 
   useEffect(() => {
-    if (isAuthenticated && user && !token) {
-      router.push(getDashboardHref(user.role, user.tenantSlug))
+    if (isAuthenticated && !token) {
+      pushTenant("/dashboard")
     }
-  }, [isAuthenticated, user, token, router])
+  }, [isAuthenticated, token, pushTenant])
 
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -95,7 +95,7 @@ function RegisterForm() {
             <p className="text-sm text-gray-500 mb-6">
               Registro fechado. Solicite um convite ao administrador.
             </p>
-            <Link href="/login" className="font-medium text-[#2563eb] hover:underline text-sm">
+            <Link href={hrefTenant("/login")} className="font-medium text-[#2563eb] hover:underline text-sm">
               Voltar para login
             </Link>
           </div>
@@ -142,11 +142,11 @@ function RegisterForm() {
       })
 
       if (loginResult?.error) {
-        router.push("/login")
+        pushTenant("/login")
         return
       }
 
-      router.push("/select-profile")
+      pushTenant("/select-profile")
     } catch {
       setError("Erro de conexao. Tente novamente.")
     }
@@ -189,7 +189,7 @@ function RegisterForm() {
           <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {error}
             {error.includes("email") && (
-              <> <Link href="/login" className="font-semibold text-[#2563eb] hover:underline">Fazer login</Link></>
+              <> <Link href={hrefTenant("/login")} className="font-semibold text-[#2563eb] hover:underline">Fazer login</Link></>
             )}
           </div>
         )}
@@ -303,7 +303,7 @@ function RegisterForm() {
 
             <p className="text-center text-sm text-gray-500">
               Ja tem uma conta?{" "}
-              <Link href="/login" className="font-medium text-[#2563eb] hover:underline">
+              <Link href={hrefTenant("/login")} className="font-medium text-[#2563eb] hover:underline">
                 Entrar
               </Link>
             </p>

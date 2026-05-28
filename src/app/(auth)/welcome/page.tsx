@@ -1,11 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getDashboardHref } from "@/lib/dashboard-href"
+import { useTenantRouter } from "@/hooks/use-tenant-router"
 
 type Me = {
   id: string
@@ -14,8 +13,8 @@ type Me = {
 }
 
 export default function WelcomePage() {
-  const router = useRouter()
   const { update } = useSession()
+  const { pushTenant } = useTenantRouter()
   const [me, setMe] = useState<Me | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -25,17 +24,17 @@ export default function WelcomePage() {
         await update()
         const res = await fetch("/mentormatch/api/users/me")
         if (!res.ok) {
-          router.push("/login")
+          pushTenant("/login")
           return
         }
         const data = await res.json()
         if (!data?.role) {
-          router.push("/select-profile")
+          pushTenant("/select-profile")
           return
         }
         setMe(data)
       } catch {
-        router.push("/login")
+        pushTenant("/login")
       } finally {
         setLoading(false)
       }
@@ -43,12 +42,6 @@ export default function WelcomePage() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const dashboardHref = getDashboardHref(
-    me?.role ?? null,
-    me?.tenant?.slug ?? null,
-    true
-  )
 
   const role = me?.role
   const message =
@@ -85,8 +78,7 @@ export default function WelcomePage() {
           <Button
             onClick={async () => {
               await update()
-              router.push(dashboardHref)
-              router.refresh()
+              pushTenant("/dashboard")
             }}
             className="w-full flex items-center justify-center gap-3 h-14 bg-[#004ac6] text-white rounded-lg text-[18px] leading-[24px] font-semibold transition-all hover:bg-[#0053db] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/30 focus:ring-offset-2 group shadow-md"
           >

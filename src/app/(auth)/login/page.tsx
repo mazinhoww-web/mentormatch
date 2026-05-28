@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles, GraduationCap } from "lucide-react"
 
@@ -12,19 +11,19 @@ import { loginSchema, type LoginInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { featureFlags } from "@/lib/feature-flags"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { getDashboardHref } from "@/lib/dashboard-href"
+import { useTenantRouter } from "@/hooks/use-tenant-router"
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { user, isAuthenticated } = useCurrentUser()
+  const { isAuthenticated } = useCurrentUser()
+  const { pushTenant, hrefTenant } = useTenantRouter()
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      router.push(getDashboardHref(user.role, user.tenantSlug))
+    if (isAuthenticated) {
+      pushTenant("/dashboard")
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, pushTenant])
 
   const {
     register,
@@ -48,11 +47,7 @@ export default function LoginPage() {
       return
     }
 
-    const sessionRes = await fetch("/mentormatch/api/auth/session")
-    const session = await sessionRes.json()
-
-    router.push(getDashboardHref(session?.user?.role, session?.user?.tenantSlug))
-    router.refresh()
+    pushTenant("/dashboard")
   }
 
   async function handleMagicLink() {
@@ -149,7 +144,7 @@ export default function LoginPage() {
                       Senha
                     </label>
                     <Link
-                      href="/forgot-password"
+                      href={hrefTenant("/forgot-password")}
                       className="text-[12px] leading-[16px] tracking-[0.05em] font-medium text-[#004ac6] hover:text-[#004ac6] hover:underline transition-colors"
                     >
                       Esqueci minha senha
@@ -199,7 +194,7 @@ export default function LoginPage() {
               <div className="mt-8 text-center">
                 <p className="text-[14px] leading-[20px] text-[#434655]">
                   Ainda nao faz parte?
-                  <Link href="/register" className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#004ac6] hover:underline hover:text-[#004ac6] ml-1 transition-colors">
+                  <Link href={hrefTenant("/register")} className="text-[14px] leading-[16px] tracking-[0.05em] font-semibold text-[#004ac6] hover:underline hover:text-[#004ac6] ml-1 transition-colors">
                     Solicitar acesso
                   </Link>
                 </p>

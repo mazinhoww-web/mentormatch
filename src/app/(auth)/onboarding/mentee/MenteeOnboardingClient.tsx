@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import {
@@ -22,6 +21,7 @@ import { menteeProfileSchema, type MenteeProfileInput } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { useTenantRouter } from "@/hooks/use-tenant-router"
 
 const steps = [
   { number: 1, label: "Perfil" },
@@ -62,9 +62,9 @@ const suggestedSkills = [
 ]
 
 export default function MenteeOnboardingClient() {
-  const router = useRouter()
   const { update } = useSession()
   const { user, isLoading: sessionLoading } = useCurrentUser()
+  const { pushTenant, hrefTenant } = useTenantRouter()
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
@@ -212,8 +212,7 @@ export default function MenteeOnboardingClient() {
       }
 
       await update()
-      router.push("/welcome")
-      router.refresh()
+      pushTenant("/welcome")
     } catch {
       setError("Erro de conexao. Tente novamente.")
     }
@@ -234,7 +233,7 @@ export default function MenteeOnboardingClient() {
       <header className="bg-white border-b border-[#E2E8F0] fixed top-0 w-full z-50 h-16 flex items-center px-6 justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/select-profile"
+            href={hrefTenant("/select-profile")}
             className="p-2 hover:bg-[#f2f3ff] transition-colors rounded-full active:scale-95 duration-150 text-[#434655]"
           >
             <ArrowLeft className="h-6 w-6" />
