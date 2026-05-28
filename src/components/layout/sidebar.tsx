@@ -53,9 +53,8 @@ function getNavItems(tenantSlug: string, role: Role): NavItem[] {
   if (role === "MENTOR") {
     return [
       { label: "Dashboard", href: `${base}/mentor`, icon: LayoutDashboard },
-      { label: "Minhas Conexoes", href: `${base}/processo`, icon: ClipboardList },
       { label: "Solicitacoes", href: `${base}/requests`, icon: ClipboardList },
-      { label: "Buscar Mentores", href: `${base}/mentors`, icon: Search },
+      { label: "Minhas Conexoes", href: `${base}/processo`, icon: ClipboardList },
       { label: "Biblioteca", href: `${base}/library`, icon: BookOpen },
       { label: "Notificacoes", href: `${base}/notifications`, icon: Bell },
       { label: "Perfil", href: `${base}/profile`, icon: User },

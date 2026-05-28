@@ -80,48 +80,26 @@ export default function ProfilePage() {
 
   async function fetchProfile() {
     try {
-      const sessionRes = await fetch("/mentormatch/api/auth/session")
-      const session = await sessionRes.json()
-
-      if (!session?.user?.id) return
+      const res = await fetch("/mentormatch/api/users/me")
+      if (!res.ok) {
+        setLoading(false)
+        return
+      }
+      const me = await res.json()
 
       const userProfile: UserProfile = {
-        id: session.user.id,
-        name: session.user.name || "",
-        email: session.user.email || "",
-        role: session.user.role || "",
-        image: session.user.image || null,
-        headline: null,
-        bio: null,
-        education: null,
-        experience: null,
-        linkedin: null,
-        whatsapp: null,
-        skills: [],
-      }
-
-      if (session.user.tenantSlug) {
-        try {
-          const mentorRes = await fetch(
-            `/api/mentors?tenantId=${encodeURIComponent(session.user.tenantSlug)}`
-          )
-          const mentors = await mentorRes.json()
-          if (Array.isArray(mentors)) {
-            const me = mentors.find(
-              (m: { id: string }) => m.id === session.user.id
-            )
-            if (me) {
-              userProfile.headline = me.headline
-              userProfile.bio = me.bio
-              userProfile.education = me.education
-              userProfile.experience = me.experience
-              userProfile.linkedin = me.linkedin
-              userProfile.skills = me.skills || []
-            }
-          }
-        } catch {
-          // Mentor data not available for this user
-        }
+        id: me.id,
+        name: me.name || "",
+        email: me.email || "",
+        role: me.role || "",
+        image: me.image || null,
+        headline: me.headline || null,
+        bio: me.bio || null,
+        education: me.education || null,
+        experience: me.experience || null,
+        linkedin: me.linkedin || null,
+        whatsapp: me.whatsapp || null,
+        skills: me.skills || [],
       }
 
       setProfile(userProfile)
@@ -185,16 +163,15 @@ export default function ProfilePage() {
 
     try {
       const payload = {
-        role: profile.role,
         name,
         bio,
-        linkedin: linkedin || "",
+        linkedin: linkedin || null,
         whatsapp,
-        image: image || undefined,
+        image: image || null,
       }
 
-      const res = await fetch("/mentormatch/api/auth/complete-profile", {
-        method: "POST",
+      const res = await fetch("/mentormatch/api/users/me", {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -374,7 +351,7 @@ export default function ProfilePage() {
               Disponibilidade
             </h3>
             <div className="flex flex-col gap-4 mt-2">
-              {DAYS.slice(0, 2).map((day) => {
+              {DAYS.map((day) => {
                 const dayConfig = availability[day]
                 return (
                   <div
