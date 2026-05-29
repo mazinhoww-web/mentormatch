@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+// Genuinely public routes (no session required). NOTE: /select-profile and
+// /onboarding were removed on purpose: the user is signed in (via signIn())
+// right after register, so these post-auth steps must require a session.
+// The real authorization boundary is each page/layout calling auth();
+// this middleware is an early redirect, not the security gate.
 const publicPaths = [
   "/login",
   "/register",
@@ -10,8 +15,6 @@ const publicPaths = [
   "/api/invitations",
   "/api/users",
   "/sicredi",
-  "/onboarding",
-  "/select-profile",
 ]
 
 export function middleware(req: NextRequest) {

@@ -109,6 +109,7 @@ export default function AdminSettingsPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          slug: params.slug,
           name: tenantName.trim(),
           brandColor,
           logo: logoUrl,

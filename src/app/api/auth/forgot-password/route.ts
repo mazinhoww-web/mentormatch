@@ -29,7 +29,13 @@ export async function POST(request: Request) {
         },
       })
 
-      const resetUrl = `${process.env.NEXTAUTH_URL || 'https://aurimarnogueira.com.br'}/mentormatch/reset-password?token=${token}`
+      // Build the reset URL robustly: NEXTAUTH_URL may or may not already
+      // include the /mentormatch basePath and may have a trailing slash.
+      // Strip both so we never produce /mentormatch/mentormatch or //.
+      const base = (process.env.NEXTAUTH_URL || "https://aurimarnogueira.com.br")
+        .replace(/\/+$/, "")
+        .replace(/\/mentormatch$/, "")
+      const resetUrl = `${base}/mentormatch/reset-password?token=${token}`
       await sendPasswordResetEmail(email, resetUrl)
     }
 

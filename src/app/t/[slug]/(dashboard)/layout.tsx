@@ -20,7 +20,7 @@ export default async function TenantDashboardLayout({
   const { slug } = await params
   const session = await auth()
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login")
   }
 
@@ -30,33 +30,31 @@ export default async function TenantDashboardLayout({
     notFound()
   }
 
-  // Tenant-ownership guard. We read role/tenant from the DB (authoritative)
-  // rather than the JWT session: right after onboarding the token is stale
-  // (it was minted at login, before the user had a tenant/role) and trusting
-  // it here vs. the DB-based redirect in /select-profile produced an infinite
-  // redirect loop (ERR_TOO_MANY_REDIRECTS). A user from tenant A must not read
-  // tenant B's dashboard; SUPER_ADMIN is exempt (manages every tenant).
+  // Authoritative read from the DB (same source of truth as select-profile /
+  // resolvePostLoginHref). The JWT can be stale right after onboarding (it was
+  // minted at login, before role/tenant existed); trusting it here made this
+  // guard disagree with select-profile and bounce the user in an infinite
+  // redirect loop (ERR_TOO_MANY_REDIRECTS).
   const dbUser = await db.user.findUnique({
     where: { id: session.user.id },
-    select: {
-      name: true,
-      role: true,
-      onboardingDone: true,
-      tenant: { select: { slug: true } },
-    },
+    select: { role: true, name: true, tenant: { select: { slug: true } } },
   })
 
-  const role = dbUser?.role ?? null
+  if (!dbUser) {
+    redirect("/login")
+  }
 
-  if (role !== "SUPER_ADMIN" && dbUser?.tenant?.slug !== slug) {
-    redirect(getDashboardHref(role, dbUser?.tenant?.slug, dbUser?.onboardingDone))
+  // Tenant-ownership guard: a user from tenant A must not read tenant B's
+  // dashboard. SUPER_ADMIN is exempt (manages every tenant).
+  if (dbUser.role !== "SUPER_ADMIN" && dbUser.tenant?.slug !== slug) {
+    redirect(getDashboardHref(dbUser.role, dbUser.tenant?.slug, true))
   }
 
   return (
     <DashboardLayout
       tenantSlug={slug}
-      role={role as "MENTOR" | "MENTEE" | "ADMIN"}
-      userName={dbUser?.name ?? session.user.name}
+      role={dbUser.role as "MENTOR" | "MENTEE" | "ADMIN"}
+      userName={dbUser.name ?? session.user.name}
       brandColor={tenant.brandColor}
       secondaryColor={tenant.secondaryColor}
     >
