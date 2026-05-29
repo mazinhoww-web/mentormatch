@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { getTenantBySlug } from "@/lib/tenant"
+import { getDashboardHref } from "@/lib/dashboard-href"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export const metadata = {
@@ -26,6 +27,16 @@ export default async function TenantDashboardLayout({
 
   if (!tenant) {
     notFound()
+  }
+
+  // Tenant-ownership guard: a user from tenant A must not read tenant B's
+  // dashboard. SUPER_ADMIN is exempt (manages every tenant). Anyone else is
+  // sent to their own dashboard.
+  if (
+    session.user.role !== "SUPER_ADMIN" &&
+    session.user.tenantSlug !== slug
+  ) {
+    redirect(getDashboardHref(session.user.role, session.user.tenantSlug, true))
   }
 
   return (
