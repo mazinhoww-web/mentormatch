@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation"
 import { auth } from "@/lib/auth"
+import { db } from "@/lib/db"
 import { getTenantBySlug } from "@/lib/tenant"
 import { getDashboardHref } from "@/lib/dashboard-href"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -29,21 +30,33 @@ export default async function TenantDashboardLayout({
     notFound()
   }
 
-  // Tenant-ownership guard: a user from tenant A must not read tenant B's
-  // dashboard. SUPER_ADMIN is exempt (manages every tenant). Anyone else is
-  // sent to their own dashboard.
-  if (
-    session.user.role !== "SUPER_ADMIN" &&
-    session.user.tenantSlug !== slug
-  ) {
-    redirect(getDashboardHref(session.user.role, session.user.tenantSlug, true))
+  // Tenant-ownership guard. We read role/tenant from the DB (authoritative)
+  // rather than the JWT session: right after onboarding the token is stale
+  // (it was minted at login, before the user had a tenant/role) and trusting
+  // it here vs. the DB-based redirect in /select-profile produced an infinite
+  // redirect loop (ERR_TOO_MANY_REDIRECTS). A user from tenant A must not read
+  // tenant B's dashboard; SUPER_ADMIN is exempt (manages every tenant).
+  const dbUser = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      name: true,
+      role: true,
+      onboardingDone: true,
+      tenant: { select: { slug: true } },
+    },
+  })
+
+  const role = dbUser?.role ?? null
+
+  if (role !== "SUPER_ADMIN" && dbUser?.tenant?.slug !== slug) {
+    redirect(getDashboardHref(role, dbUser?.tenant?.slug, dbUser?.onboardingDone))
   }
 
   return (
     <DashboardLayout
       tenantSlug={slug}
-      role={session.user.role as "MENTOR" | "MENTEE" | "ADMIN"}
-      userName={session.user.name}
+      role={role as "MENTOR" | "MENTEE" | "ADMIN"}
+      userName={dbUser?.name ?? session.user.name}
       brandColor={tenant.brandColor}
       secondaryColor={tenant.secondaryColor}
     >
