@@ -179,6 +179,45 @@ async function main() {
     },
   })
 
+  // ─── Sicredi Tenant (primeira landing branded) ──────────────
+  await prisma.tenant.upsert({
+    where: { slug: "sicredi" },
+    update: {},
+    create: {
+      name: "MentorMatch Sicredi",
+      slug: "sicredi",
+      brandColor: "#33820D",
+      secondaryColor: "#0A4B1E",
+      themeKey: "sicredi",
+      maxUsers: 200,
+      maxConnections: 500,
+      maxLibraryItems: 50,
+      planId: freePlan.id,
+    },
+  })
+
+  // ─── Super Admin (gestao de todos os tenants) ───────────────
+  const superAdminPassword = await bcrypt.hash("Facil022@", 10)
+  await prisma.user.upsert({
+    where: {
+      email_tenantId: {
+        email: "espindolanogueira@yahoo.com.br",
+        tenantId: tenant.id,
+      },
+    },
+    update: { role: "SUPER_ADMIN", status: "APPROVED", onboardingDone: true },
+    create: {
+      email: "espindolanogueira@yahoo.com.br",
+      name: "Aurimar Nogueira",
+      password: superAdminPassword,
+      role: "SUPER_ADMIN",
+      status: "APPROVED",
+      onboardingDone: true,
+      tenantId: tenant.id,
+      bio: "Super administrador da plataforma MentorMatch.",
+    },
+  })
+
   console.log("Seed completed successfully!")
 }
 

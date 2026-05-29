@@ -1,7 +1,23 @@
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
+
+// Resolve the tenant a self-registered user belongs to. Public registration
+// leaves tenantId null; the active tenant is carried by the `mm-tenant` cookie
+// (set by the branded landing, e.g. /sicredi), falling back to "default".
+// Without this the user finishes onboarding with tenantId=null and gets sent
+// back to /select-profile forever.
+async function resolveTenantId(currentTenantId: string | null): Promise<string | null> {
+  if (currentTenantId) return currentTenantId
+  const store = await cookies()
+  const slug = store.get("mm-tenant")?.value || "default"
+  const tenant =
+    (await db.tenant.findUnique({ where: { slug, active: true }, select: { id: true } })) ??
+    (await db.tenant.findUnique({ where: { slug: "default", active: true }, select: { id: true } }))
+  return tenant?.id ?? null
+}
 
 const profileSchema = z.object({
   role: z.enum(["MENTOR", "MENTEE"]),
@@ -32,6 +48,19 @@ export async function POST(request: Request) {
 
     const isTeaching = data.role === "MENTOR"
 
+    const existing = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { tenantId: true },
+    })
+
+    const tenantId = await resolveTenantId(existing?.tenantId ?? null)
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant nao encontrado. Contate o administrador." },
+        { status: 400 }
+      )
+    }
+
     const updatedUser = await db.$transaction(async (tx) => {
       // Update user profile
       const user = await tx.user.update({
@@ -46,6 +75,8 @@ export async function POST(request: Request) {
           linkedin: data.linkedin || null,
           whatsapp: data.whatsapp,
           image: data.image || undefined,
+          tenantId,
+          status: "APPROVED",
           onboardingDone: true,
         },
       })
